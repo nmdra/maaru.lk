@@ -1,6 +1,26 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
-import React from 'react';
+import React, { useContext } from 'react';
+import { View, Text } from 'react-native';
+// import { CartContext } from '../../context/CartContext';
+
+function CartTabIcon({ color, size }) {
+  const { getCartItemCount } = useContext(CartContext);
+  const itemCount = getCartItemCount();
+
+  return (
+    <View className="relative">
+      <Ionicons name="cart-outline" size={size ?? 24} color={color} />
+      {itemCount > 0 && (
+        <View className="absolute -top-1 -right-2 bg-red-500 rounded-full min-w-[18px] h-[18px] items-center justify-center">
+          <Text className="text-white text-[10px] font-bold">
+            {itemCount > 99 ? '99+' : itemCount}
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+}
 
 export default function TabLayout() {
   return (
@@ -23,7 +43,7 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="Home"
         options={{
           title: 'Home',
           tabBarIcon: ({ color, size }) => (
@@ -41,11 +61,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="Reviews"
         options={{
-          title: 'Profile',
+          title: 'Reviews',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size ?? 24} color={color} />
+            <Ionicons name="star-outline" size={size ?? 24} color={color} />
           ),
         }}
       />
