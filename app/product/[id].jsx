@@ -30,6 +30,7 @@ export default function ProductDetailScreen() {
   const pressOutInfo = () =>
     Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true }).start();
   const openGuidelines = () => setSwapGuidelinesVisible(true);
+  const onChatPress = () => router.push('/chat');
 
   const mockTags = product?.tags || [];
 

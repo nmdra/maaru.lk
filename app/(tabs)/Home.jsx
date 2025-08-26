@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { fetchProducts } from '../../services/productService';
 import formatPrice from '../../utils/formatPrice';
+import ChatBubble from '../../components/chat/ChatBubble';
 
 const CATEGORIES = ['All', 'Shoes', 'Clothes', 'Accessories', 'Electronics', 'Books', 'Others'];
 
@@ -50,19 +51,21 @@ export default function HomeScreen() {
   // Header + Search + Category Chips as FlatList header
   const renderHeader = () => (
     <View className="bg-white px-4 pt-4 pb-2">
-      {/* Search Bar */}
+      {/* Top Bar */}
       <View className="flex-row justify-between items-center mb-4">
         <Text className="text-2xl font-bold text-gray-900">Maaru.LK</Text>
 
-        {/* Add profile button  */}
+        {/* Profile */}
         <Pressable
           onPress={() => router.push('/profile')}
           className="bg-blue-600 p-2 rounded-full"
           accessibilityLabel="Go to Profile"
         >
-         <Ionicons name="person" size={24} color="white" />
-       </Pressable>
-     </View>
+          <Ionicons name="person" size={24} color="white" />
+        </Pressable>
+      </View>
+
+      {/* Search */}
       <TouchableOpacity
         onPress={() => router.push('/search')}
         className="flex-row items-center bg-gray-100 rounded-lg p-3 mb-3"
@@ -101,37 +104,42 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
-      <FlatList
-        data={filteredItems}
-        keyExtractor={(item) => item.id}
-        ListHeaderComponent={renderHeader}
-        contentContainerStyle={{ paddingBottom: 120, paddingHorizontal: 16 }}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            onPress={() => router.push(`/product/${item.id}`)}
-            className="mb-4 bg-white rounded-xl shadow-md overflow-hidden"
-          >
-            <Image source={{ uri: item.imageUrl }} className="w-full h-48" resizeMode="cover" />
-            <View className="p-4">
-              <Text className="text-lg font-semibold text-gray-800">{item.name}</Text>
-              <Text className="text-gray-600 mt-1" numberOfLines={2}>
-                {item.description}
-              </Text>
-              <Text className="mt-2 font-bold text-blue-600">
-                {formatPrice(item.price, item.currency)}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        )}
-      />
+      <View className="flex-1">
+        <FlatList
+          data={filteredItems}
+          keyExtractor={(item) => item.id}
+          ListHeaderComponent={renderHeader}
+          contentContainerStyle={{ paddingBottom: 140, paddingHorizontal: 16 }}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              onPress={() => router.push(`/product/${item.id}`)}
+              className="mb-4 bg-white rounded-xl shadow-md overflow-hidden"
+            >
+              <Image source={{ uri: item.imageUrl }} className="w-full h-48" resizeMode="cover" />
+              <View className="p-4">
+                <Text className="text-lg font-semibold text-gray-800">{item.name}</Text>
+                <Text className="text-gray-600 mt-1" numberOfLines={2}>
+                  {item.description}
+                </Text>
+                <Text className="mt-2 font-bold text-blue-600">
+                  {formatPrice(item.price, item.currency)}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          )}
+        />
 
-      {/* Floating Add New Item Button */}
-      <TouchableOpacity
-        onPress={() => router.push('/AddProduct')}
-        className="absolute bottom-6 right-6 bg-blue-600 w-16 h-16 rounded-full items-center justify-center shadow-lg"
-      >
-        <Ionicons name="add" size={32} color="#fff" />
-      </TouchableOpacity>
+        {/* Floating Chat Bubble (opens chat list) */}
+        <ChatBubble to="/chat" />
+
+        {/* Floating Add New Item Button (shifted left so it doesn't overlap the chat bubble) */}
+        <TouchableOpacity
+          onPress={() => router.push('/AddProduct')}
+          className="absolute bottom-6 right-24 bg-blue-600 w-16 h-16 rounded-full items-center justify-center shadow-lg"
+        >
+          <Ionicons name="add" size={32} color="#fff" />
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
