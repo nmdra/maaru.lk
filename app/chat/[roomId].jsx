@@ -1,32 +1,43 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { GiftedChat } from 'react-native-gifted-chat';
 import { useLocalSearchParams } from 'expo-router';
+import { listenMessages, sendMessage } from '../../services/chatService';
+import { useAuth } from '../../context/AuthContext';
 
 export default function ChatRoom() {
   const { roomId } = useLocalSearchParams();
+  const { user } = useAuth(); // expects user.uid
+  const [messages, setMessages] = useState([]);
+
+  useEffect(() => {
+    if (!roomId) return;
+    const unsub = listenMessages(roomId, (rows) => {
+      setMessages(
+        rows.map((m) => ({
+          _id: m.id,
+          text: m.text,
+          createdAt: m.createdAt?.toDate?.() ?? new Date(),
+          user: { _id: m.fromUid },
+        }))
+      );
+    });
+    return () => unsub?.();
+  }, [roomId]);
+
+  const onSend = useCallback(async (newMessages = []) => {
+    for (const m of newMessages) {
+      await sendMessage(roomId, user.uid, m.text);
+    }
+  }, [roomId, user?.uid]);
 
   return (
-    <View style={styles.wrap}>
-      <Text style={styles.title}>Chat Room</Text>
-      <Text style={styles.sub}>Room ID: {String(roomId)}</Text>
-      <View style={styles.box}>
-        <Text style={styles.note}>
-          Frontend shell ready. We’ll wire real-time messages next.
-        </Text>
-      </View>
-    </View>
+    <GiftedChat
+      messages={messages}
+      onSend={onSend}
+      user={{ _id: user.uid }}
+      renderUsernameOnMessage={false}
+      showUserAvatar={false}
+      alwaysShowSend
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  wrap: { flex: 1, padding: 16, backgroundColor: '#fff' },
-  title: { fontSize: 20, fontWeight: '700' },
-  sub: { marginTop: 6, color: '#666' },
-  box: {
-    marginTop: 16,
-    padding: 16,
-    backgroundColor: '#f7f7f7',
-    borderRadius: 12,
-  },
-  note: { color: '#444' },
-});

@@ -16,9 +16,14 @@ import ProductCard from '../../components/product/ProductCard';
 import { db } from '../../services/firebaseConfig';
 import formatPrice from '../../utils/formatPrice';
 
+// 🔗 chat helpers + auth
+import { ensureConversation } from '../../services/chatService';
+import { useAuth } from '../../context/AuthContext';
+
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { user } = useAuth(); // expects user?.uid
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [relatedItems, setRelatedItems] = useState([]);
@@ -30,7 +35,6 @@ export default function ProductDetailScreen() {
   const pressOutInfo = () =>
     Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true }).start();
   const openGuidelines = () => setSwapGuidelinesVisible(true);
-  const onChatPress = () => router.push('/chat');
 
   const mockTags = product?.tags || [];
 
@@ -58,7 +62,7 @@ export default function ProductDetailScreen() {
         const q = query(productsRef, where('category', '==', category), limit(10));
         const snapshot = await getDocs(q);
         const items = snapshot.docs
-          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .map((d) => ({ id: d.id, ...d.data() }))
           .filter((item) => item.id !== excludeId)
           .sort(() => Math.random() - 0.5);
         setRelatedItems(items.slice(0, 5));
@@ -80,7 +84,31 @@ export default function ProductDetailScreen() {
 
   const handleSwap = () => product && router.push(`/swap/${product.id}`);
   const handlePay = () => Alert.alert('Payment', `Pay for ${product.name}`);
-  const handleChat = () => product && router.push(`/chat/${product.ownerId}`);
+
+  // ✅ Open (or create) a chat room with the seller and navigate to it
+  const handleChat = async () => {
+    try {
+      if (!user?.uid) {
+        Alert.alert('Login required', 'Please sign in to start a chat.');
+        return;
+      }
+      const sellerUid = product?.ownerId || product?.userId || product?.createdBy;
+      if (!sellerUid) {
+        Alert.alert('Unavailable', 'Seller information is missing for this product.');
+        return;
+      }
+      if (sellerUid === user.uid) {
+        Alert.alert('Heads up', 'You cannot chat with yourself about your own item.');
+        return;
+      }
+      const { id: roomId } = await ensureConversation(user.uid, sellerUid, product.id);
+      router.push(`/chat/${roomId}`);
+    } catch (e) {
+      console.error('Chat error:', e);
+      Alert.alert('Error', 'Could not open chat. Please try again.');
+    }
+  };
+
   const handleFavorite = () => Alert.alert('Favorite', `${product.name} added to favorites.`);
 
   return (
