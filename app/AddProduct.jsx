@@ -14,7 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { db, storage } from '../../services/firebaseConfig';
+import { db, storage } from '../services/firebaseConfig';
 
 const CATEGORIES = ['Electronics', 'Furniture', 'Books', 'Clothing', 'Others'];
 const MOCK_TAGS = ['Emergency', 'Good Condition', 'Limited Time', 'New Arrival'];
