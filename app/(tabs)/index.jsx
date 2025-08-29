@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { fetchProducts } from '../../services/productService';
+import formatPrice from '../../utils/formatPrice';
 
 const CATEGORIES = ['All', 'Shoes', 'Clothes', 'Accessories', 'Electronics', 'Books', 'Others'];
 
@@ -103,7 +104,7 @@ export default function HomeScreen() {
               <Text className="text-gray-600 mt-1" numberOfLines={2}>
                 {item.description}
               </Text>
-              <Text className="mt-2 font-bold text-blue-600">LKR{item.price.toLocaleString()}</Text>
+              <Text className="mt-2 font-bold text-blue-600">{formatPrice(item.price, item.currency)}</Text>
             </View>
           </TouchableOpacity>
         )}
