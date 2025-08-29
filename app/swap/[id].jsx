@@ -155,7 +155,7 @@ export default function SwapScreen() {
               >
                 <ProductCard
                   name={item.name}
-                  priceCents={item.priceCents}
+                  priceCents={item.price}
                   currency={item.currency}
                   imageUrl={item.imageUrl}
                   onPress={() => toggleSelectItem(item.id)}

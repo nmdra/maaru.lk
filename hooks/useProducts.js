@@ -1,83 +1,90 @@
-// hooks/useProducts.js
-import { useCallback, useRef, useState } from 'react';
-import { PAGE_SIZE } from '../constants/firebase';
-import { fetchProducts } from '../services/productService';
+import { collection, getDocs, limit, query, startAfter, where } from 'firebase/firestore';
+import { useState } from 'react';
+import { db } from '../services/firebaseConfig';
 
-export default function useProducts() {
+export default function useProducts(filters) {
   const [items, setItems] = useState([]);
-  const [cursor, setCursor] = useState(null);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [error, setError] = useState(null);
+  const [lastDoc, setLastDoc] = useState(null);
   const [search, setSearch] = useState('');
 
-  const fetchingRef = useRef(false);
+  const buildQuery = (startAfterDoc = null) => {
+    let q = collection(db, 'products');
 
-  // Load first page (reset on new search)
-  const fetchFirstPage = useCallback(async (searchTerm = '') => {
-    if (fetchingRef.current) return;
-    fetchingRef.current = true;
+    // Category filter
+    if (filters.category && filters.category !== 'All') {
+      if (filters.category === 'Swap Only') {
+        q = query(q, where('swapOnly', '==', true));
+      } else {
+        q = query(q, where('category', '==', filters.category));
+      }
+    }
+
+    // Price filters
+    if (filters.minPrice != null) q = query(q, where('price', '>=', filters.minPrice));
+    if (filters.maxPrice != null) q = query(q, where('price', '<=', filters.maxPrice));
+
+    // Search filter
+    if (search) {
+      q = query(q, where('name', '>=', search), where('name', '<=', search + '\uf8ff'));
+    }
+
+    // Pagination
+    if (startAfterDoc) q = query(q, startAfter(startAfterDoc));
+
+    // Limit
+    q = query(q, limit(20));
+
+    return q;
+  };
+
+  const fetchFirstPage = async (searchText = '') => {
     setLoading(true);
-    setError(null);
-
+    setSearch(searchText);
     try {
-      const { items: page, cursor: cur } = await fetchProducts({
-        search: searchTerm,
-        pageSize: PAGE_SIZE,
-      });
-      setItems(page);
-      setCursor(cur);
-      setHasMore(!!cur);
-      setSearch(searchTerm);
-    } catch (e) {
-      setError(e);
+      const q = buildQuery();
+      const snapshot = await getDocs(q);
+      const fetchedItems = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setItems(fetchedItems);
+      setLastDoc(snapshot.docs[snapshot.docs.length - 1] || null);
+      setHasMore(fetchedItems.length > 0);
+    } catch (err) {
+      console.error(err);
     } finally {
       setLoading(false);
-      fetchingRef.current = false;
     }
-  }, []);
+  };
 
-  // Load next page (infinite scroll)
-  const fetchNextPage = useCallback(async () => {
-    if (fetchingRef.current || !hasMore) return;
-    fetchingRef.current = true;
+  const fetchNextPage = async () => {
+    if (!lastDoc || !hasMore) return;
     setLoading(true);
-
     try {
-      const { items: page, cursor: cur } = await fetchProducts({
-        cursor,
-        search,
-        pageSize: PAGE_SIZE,
-      });
-      setItems((prev) => [...prev, ...page]);
-      setCursor(cur);
-      setHasMore(!!cur);
-    } catch (e) {
-      setError(e);
+      const q = buildQuery(lastDoc);
+      const snapshot = await getDocs(q);
+      const fetchedItems = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      setItems((prev) => [...prev, ...fetchedItems]);
+      setLastDoc(snapshot.docs[snapshot.docs.length - 1] || null);
+      setHasMore(fetchedItems.length > 0);
+    } catch (err) {
+      console.error(err);
     } finally {
       setLoading(false);
-      fetchingRef.current = false;
     }
-  }, [cursor, hasMore, search]);
+  };
 
-  // Refresh list (pull-to-refresh)
-  const refresh = useCallback(async () => {
-    setRefreshing(true);
-    await fetchFirstPage(search);
-    setRefreshing(false);
-  }, [fetchFirstPage, search]);
+  const refresh = () => fetchFirstPage(search);
 
   return {
     items,
     loading,
-    refreshing,
     hasMore,
-    error,
-    search,
-    setSearch,
+    refreshing,
     fetchFirstPage,
     fetchNextPage,
     refresh,
+    setSearch,
+    search,
   };
 }

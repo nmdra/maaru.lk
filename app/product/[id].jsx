@@ -24,7 +24,6 @@ export default function ProductDetailScreen() {
   const [relatedItems, setRelatedItems] = useState([]);
   const [swapGuidelinesVisible, setSwapGuidelinesVisible] = useState(false);
 
-  // Tooltip animation
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const pressInInfo = () =>
     Animated.spring(scaleAnim, { toValue: 0.9, useNativeDriver: true }).start();
@@ -32,8 +31,7 @@ export default function ProductDetailScreen() {
     Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true }).start();
   const openGuidelines = () => setSwapGuidelinesVisible(true);
 
-  // Mock tags (temporary)
-  const mockTags = ['Emergency', 'Good Condition', 'Limited Time'];
+  const mockTags = product?.tags || [];
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -80,12 +78,13 @@ export default function ProductDetailScreen() {
   }
 
   const handleSwap = () => product && router.push(`/swap/${product.id}`);
+  const handlePay = () => Alert.alert('Payment', `Pay for ${product.name}`);
   const handleChat = () => product && router.push(`/chat/${product.ownerId}`);
   const handleFavorite = () => Alert.alert('Favorite', `${product.name} added to favorites.`);
 
   return (
     <View className="flex-1 bg-white">
-      {/* Info Tooltip Top-Right */}
+      {/* Info Button */}
       <Animated.View
         style={{
           position: 'absolute',
@@ -115,7 +114,8 @@ export default function ProductDetailScreen() {
             className="w-full h-80 bg-gray-200"
             resizeMode="cover"
           />
-          {/* Floating Tags */}
+
+          {/* Tags */}
           <View className="absolute bottom-3 left-3 flex-row space-x-2">
             {mockTags.map((tag) => {
               const randomColor = `hsl(${Math.floor(Math.random() * 360)}, 70%, 50%)`;
@@ -130,55 +130,103 @@ export default function ProductDetailScreen() {
               );
             })}
           </View>
+
+          {/* Like Button */}
+          <TouchableOpacity
+            onPress={handleFavorite}
+            className="absolute bottom-3 right-3 bg-pink-500 p-3 rounded-full shadow-md"
+          >
+            <Ionicons name="heart-outline" size={20} color="white" />
+          </TouchableOpacity>
         </View>
 
         {/* Product Info */}
-        <View className="p-4 space-y-2">
+        <View className="p-4 space-y-4">
           <Text className="text-2xl font-bold text-gray-900">{product.name}</Text>
-          {product.swapOnly && (
-            <View className="bg-red-500 px-2 py-1 rounded-full w-28">
-              <Text className="text-xs font-bold text-white text-center">SWAP ONLY</Text>
-            </View>
-          )}
-          {product.condition && (
-            <Text className="text-sm text-gray-500">Condition: {product.condition}</Text>
-          )}
-          {product.priceCents && !product.swapOnly && (
-            <Text className="text-blue-600 font-semibold text-lg">
-              {formatPrice(product.priceCents, product.currency)}
+
+          {/* Swap Only / Condition */}
+          <View className="flex-row items-center space-x-2">
+            {product.swapOnly && (
+              <View className="bg-red-500 px-3 py-1 rounded-full">
+                <Text className="text-xs font-bold text-white">SWAP ONLY</Text>
+              </View>
+            )}
+            {product.condition && (
+              <View className="bg-gray-200 px-3 py-1 rounded-full">
+                <Text className="text-xs font-semibold text-gray-800">{product.condition}</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Price */}
+          {!product.swapOnly && (
+            <Text className="text-2xl font-semibold text-blue-600">
+              {product.price ? formatPrice(product.price, product.currency) : 'Free'}
             </Text>
           )}
-          <Text className="text-gray-700 text-sm">Category: {product.category}</Text>
-          <Text className="text-gray-700 text-sm">Stock: {product.stock}</Text>
-          <Text className="text-gray-800 mt-2">{product.description}</Text>
-          {product.ownerName && (
-            <Text className="text-gray-600 text-sm mt-2">Owner: {product.ownerName}</Text>
-          )}
+
+          {/* Info Chips */}
+          <View className="flex-row space-x-3 mt-2">
+            <View className="flex-row items-center bg-gray-100 px-3 py-1 rounded-full shadow-sm">
+              <Ionicons name="pricetag-outline" size={16} color="#4B5563" className="mr-1" />
+              <Text className="text-xs font-medium text-gray-700">{product.category}</Text>
+            </View>
+            <View className="flex-row items-center bg-gray-100 px-3 py-1 rounded-full shadow-sm">
+              <Ionicons name="cube-outline" size={16} color="#4B5563" className="mr-1" />
+              <Text className="text-xs font-medium text-gray-700">Stock: {product.stock}</Text>
+            </View>
+            {product.ownerName && (
+              <View className="flex-row items-center bg-gray-100 px-3 py-1 rounded-full shadow-sm">
+                <Ionicons name="person-outline" size={16} color="#4B5563" className="mr-1" />
+                <Text className="text-xs font-medium text-gray-700">{product.ownerName}</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Description */}
+          <View className="bg-gray-50 p-4 rounded-xl shadow-sm mt-4">
+            <Text className="text-gray-800 leading-6">{product.description}</Text>
+          </View>
         </View>
 
         {/* Action Buttons */}
         <View className="flex-row justify-between px-4 py-3 space-x-3 items-center">
-          <TouchableOpacity
-            onPress={handleSwap}
-            className="flex-1 bg-green-600 py-3 rounded-lg flex-row items-center justify-center"
-          >
-            <Ionicons name="swap-horizontal-outline" size={20} color="white" className="mr-2" />
-            <Text className="text-white font-semibold">Swap</Text>
-          </TouchableOpacity>
+          {/* Swap / Pay Buttons */}
+          {product.swapOnly ? (
+            <TouchableOpacity
+              onPress={handleSwap}
+              className="flex-1 bg-green-600 py-3 rounded-lg flex-row items-center justify-center"
+            >
+              <Ionicons name="swap-horizontal-outline" size={20} color="white" className="mr-2" />
+              <Text className="text-white font-semibold">Swap</Text>
+            </TouchableOpacity>
+          ) : (
+            <>
+              <TouchableOpacity
+                onPress={handleSwap}
+                className="flex-1 bg-green-600 py-3 rounded-lg flex-row items-center justify-center"
+              >
+                <Ionicons name="swap-horizontal-outline" size={20} color="white" className="mr-2" />
+                <Text className="text-white font-semibold">Swap</Text>
+              </TouchableOpacity>
 
+              <TouchableOpacity
+                onPress={handlePay}
+                className="flex-1 bg-yellow-500 py-3 rounded-lg flex-row items-center justify-center"
+              >
+                <Ionicons name="card-outline" size={20} color="white" className="mr-2" />
+                <Text className="text-white font-semibold">Pay</Text>
+              </TouchableOpacity>
+            </>
+          )}
+
+          {/* Chat Button */}
           <TouchableOpacity
             onPress={handleChat}
-            className="flex-1 bg-blue-600 py-3 rounded-lg flex-row items-center justify-center"
+            className="bg-blue-600 py-3 px-4 rounded-lg flex-row items-center justify-center"
           >
             <Ionicons name="chatbubble-outline" size={20} color="white" className="mr-2" />
             <Text className="text-white font-semibold">Chat</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={handleFavorite}
-            className="bg-pink-500 p-3 rounded-lg items-center justify-center"
-          >
-            <Ionicons name="heart-outline" size={20} color="white" />
           </TouchableOpacity>
         </View>
 
@@ -191,9 +239,11 @@ export default function ProductDetailScreen() {
                 <ProductCard
                   key={item.id}
                   name={item.name}
-                  priceCents={item.priceCents}
+                  price={item.price}
                   currency={item.currency}
                   imageUrl={item.imageUrl}
+                  swapOnly={item.swapOnly}
+                  condition={item.condition}
                   onPress={() => router.push(`/product/${item.id}`)}
                 />
               ))}

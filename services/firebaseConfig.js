@@ -1,5 +1,7 @@
 import { getApps, initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
 import { CACHE_SIZE_UNLIMITED, getFirestore, initializeFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -11,15 +13,19 @@ const firebaseConfig = {
   measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-console.log(firebaseConfig.apiKey)
-
+// Initialize Firebase app
 let app;
 if (!getApps().length) {
   app = initializeApp(firebaseConfig);
-  // Recommended for RN: increase cache, compat with suspense
+  // Recommended for React Native: Firestore with unlimited cache
   initializeFirestore(app, { cacheSizeBytes: CACHE_SIZE_UNLIMITED });
 } else {
   app = getApps()[0];
 }
 
+// Initialize services
 export const db = getFirestore(app);
+export const storage = getStorage(app);
+export const auth = getAuth(app);
+
+export default app;

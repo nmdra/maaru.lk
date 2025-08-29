@@ -1,20 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { useState } from 'react';
-import {
-  Alert,
-  Image,
-  ScrollView,
-  Switch,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { db, storage } from '../services/firebaseConfig';
+import { Image, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { addItemToFirestore } from '../services/itemService';
 
 const CATEGORIES = ['Electronics', 'Furniture', 'Books', 'Clothing', 'Others'];
 const MOCK_TAGS = ['Emergency', 'Good Condition', 'Limited Time', 'New Arrival'];
@@ -33,18 +22,15 @@ export default function AddItemScreen() {
   const [customTag, setCustomTag] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Pick image from camera or gallery
+  // Pick image
   const handlePickImage = async (fromCamera = true) => {
     try {
-      let permissionStatus;
-      if (fromCamera) {
-        permissionStatus = await ImagePicker.requestCameraPermissionsAsync();
-      } else {
-        permissionStatus = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      }
+      const permissionStatus = fromCamera
+        ? await ImagePicker.requestCameraPermissionsAsync()
+        : await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (permissionStatus.status !== 'granted') {
-        Alert.alert('Permission Denied', 'Permission is required to select an image.');
+        alert('Permission required to select an image.');
         return;
       }
 
@@ -56,6 +42,7 @@ export default function AddItemScreen() {
             aspect: [4, 4],
           });
 
+      // TODO: Use proper image upload
       if (!result.canceled) {
         setImageUri(result.assets[0].uri);
       }
@@ -75,50 +62,37 @@ export default function AddItemScreen() {
     }
   };
 
-  // Upload image to Firebase Storage
-  const uploadImage = async (uri) => {
-    if (!uri) return null;
-
-    const response = await fetch(uri);
-    const blob = await response.blob();
-    const filename = `products/${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-    const storageRef = ref(storage, filename);
-
-    await uploadBytes(storageRef, blob);
-    const downloadUrl = await getDownloadURL(storageRef);
-    return downloadUrl;
-  };
-
   const handleAddItem = async () => {
-    if (!name || !description || !category) {
-      Alert.alert('Validation Error', 'Please fill all required fields.');
+    if (!name || !description) {
+      alert('Please fill all required fields.');
       return;
     }
 
     setLoading(true);
-
     try {
-      const uploadedImageUrl = await uploadImage(imageUri);
-
       const newItem = {
         name,
         description,
         category,
-        priceCents: price ? parseFloat(price) * 100 : null,
+        price: Number(price),
         swapOnly,
         condition,
-        imageUrl: uploadedImageUrl || 'https://placehold.co/200x200',
+        imageUrl: imageUri || 'https://placehold.co/200x200',
         tags,
-        ownerId: 'mockUserId', // TODO: Replace with actual user id
-        createdAt: serverTimestamp(),
+        ownerId: 'mockUserId', // Replace with actual user ID
+        createdAt: new Date(), // itemService can override with serverTimestamp if needed
+        stock: 1, // optional, default stock
       };
 
-      await addDoc(collection(db, 'products'), newItem);
-      Alert.alert('Item Added', `${name} has been added successfully!`);
-      router.back();
+      const itemId = await addItemToFirestore(newItem);
+
+      router.push({
+        pathname: '/AddProductConfirmation',
+        params: { name, itemId },
+      });
     } catch (err) {
       console.error(err);
-      Alert.alert('Error', 'Failed to add item.');
+      alert('Failed to add item.');
     } finally {
       setLoading(false);
     }
@@ -139,40 +113,37 @@ export default function AddItemScreen() {
             onPress={() => handlePickImage(true)}
             className="bg-blue-600 px-5 py-3 rounded-xl flex-row items-center shadow-md"
           >
-            <Ionicons name="camera-outline" size={20} color="white" className="mr-2" />
-            <Text className="text-white font-semibold text-base">Camera</Text>
+            <Ionicons name="camera-outline" size={20} color="white" />
+            <Text className="text-white font-semibold text-base ml-2">Camera</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => handlePickImage(false)}
             className="bg-green-600 px-5 py-3 rounded-xl flex-row items-center shadow-md"
           >
-            <Ionicons name="images-outline" size={20} color="white" className="mr-2" />
-            <Text className="text-white font-semibold text-base">Gallery</Text>
+            <Ionicons name="images-outline" size={20} color="white" />
+            <Text className="text-white font-semibold text-base ml-2">Gallery</Text>
           </TouchableOpacity>
         </View>
       </View>
 
       {/* Name */}
-      <Text className="text-gray-700 mb-1 font-medium">Name*</Text>
       <TextInput
         value={name}
         onChangeText={setName}
-        placeholder="Enter item name"
+        placeholder="Item Name*"
         className="bg-white border border-gray-300 rounded-xl px-4 py-3 mb-4 shadow-sm"
       />
 
       {/* Description */}
-      <Text className="text-gray-700 mb-1 font-medium">Description*</Text>
       <TextInput
         value={description}
         onChangeText={setDescription}
-        placeholder="Enter item description"
+        placeholder="Description*"
         multiline
         className="bg-white border border-gray-300 rounded-xl px-4 py-3 mb-4 shadow-sm h-24"
       />
 
       {/* Category */}
-      <Text className="text-gray-700 mb-2 font-medium">Category*</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4 space-x-2">
         {CATEGORIES.map((cat) => (
           <TouchableOpacity
@@ -189,7 +160,7 @@ export default function AddItemScreen() {
         ))}
       </ScrollView>
 
-      {/* Swap Only Toggle */}
+      {/* Swap Only */}
       <View className="flex-row justify-between items-center mb-4 px-1">
         <Text className="text-gray-700 font-medium">Swap Only</Text>
         <Switch value={swapOnly} onValueChange={setSwapOnly} />
@@ -197,29 +168,24 @@ export default function AddItemScreen() {
 
       {/* Price */}
       {!swapOnly && (
-        <>
-          <Text className="text-gray-700 mb-1 font-medium">Price (optional)</Text>
-          <TextInput
-            value={price}
-            onChangeText={setPrice}
-            placeholder="Enter price in USD"
-            keyboardType="numeric"
-            className="bg-white border border-gray-300 rounded-xl px-4 py-3 mb-4 shadow-sm"
-          />
-        </>
+        <TextInput
+          value={price}
+          onChangeText={setPrice}
+          placeholder="Price (optional)"
+          keyboardType="numeric"
+          className="bg-white border border-gray-300 rounded-xl px-4 py-3 mb-4 shadow-sm"
+        />
       )}
 
       {/* Condition */}
-      <Text className="text-gray-700 mb-1 font-medium">Condition</Text>
       <TextInput
         value={condition}
         onChangeText={setCondition}
-        placeholder="e.g., New, Like New, Used"
+        placeholder="Condition"
         className="bg-white border border-gray-300 rounded-xl px-4 py-3 mb-4 shadow-sm"
       />
 
-      {/* Tags Selection */}
-      <Text className="text-gray-700 mb-2 font-medium">Tags</Text>
+      {/* Tags */}
       <View className="flex-row flex-wrap mb-4 space-x-2">
         {MOCK_TAGS.map((tag) => (
           <TouchableOpacity
@@ -234,7 +200,7 @@ export default function AddItemScreen() {
         ))}
       </View>
 
-      {/* Add Custom Tag */}
+      {/* Custom Tag */}
       <View className="flex-row mb-6">
         <TextInput
           value={customTag}
@@ -250,11 +216,13 @@ export default function AddItemScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Add Button */}
+      {/* Submit */}
       <TouchableOpacity
         onPress={handleAddItem}
-        className={`bg-green-600 py-4 rounded-2xl items-center justify-center flex-row shadow-md mb-8 ${loading ? 'opacity-50' : ''}`}
         disabled={loading}
+        className={`bg-green-600 py-4 rounded-2xl items-center justify-center flex-row shadow-md mb-8 ${
+          loading ? 'opacity-50' : ''
+        }`}
       >
         <Ionicons name="add-circle-outline" size={22} color="white" className="mr-2" />
         <Text className="text-white font-semibold text-lg">

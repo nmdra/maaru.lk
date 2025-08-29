@@ -70,7 +70,7 @@ export default function ProductsScreen() {
           renderItem={({ item }) => (
             <ProductCard
               name={item.name}
-              priceCents={item.priceCents}
+              price={item.price}
               currency={item.currency}
               imageUrl={item.imageUrl}
               onPress={() => router.push(`/product/${item.id}`)}

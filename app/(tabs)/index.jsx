@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { fetchProducts } from '../../services/productService';
 
-const CATEGORIES = ['All', 'Shoes', 'Clothes', 'Accessories', 'Electronics'];
+const CATEGORIES = ['All', 'Shoes', 'Clothes', 'Accessories', 'Electronics', 'Books', 'Others'];
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -103,7 +103,7 @@ export default function HomeScreen() {
               <Text className="text-gray-600 mt-1" numberOfLines={2}>
                 {item.description}
               </Text>
-              <Text className="mt-2 font-bold text-blue-600">₹{item.price.toLocaleString()}</Text>
+              <Text className="mt-2 font-bold text-blue-600">LKR{item.price.toLocaleString()}</Text>
             </View>
           </TouchableOpacity>
         )}
@@ -111,7 +111,7 @@ export default function HomeScreen() {
 
       {/* Floating Add New Item Button */}
       <TouchableOpacity
-        onPress={() => router.push('/new-item')}
+        onPress={() => router.push('/AddProduct')}
         className="absolute bottom-6 right-6 bg-blue-600 w-16 h-16 rounded-full items-center justify-center shadow-lg"
       >
         <Ionicons name="add" size={32} color="#fff" />

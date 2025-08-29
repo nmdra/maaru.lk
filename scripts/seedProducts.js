@@ -1,4 +1,4 @@
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig.js';
 
 const mockProducts = [
@@ -9,7 +9,11 @@ const mockProducts = [
     imageUrl: 'https://placehold.co/600x400?text=iPhone+15+Pro+Max',
     category: 'Electronics',
     stock: 10,
-    createdAt: new Date(),
+    condition: 'New',
+    swapOnly: false,
+    tags: ['Good Condition', 'New Arrival'],
+    ownerId: 'mockUserId1',
+    createdAt: serverTimestamp(),
   },
   {
     name: 'Samsung Galaxy S24 Ultra',
@@ -18,7 +22,11 @@ const mockProducts = [
     imageUrl: 'https://placehold.co/600x400?text=Galaxy+S24+Ultra',
     category: 'Electronics',
     stock: 15,
-    createdAt: new Date(),
+    condition: 'New',
+    swapOnly: false,
+    tags: ['Limited Time'],
+    ownerId: 'mockUserId2',
+    createdAt: serverTimestamp(),
   },
   {
     name: 'Nike Air Max 270',
@@ -27,7 +35,11 @@ const mockProducts = [
     imageUrl: 'https://placehold.co/600x400?text=Nike+Air+Max+270',
     category: 'Shoes',
     stock: 25,
-    createdAt: new Date(),
+    condition: 'New',
+    swapOnly: false,
+    tags: ['Good Condition'],
+    ownerId: 'mockUserId3',
+    createdAt: serverTimestamp(),
   },
   {
     name: 'Sony WH-1000XM5',
@@ -36,7 +48,11 @@ const mockProducts = [
     imageUrl: 'https://placehold.co/600x400?text=Sony+WH-1000XM5',
     category: 'Electronics',
     stock: 20,
-    createdAt: new Date(),
+    condition: 'Like New',
+    swapOnly: false,
+    tags: ['Good Condition'],
+    ownerId: 'mockUserId4',
+    createdAt: serverTimestamp(),
   },
   {
     name: 'Adidas Ultraboost 5',
@@ -45,7 +61,11 @@ const mockProducts = [
     imageUrl: 'https://placehold.co/600x400?text=Adidas+Ultraboost+5',
     category: 'Shoes',
     stock: 30,
-    createdAt: new Date(),
+    condition: 'New',
+    swapOnly: false,
+    tags: ['New Arrival'],
+    ownerId: 'mockUserId5',
+    createdAt: serverTimestamp(),
   },
   {
     name: 'MacBook Air M2',
@@ -54,7 +74,25 @@ const mockProducts = [
     imageUrl: 'https://placehold.co/600x400?text=MacBook+Air+M2',
     category: 'Electronics',
     stock: 8,
-    createdAt: new Date(),
+    condition: 'New',
+    swapOnly: false,
+    tags: ['New Arrival', 'Limited Time'],
+    ownerId: 'mockUserId6',
+    createdAt: serverTimestamp(),
+  },
+  // New product example
+  {
+    name: 'The Three-Body Problem',
+    description: 'Science fiction novel by Liu Cixin.',
+    price: 2500,
+    imageUrl: 'https://placehold.co/200x300?text=The+Three-Body+Problem',
+    category: 'Books',
+    stock: 50,
+    condition: 'New',
+    swapOnly: false,
+    tags: ['Good Condition', 'Bestseller'],
+    ownerId: 'mockUserId7',
+    createdAt: serverTimestamp(),
   },
 ];
 
