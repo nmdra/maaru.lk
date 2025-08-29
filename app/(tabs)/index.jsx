@@ -104,7 +104,9 @@ export default function HomeScreen() {
               <Text className="text-gray-600 mt-1" numberOfLines={2}>
                 {item.description}
               </Text>
-              <Text className="mt-2 font-bold text-blue-600">{formatPrice(item.price, item.currency)}</Text>
+              <Text className="mt-2 font-bold text-blue-600">
+                {formatPrice(item.price, item.currency)}
+              </Text>
             </View>
           </TouchableOpacity>
         )}

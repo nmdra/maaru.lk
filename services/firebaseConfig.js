@@ -1,8 +1,10 @@
+import { getAI, GoogleAIBackend } from 'firebase/ai';
 import { getApps, initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { CACHE_SIZE_UNLIMITED, getFirestore, initializeFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
+// Firebase config
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -17,15 +19,17 @@ const firebaseConfig = {
 let app;
 if (!getApps().length) {
   app = initializeApp(firebaseConfig);
-  // Recommended for React Native: Firestore with unlimited cache
+  // Firestore with unlimited cache (recommended for React Native)
   initializeFirestore(app, { cacheSizeBytes: CACHE_SIZE_UNLIMITED });
 } else {
   app = getApps()[0];
 }
 
-// Initialize services
+// Initialize Firebase services
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 export const auth = getAuth(app);
+
+export const ai = getAI(app, { backend: new GoogleAIBackend() });
 
 export default app;
