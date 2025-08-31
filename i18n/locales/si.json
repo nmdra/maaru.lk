@@ -1,0 +1,108 @@
+{
+  "common": {
+    "save": "සුරකින්න",
+    "cancel": "අවලංගු කරන්න",
+    "loading": "පූරණය වෙමින්...",
+    "search": "සොයන්න",
+    "continue": "ඉදිරියට",
+    "back": "ආපසු",
+    "next": "ඊළඟ",
+    "done": "අවසන්",
+    "error": "දෝෂයක්",
+    "success": "සාර්ථකයි",
+    "warning": "අවවාදයයි",
+    "info": "තොරතුරු",
+    "confirm": "තහවුරු කරන්න",
+    "delete": "මකන්න",
+    "edit": "සංස්කරණය",
+    "add": "එකතු කරන්න",
+    "remove": "ඉවත් කරන්න",
+    "update": "යාවත්කාලීන",
+    "submit": "ගොනු කරන්න",
+    "reset": "නැවත සකසන්න",
+    "close": "වසන්න",
+    "open": "විවෘත කරන්න",
+    "yes": "ඔව්",
+    "no": "නැත"
+  },
+  "navigation": {
+    "home": "මුල් පිටුව",
+    "search": "සොයන්න",
+    "reviews": "සමාලෝචන",
+    "language": "භාෂාව",
+    "profile": "පැතිකඩ"
+  },
+  "auth": {
+    "login": "පුරන්න",
+    "signup": "ලියාපදිංචි වන්න",
+    "logout": "ඉවත් වන්න",
+    "welcomeBack": "නැවත සාදරයෙන් පිළිගනිමු",
+    "signInToContinue": "Maaru.LK වෙත ඉදිරියට යාම සඳහා පුරන්න",
+    "emailAddress": "ඊමේල් ලිපිනය",
+    "password": "මුරපදය",
+    "signIn": "පුරන්න",
+    "continueWithGoogle": "Google සමඟ ඉදිරියට",
+    "forgotPassword": "මුරපදය අමතකද?",
+    "dontHaveAccount": "ගිණුමක් නැද්ද?",
+    "createAccount": "ගිණුමක් සාදන්න",
+    "continueAsGuest": "අමුත්තෙකු ලෙස ඉදිරියට",
+    "enterYourPassword": "ඔබේ මුරපදය ඇතුලත් කරන්න",
+    "emailPlaceholder": "ඔබේ@උදාහරණය.com"
+  },
+  "language": {
+    "settings": "භාෂා සැකසුම්",
+    "selectLanguage": "යෙදුම් අතුරුමුහුණත සඳහා ඔබගේ කැමති භාෂාව තෝරන්න",
+    "english": "English",
+    "sinhala": "සිංහල",
+    "tamil": "தமிழ்",
+    "currentLanguage": "වර්තමාන භාෂාව"
+  },
+  "products": {
+    "allProducts": "සියලුම නිෂ්පාදන",
+    "searchProducts": "නිෂ්පාදන සොයන්න...",
+    "noProductsFound": "නිෂ්පාදන හමු නොවීය",
+    "price": "මිල",
+    "addToCart": "කරට එකතු කරන්න",
+    "outOfStock": "තොගය නැත",
+    "inStock": "තොගයේ ඇත",
+    "category": "වර්ගය",
+    "brand": "වෙළඳ නාමය",
+    "description": "විස්තරය"
+  },
+  "reviews": {
+    "title": "සමාලෝචන",
+    "writeReview": "සමාලෝචනයක් ලියන්න",
+    "noReviews": "තවම සමාලෝචන නැත",
+    "rating": "ශ්‍රේණිගත කිරීම",
+    "comment": "අදහස",
+    "submitReview": "සමාලෝචනය ගොනු කරන්න",
+    "create": "සමාලෝචනය සාදන්න",
+    "underDevelopment": "මෙම පිටුව සංවර්ධනය වෙමින් පවතී"
+  },
+  "profile": {
+    "title": "පැතිකඩ",
+    "editProfile": "පැතිකඩ සංස්කරණය",
+    "personalInfo": "පුද්ගලික තොරතුරු",
+    "settings": "සැකසුම්",
+    "about": "ගැන",
+    "support": "සහාය",
+    "termsOfService": "සේවා කොන්දේසි",
+    "privacyPolicy": "පෞද්ගලිකත්ව ප්‍රතිපත්තිය"
+  },
+  "errors": {
+    "networkError": "ජාල දෝෂයක්. ඔබේ සම්බන්ධතාව පරීක්ෂා කරන්න.",
+    "serverError": "සේවාදායක දෝෂයක්. පසුව නැවත උත්සාහ කරන්න.",
+    "invalidInput": "වලංගු නොවන ආදානයක්. ඔබේ දත්ත පරීක්ෂා කරන්න.",
+    "unauthorized": "අනවසර ප්‍රවේශය. කරුණාකර නැවත පුරන්න.",
+    "notFound": "ඉල්ලූ සම්පත හමු නොවීය.",
+    "validationError": "සියලුම අවශ්‍ය ක්ෂේත්‍ර නිවැරදිව පුරවන්න."
+  },
+  "messages": {
+    "loginSuccess": "සාර්ථකව පුරන ලදී",
+    "loginFailed": "පුරන්න අසාර්ථකයි",
+    "logoutSuccess": "සාර්ථකව ඉවත් වී ඇත",
+    "dataLoaded": "දත්ත සාර්ථකව පූරණය විය",
+    "dataError": "දත්ත පූරණය කිරීමේ දෝෂයක්",
+    "changesSaved": "වෙනස්කම් සාර්ථකව සුරකින ලදී"
+  }
+}

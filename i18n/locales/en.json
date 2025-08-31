@@ -1,0 +1,108 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel", 
+    "loading": "Loading...",
+    "search": "Search",
+    "continue": "Continue",
+    "back": "Back",
+    "next": "Next",
+    "done": "Done",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Information",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "remove": "Remove",
+    "update": "Update",
+    "submit": "Submit",
+    "reset": "Reset",
+    "close": "Close",
+    "open": "Open",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "navigation": {
+    "home": "Home",
+    "search": "Search",
+    "reviews": "Reviews", 
+    "language": "Language",
+    "profile": "Profile"
+  },
+  "auth": {
+    "login": "Login",
+    "signup": "Sign Up",
+    "logout": "Logout",
+    "welcomeBack": "Welcome Back",
+    "signInToContinue": "Sign in to continue to Maaru.LK",
+    "emailAddress": "Email Address",
+    "password": "Password",
+    "signIn": "Sign In",
+    "continueWithGoogle": "Continue with Google",
+    "forgotPassword": "Forgot Password?",
+    "dontHaveAccount": "Don't have an account?",
+    "createAccount": "Create Account",
+    "continueAsGuest": "Continue as Guest",
+    "enterYourPassword": "Enter your password",
+    "emailPlaceholder": "you@example.com"
+  },
+  "language": {
+    "settings": "Language Settings",
+    "selectLanguage": "Select your preferred language for the app interface",
+    "english": "English",
+    "sinhala": "සිංහල",
+    "tamil": "தமிழ்",
+    "currentLanguage": "Current Language"
+  },
+  "products": {
+    "allProducts": "All Products",
+    "searchProducts": "Search products...",
+    "noProductsFound": "No products found",
+    "price": "Price",
+    "addToCart": "Add to Cart",
+    "outOfStock": "Out of Stock",
+    "inStock": "In Stock",
+    "category": "Category",
+    "brand": "Brand",
+    "description": "Description"
+  },
+  "reviews": {
+    "title": "Reviews",
+    "writeReview": "Write a Review",
+    "noReviews": "No reviews yet",
+    "rating": "Rating",
+    "comment": "Comment",
+    "submitReview": "Submit Review",
+    "create": "Create Review",
+    "underDevelopment": "This page is under development"
+  },
+  "profile": {
+    "title": "Profile",
+    "editProfile": "Edit Profile",
+    "personalInfo": "Personal Information",
+    "settings": "Settings",
+    "about": "About",
+    "support": "Support",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy"
+  },
+  "errors": {
+    "networkError": "Network error. Please check your connection.",
+    "serverError": "Server error. Please try again later.", 
+    "invalidInput": "Invalid input. Please check your data.",
+    "unauthorized": "Unauthorized access. Please login again.",
+    "notFound": "The requested resource was not found.",
+    "validationError": "Please fill in all required fields correctly."
+  },
+  "messages": {
+    "loginSuccess": "Successfully logged in",
+    "loginFailed": "Login failed",
+    "logoutSuccess": "Successfully logged out",
+    "dataLoaded": "Data loaded successfully",
+    "dataError": "Error loading data",
+    "changesSaved": "Changes saved successfully"
+  }
+}
