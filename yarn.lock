@@ -863,10 +863,10 @@
     "@eslint/core" "^0.15.2"
     levn "^0.4.1"
 
-"@expo/cli@0.24.21":
-  version "0.24.21"
-  resolved "https://registry.npmjs.org/@expo/cli/-/cli-0.24.21.tgz"
-  integrity sha512-DT6K9vgFHqqWL/19mU1ofRcPoO1pn4qmgi76GtuiNU4tbBe/02mRHwFsQw7qRfFAT28If5e/wiwVozgSuZVL8g==
+"@expo/cli@0.24.22":
+  version "0.24.22"
+  resolved "https://registry.npmjs.org/@expo/cli/-/cli-0.24.22.tgz"
+  integrity sha512-cEg6/F8ZWjoVkEwm0rXKReWbsCUROFbLFBYht+d5RzHnDwJoTX4QWJKx4m+TGNDPamRUIGw36U4z41Fvev0XmA==
   dependencies:
     "@0no-co/graphql.web" "^1.0.8"
     "@babel/runtime" "^7.20.0"
@@ -881,7 +881,7 @@
     "@expo/osascript" "^2.2.5"
     "@expo/package-manager" "^1.8.6"
     "@expo/plist" "^0.3.5"
-    "@expo/prebuild-config" "^9.0.11"
+    "@expo/prebuild-config" "^9.0.12"
     "@expo/schema-utils" "^0.1.0"
     "@expo/spawn-async" "^1.7.2"
     "@expo/ws-tunnel" "^1.0.1"
@@ -1111,17 +1111,17 @@
     base64-js "^1.2.3"
     xmlbuilder "^15.1.1"
 
-"@expo/prebuild-config@^9.0.10", "@expo/prebuild-config@^9.0.11":
-  version "9.0.11"
-  resolved "https://registry.npmjs.org/@expo/prebuild-config/-/prebuild-config-9.0.11.tgz"
-  integrity sha512-0DsxhhixRbCCvmYskBTq8czsU0YOBsntYURhWPNpkl0IPVpeP9haE5W4OwtHGzXEbmHdzaoDwNmVcWjS/mqbDw==
+"@expo/prebuild-config@^9.0.10", "@expo/prebuild-config@^9.0.12":
+  version "9.0.12"
+  resolved "https://registry.npmjs.org/@expo/prebuild-config/-/prebuild-config-9.0.12.tgz"
+  integrity sha512-AKH5Scf+gEMgGxZZaimrJI2wlUJlRoqzDNn7/rkhZa5gUTnO4l6slKak2YdaH+nXlOWCNfAQWa76NnpQIfmv6Q==
   dependencies:
     "@expo/config" "~11.0.13"
     "@expo/config-plugins" "~10.1.2"
     "@expo/config-types" "^53.0.5"
     "@expo/image-utils" "^0.7.6"
     "@expo/json-file" "^9.1.5"
-    "@react-native/normalize-colors" "0.79.5"
+    "@react-native/normalize-colors" "0.79.6"
     debug "^4.3.1"
     resolve-from "^5.0.0"
     semver "^7.6.0"
@@ -1855,10 +1855,17 @@
   dependencies:
     "@radix-ui/react-compose-refs" "1.1.2"
 
-"@react-native-async-storage/async-storage@^1.18.1", "@react-native-async-storage/async-storage@^1.24.0":
+"@react-native-async-storage/async-storage@^1.18.1":
   version "1.24.0"
   resolved "https://registry.npmjs.org/@react-native-async-storage/async-storage/-/async-storage-1.24.0.tgz"
   integrity sha512-W4/vbwUOYOjco0x3toB8QCr7EjIP6nE9G7o8PMguvvjYT5Awg09lyV4enACRx4s++PPulBiBSjL0KTFx2u0Z/g==
+  dependencies:
+    merge-options "^3.0.4"
+
+"@react-native-async-storage/async-storage@^2.1.2":
+  version "2.1.2"
+  resolved "https://registry.npmjs.org/@react-native-async-storage/async-storage/-/async-storage-2.1.2.tgz"
+  integrity sha512-dvlNq4AlGWC+ehtH12p65+17V0Dx7IecOWl6WanF2ja38O1Dcjjvn7jVzkUHJ5oWkQBlyASurTPlTHgKXyYiow==
   dependencies:
     merge-options "^3.0.4"
 
@@ -3941,13 +3948,13 @@ expo-web-browser@~14.2.0:
   resolved "https://registry.npmjs.org/expo-web-browser/-/expo-web-browser-14.2.0.tgz"
   integrity sha512-6S51d8pVlDRDsgGAp8BPpwnxtyKiMWEFdezNz+5jVIyT+ctReW42uxnjRgtsdn5sXaqzhaX+Tzk/CWaKCyC0hw==
 
-expo@*, expo@53.0.22:
-  version "53.0.22"
-  resolved "https://registry.npmjs.org/expo/-/expo-53.0.22.tgz"
-  integrity sha512-sJ2I4W/e5iiM4u/wYCe3qmW4D7WPCRqByPDD0hJcdYNdjc9HFFFdO4OAudZVyC/MmtoWZEIH5kTJP1cw9FjzYA==
+expo@*, expo@~53.0.23:
+  version "53.0.23"
+  resolved "https://registry.npmjs.org/expo/-/expo-53.0.23.tgz"
+  integrity sha512-6TOLuNCP3AsSkXBJA5W6U/7wpZUop3Q6BxHMtRD2OOgT7CCPvnYgJdnTzqU+gD1hMfcryD8Ejq9RdHbLduXohg==
   dependencies:
     "@babel/runtime" "^7.20.0"
-    "@expo/cli" "0.24.21"
+    "@expo/cli" "0.24.22"
     "@expo/config" "~11.0.13"
     "@expo/config-plugins" "~10.1.2"
     "@expo/fingerprint" "0.13.4"
@@ -6260,7 +6267,7 @@ react-native-webview@*, react-native-webview@13.13.5:
     escape-string-regexp "^4.0.0"
     invariant "2.2.4"
 
-react-native@*, "react-native@^0.0.0-0 || >=0.60 <1.0", "react-native@>= 0.30.0", react-native@0.79.5:
+react-native@*, "react-native@^0.0.0-0 || >=0.60 <1.0", "react-native@^0.0.0-0 || >=0.65 <1.0", "react-native@>= 0.30.0", react-native@0.79.5:
   version "0.79.5"
   resolved "https://registry.npmjs.org/react-native/-/react-native-0.79.5.tgz"
   integrity sha512-jVihwsE4mWEHZ9HkO1J2eUZSwHyDByZOqthwnGrVZCh6kTQBCm4v8dicsyDa6p0fpWNE5KicTcpX/XXl0ASJFg==

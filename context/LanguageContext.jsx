@@ -1,32 +1,40 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import i18n from '../i18n';
 
 export const LanguageContext = createContext();
 
 const LANGUAGE_STORAGE_KEY = 'app_language_preference';
 
-// Simple storage implementation for demo purposes
-// In production, you would use AsyncStorage or expo-secure-store
+// Storage implementation with AsyncStorage for React Native and localStorage for web
 const storage = {
   async getItem(key) {
-    // For web compatibility, use localStorage
-    if (typeof window !== 'undefined' && window.localStorage) {
-      return window.localStorage.getItem(key);
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        // Web environment - use localStorage
+        return window.localStorage.getItem(key);
+      } else {
+        // React Native environment - use AsyncStorage
+        return await AsyncStorage.getItem(key);
+      }
+    } catch (error) {
+      console.error('Error getting item from storage:', error);
+      return null;
     }
-    // For React Native, this would use AsyncStorage:
-    // return await AsyncStorage.getItem(key);
-    return null;
   },
   async setItem(key, value) {
-    // For web compatibility, use localStorage
-    if (typeof window !== 'undefined' && window.localStorage) {
-      window.localStorage.setItem(key, value);
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        // Web environment - use localStorage
+        window.localStorage.setItem(key, value);
+      } else {
+        // React Native environment - use AsyncStorage
+        await AsyncStorage.setItem(key, value);
+      }
+    } catch (error) {
+      console.error('Error saving item to storage:', error);
     }
-    // For React Native, this would use AsyncStorage:
-    // await AsyncStorage.setItem(key, value);
-    console.log(`Saving ${key}: ${value}`);
-    return Promise.resolve();
   }
 };
 

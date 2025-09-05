@@ -1,8 +1,7 @@
-import React from 'react';
-import { View, Text, ScrollView, SafeAreaView } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { SafeAreaView, ScrollView, Text, View } from 'react-native';
 import LanguageDropdown from '../../components/LanguageDropdown';
-import { useAppI18n, getLanguageName } from '../../utils/i18n';
+import { getLanguageName, useAppI18n } from '../../utils/i18n';
 
 export default function LanguageScreen() {
   const { t, currentLanguage, changeLanguage } = useAppI18n();

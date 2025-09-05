@@ -1,6 +1,6 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-// import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Import language resources
 import en from './locales/en.json';
@@ -11,13 +11,19 @@ import ta from './locales/ta.json';
 const languageDetector = {
   type: 'languageDetector',
   async: true,
-  detect: (callback) => {
-    // Try to get language from AsyncStorage
-    // For now, using localStorage fallback for web compatibility
+  detect: async (callback) => {
     try {
+      // Check if we're in a web environment
       if (typeof window !== 'undefined' && window.localStorage) {
-        // Web environment
+        // Web environment - use localStorage
         const savedLanguage = window.localStorage.getItem('app_language_preference');
+        if (savedLanguage) {
+          callback(savedLanguage);
+          return;
+        }
+      } else {
+        // React Native environment - use AsyncStorage
+        const savedLanguage = await AsyncStorage.getItem('app_language_preference');
         if (savedLanguage) {
           callback(savedLanguage);
           return;
@@ -31,14 +37,15 @@ const languageDetector = {
     }
   },
   init: () => {},
-  cacheUserLanguage: (language) => {
+  cacheUserLanguage: async (language) => {
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
-        // Web environment
+        // Web environment - use localStorage
         window.localStorage.setItem('app_language_preference', language);
+      } else {
+        // React Native environment - use AsyncStorage
+        await AsyncStorage.setItem('app_language_preference', language);
       }
-      // For React Native, this would use AsyncStorage:
-      // AsyncStorage.setItem('app_language_preference', language);
     } catch (error) {
       console.error('Error caching language:', error);
     }

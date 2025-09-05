@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Modal, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useAppI18n, LANGUAGE_OPTIONS } from '../utils/i18n';
+import { useState } from 'react';
+import { FlatList, Modal, Text, TouchableOpacity, View } from 'react-native';
+import { LANGUAGE_OPTIONS, useAppI18n } from '../utils/i18n';
 
 export default function LanguageDropdown({ selectedLanguage, onLanguageChange }) {
   const [isOpen, setIsOpen] = useState(false);
