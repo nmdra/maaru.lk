@@ -12,11 +12,17 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "../../services/firebaseConfig";
+import * as ImagePicker from 'expo-image-picker';
+import { Image } from 'react-native';
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { updateProfile } from "firebase/auth";
 
 export default function UpdateProfile() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [photo, setPhoto] = useState(null);
+  const [photoURL, setPhotoURL] = useState('');
 
   // Profile fields
   const [firstName, setFirstName] = useState("");
@@ -45,6 +51,7 @@ export default function UpdateProfile() {
           setAge(data.born || "");
           setPhone(data.phone || "");
           setEmail(data.email || user.email || "");
+          setPhotoURL(data.photoURL || user.photoURL || "");
         } else {
           Alert.alert("Error", "Profile not found.");
         }
@@ -57,22 +64,50 @@ export default function UpdateProfile() {
     fetchProfile();
   }, []);
 
+    const handlePickPhoto = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      Alert.alert("Permission required", "Camera roll permissions are required!");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+    if (!result.cancelled && result.assets?.length > 0) {
+      setPhoto(result.assets[0]);
+    }
+  };
+
  const handleUpdate = async () => {
   if (!firstName || !lastName || !address || !age || !phone) {
     Alert.alert("Error", "Please fill all fields.");
     return;
   }
-  setIsSubmitting(true);
-  try {
-    const user = auth.currentUser;
-    const docRef = doc(db, "users", user.uid);
-    await updateDoc(docRef, {
-      firstName,
-      lastName,
-      address,
-      born: age,
-      phone,
-    });
+    setIsSubmitting(true);
+    let uploadedPhotoURL = photoURL;
+    try {
+      const user = auth.currentUser;
+      if (photo) {
+        const response = await fetch(photo.uri);
+        const blob = await response.blob();
+        const storage = getStorage();
+        const storageRef = ref(storage, `profilePictures/${user.uid}.jpg`);
+        await uploadBytes(storageRef, blob);
+        uploadedPhotoURL = await getDownloadURL(storageRef);
+        await updateProfile(user, { photoURL: uploadedPhotoURL });
+      }
+      const docRef = doc(db, "users", user.uid);
+      await updateDoc(docRef, {
+        firstName,
+        lastName,
+        address,
+        born: age,
+        phone,
+        photoURL: uploadedPhotoURL,
+      });
     
     Alert.alert("Success", "Profile updated!");
     router.push("/profile"); // Make sure this matches your route
@@ -108,12 +143,24 @@ export default function UpdateProfile() {
         <View className="mx-6 -mt-12 bg-white rounded-2xl shadow-lg p-6">
           {/* Icon Section */}
           <View className="items-center -mt-16 mb-8">
-            <View className="w-32 h-32 rounded-full bg-white p-1 shadow-lg">
-              <View className="w-full h-full rounded-full bg-blue-500 items-center justify-center">
-                <Text className="text-white text-4xl font-bold">✎</Text>
+            <Pressable onPress={handlePickPhoto}>
+              <View className="w-32 h-32 rounded-full bg-white p-1 shadow-lg">
+                {photo ? (
+                  <Image source={{ uri: photo.uri }} className="w-full h-full rounded-full" />
+                ) : photoURL ? (
+                  <Image source={{ uri: photoURL }} className="w-full h-full rounded-full" />
+                ) : (
+                  <View className="w-full h-full rounded-full bg-blue-500 items-center justify-center">
+                    <Text className="text-white text-4xl font-bold">✎</Text>
+                  </View>
+                )}
               </View>
-            </View>
+              <View className="items-center mt-2">
+                <Text className="text-blue-600">Change Photo</Text>
+              </View>
+            </Pressable>
           </View>
+
 
           {/* Form Section */}
           <View className="space-y-4">

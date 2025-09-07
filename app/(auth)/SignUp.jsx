@@ -1,7 +1,9 @@
 // ...existing code...
 import { useRouter } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
 import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, updateDoc } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
@@ -11,9 +13,10 @@ import {
   Text,
   TextInput,
   View,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { db } from '../../services/firebaseConfig';
+import { db, auth } from '../../services/firebaseConfig';
 
 export default function SignUp() {
   const router = useRouter();
@@ -25,13 +28,23 @@ export default function SignUp() {
   const [age, setAge] = useState('');
   const [phone, setPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [photo, setPhoto] = useState(null);
+  const [photoURL, setPhotoURL] = useState('');
 
   const handleRegister = async () => {
     if (!email || !password || !firstName || !lastName || !address || !age || !phone) {
       Alert.alert('Error', 'Please fill all fields.');
       return;
     }
-
+let uploadedPhotoURL = '';
+if (photo) {
+  const response = await fetch(photo.uri);
+  const blob = await response.blob();
+  const storage = getStorage();
+  const storageRef = ref(storage, `profilePictures/${user.uid}.jpg`);
+  await uploadBytes(storageRef, blob);
+  uploadedPhotoURL = await getDownloadURL(storageRef);
+}
     setIsSubmitting(true);
     try {
       const auth = getAuth();
@@ -48,6 +61,7 @@ export default function SignUp() {
         phone,
         uid: user.uid,
         createdAt: new Date().toISOString(),
+        photoURL: uploadedPhotoURL,
       });
       console.log('Document written with ID: ', user.uid);
       Alert.alert('Success', `User registered (id: ${user.uid})`);
@@ -60,6 +74,8 @@ export default function SignUp() {
       setAddress('');
       setAge('');
       setPhone('');
+      setPhoto(null);
+      setPhotoURL('');
 
       router.replace('/Home');
     } catch (error) {
@@ -69,6 +85,23 @@ export default function SignUp() {
       setIsSubmitting(false);
     }
   };
+
+  const handlePickPhoto = async () => {
+  const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  if (!permissionResult.granted) {
+    Alert.alert("Permission required", "Camera roll permissions are required!");
+    return;
+  }
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsEditing: true,
+    aspect: [1, 1],
+    quality: 0.7,
+  });
+  if (!result.cancelled && result.assets?.length > 0) {
+    setPhoto(result.assets[0]);
+  }
+};
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
@@ -85,14 +118,22 @@ export default function SignUp() {
         {/* Registration Card */}
         <View className="mx-6 -mt-12 bg-white rounded-2xl shadow-lg p-6">
           
-          {/* Logo/Icon Section */}
-          <View className="items-center -mt-16 mb-8">
-            <View className="w-32 h-32 rounded-full bg-white p-1 shadow-lg">
-              <View className="w-full h-full rounded-full bg-blue-500 items-center justify-center">
-                <Text className="text-white text-4xl font-bold">+</Text>
-              </View>
-            </View>
-          </View>
+<View className="items-center -mt-16 mb-8">
+  <Pressable onPress={handlePickPhoto}>
+    <View className="w-32 h-32 rounded-full bg-white p-1 shadow-lg">
+      {photo ? (
+        <Image source={{ uri: photo.uri }} className="w-full h-full rounded-full" />
+      ) : (
+        <View className="w-full h-full rounded-full bg-blue-500 items-center justify-center">
+          <Text className="text-white text-4xl font-bold">+</Text>
+        </View>
+      )}
+    </View>
+    <View className="items-center mt-2">
+      <Text className="text-blue-600">Add Photo</Text>
+    </View>
+  </Pressable>
+</View>
 
           {/* Form Section */}
           <View className="space-y-4">
