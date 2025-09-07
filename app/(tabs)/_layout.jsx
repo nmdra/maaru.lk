@@ -23,7 +23,7 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="Home"
         options={{
           title: 'Home',
           tabBarIcon: ({ color, size }) => (
@@ -37,15 +37,6 @@ export default function TabLayout() {
           title: 'Search',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="search-outline" size={size ?? 24} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size ?? 24} color={color} />
           ),
         }}
       />

@@ -138,8 +138,10 @@ export default function Profile() {
                   </View>
                 )}
               </View>
-              
-              <Pressable className="absolute bottom-0 right-0 bg-blue-600 w-10 h-10 rounded-full items-center justify-center shadow-lg">
+              <Pressable
+                className="absolute bottom-0 right-0 bg-blue-600 w-10 h-10 rounded-full items-center justify-center shadow-lg"
+                // onPress={() => router.push("/updateProfile")}
+              >
                 <Text className="text-white text-lg font-bold">+</Text>
               </Pressable>
             </View>
@@ -172,7 +174,8 @@ export default function Profile() {
 
           {/* Action Buttons */}
           <View className="space-y-3">
-            <Pressable className="bg-blue-600 py-4 rounded-xl">
+            <Pressable className="bg-blue-600 py-4 rounded-xl"
+              onPress={() => router.push("/updateProfile")}>
               <Text className="text-white font-semibold text-base text-center">Edit Profile</Text>
             </Pressable>
             

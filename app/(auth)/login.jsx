@@ -170,7 +170,7 @@ export default function Login() {
         </View>
        {/* Continue as Guest (small link) */}
        <View className="mx-6 mt-6 mb-8 items-center">
-         <Pressable onPress={() => router.push('/')} >
+         <Pressable onPress={() => router.push('/Home')} >
            <Text className="text-gray-500">Continue as Guest</Text>
          </Pressable>
        </View>
