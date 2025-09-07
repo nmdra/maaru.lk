@@ -78,7 +78,7 @@ export default function ProductDetailScreen() {
   }
 
   const handleSwap = () => product && router.push(`/swap/${product.id}`);
-  const handlePay = () => Alert.alert('Payment', `Pay for ${product.name}`);
+  const handlePay = () => product && router.push(`/product/payment/${product.id}`);
   const handleChat = () => product && router.push(`/chat/${product.ownerId}`);
   const handleFavorite = () => Alert.alert('Favorite', `${product.name} added to favorites.`);
 
