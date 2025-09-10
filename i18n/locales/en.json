@@ -104,5 +104,124 @@
     "dataLoaded": "Data loaded successfully",
     "dataError": "Error loading data",
     "changesSaved": "Changes saved successfully"
+  },
+  "payment": {
+    "title": "Payment",
+    "orderSummary": "Order Summary",
+    "quantity": "Quantity",
+    "paymentMethod": "Payment Method",
+    "cardDetails": "Card Details",
+    "cardholderName": "Cardholder Name",
+    "cardNumber": "Card Number",
+    "expiryDate": "Expiry Date",
+    "cvv": "CVV",
+    "billingInfo": "Billing Information",
+    "phoneNumber": "Phone Number",
+    "billingAddress": "Billing Address",
+    "priceBreakdown": "Price Breakdown",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "tax": "Tax",
+    "total": "Total",
+    "payButton": "Pay",
+    "paymentMethods": {
+      "card": "Credit/Debit Card",
+      "paypal": "PayPal", 
+      "bank": "Bank Transfer",
+      "cash": "Cash on Delivery"
+    },
+    "placeholders": {
+      "cardholderName": "Enter cardholder name",
+      "cardNumber": "4444 4444 4444 4444",
+      "expiryDate": "MM/YY",
+      "cvv": "123",
+      "phoneNumber": "Enter phone number",
+      "billingAddress": "Enter billing address"
+    },
+    "validation": {
+      "selectPaymentMethod": "Please select a payment method",
+      "fillCardDetails": "Please fill in all card details",
+      "fillBillingInfo": "Please fill in billing information",
+      "invalidCard": "Invalid card details",
+      "attemptsRemaining": "attempt(s) remaining"
+    },
+    "confirmation": {
+      "title": "Payment Confirmation",
+      "message": "Are you sure you want to proceed with the payment of"
+    }
+  },
+  "paymentSuccess": {
+    "title": "Payment Successful!",
+    "subtitle": "Your order has been confirmed and will be processed shortly.",
+    "orderSummary": "Order Summary",
+    "orderNumber": "Order Number",
+    "product": "Product",
+    "unitPrice": "Unit Price",
+    "totalPaid": "Total Paid",
+    "deliveryInfo": "Delivery Information",
+    "orderDate": "Order Date",
+    "estimatedDelivery": "Estimated Delivery",
+    "status": "Status",
+    "processing": "Processing",
+    "whatsNext": "What's Next?",
+    "steps": {
+      "confirmation": {
+        "title": "Order Confirmation",
+        "description": "You'll receive an email confirmation shortly"
+      },
+      "packaging": {
+        "title": "Packaging & Dispatch",
+        "description": "Your order will be packed and dispatched within 24 hours"
+      },
+      "tracking": {
+        "title": "Track Your Order", 
+        "description": "You'll receive tracking information via SMS/email"
+      }
+    },
+    "actions": {
+      "continueShopping": "Continue Shopping",
+      "viewOrders": "View My Orders"
+    }
+  },
+  "paymentFailure": {
+    "title": "Payment Failed",
+    "subtitle": "We couldn't process your payment after multiple attempts.",
+    "whatHappened": "What Happened?",
+    "explanation": "Your payment could not be processed due to incorrect card details. You attempted to pay 2 times with invalid information.",
+    "commonReasons": {
+      "title": "Common reasons for payment failure:",
+      "incorrectDetails": "Incorrect card number, expiry date, or CVV",
+      "insufficientFunds": "Insufficient funds in your account",
+      "expiredCard": "Card expired or blocked by bank",
+      "limitExceeded": "Daily transaction limit exceeded"
+    },
+    "sampleCard": {
+      "title": "Sample Test Card",
+      "description": "For testing purposes, use these card details:"
+    },
+    "whatCanYouDo": "What Can You Do?",
+    "options": {
+      "tryAgain": {
+        "title": "Try Again",
+        "description": "Go back and verify your payment details"
+      },
+      "differentMethod": {
+        "title": "Use Different Payment Method",
+        "description": "Try PayPal, bank transfer, or cash on delivery"
+      },
+      "contactSupport": {
+        "title": "Contact Support",
+        "description": "Get help from our customer service team"
+      },
+      "tryLater": {
+        "title": "Try Later",
+        "description": "Your item will be saved for later purchase"
+      }
+    },
+    "actions": {
+      "tryAgain": "Try Again",
+      "contactSupport": "Contact Support",
+      "backToHome": "Back to Home"
+    }
   }
 }

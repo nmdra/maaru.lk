@@ -36,10 +36,10 @@ export default function PaymentScreen() {
   });
 
   const paymentMethods = [
-    { id: 'card', name: 'Credit/Debit Card', icon: 'card-outline' },
-    { id: 'paypal', name: 'PayPal', icon: 'logo-paypal' },
-    { id: 'bank', name: 'Bank Transfer', icon: 'business-outline' },
-    { id: 'cash', name: 'Cash on Delivery', icon: 'cash-outline' },
+    { id: 'card', name: t('payment.paymentMethods.card'), icon: 'card-outline' },
+    { id: 'paypal', name: t('payment.paymentMethods.paypal'), icon: 'logo-paypal' },
+    { id: 'bank', name: t('payment.paymentMethods.bank'), icon: 'business-outline' },
+    { id: 'cash', name: t('payment.paymentMethods.cash'), icon: 'cash-outline' },
   ];
 
   useEffect(() => {
@@ -95,29 +95,29 @@ export default function PaymentScreen() {
 
   const handlePayment = () => {
     if (!selectedPaymentMethod) {
-      Alert.alert('Error', 'Please select a payment method');
+      Alert.alert(common('error'), t('payment.validation.selectPaymentMethod'));
       return;
     }
 
     if (selectedPaymentMethod === 'card') {
       if (!paymentDetails.cardNumber || !paymentDetails.expiryDate || !paymentDetails.cvv || !paymentDetails.cardholderName) {
-        Alert.alert('Error', 'Please fill in all card details');
+        Alert.alert(common('error'), t('payment.validation.fillCardDetails'));
         return;
       }
     }
 
     if (!paymentDetails.phoneNumber || !paymentDetails.billingAddress) {
-      Alert.alert('Error', 'Please fill in billing information');
+      Alert.alert(common('error'), t('payment.validation.fillBillingInfo'));
       return;
     }
 
     Alert.alert(
-      'Payment Confirmation',
-      `Are you sure you want to proceed with the payment of ${formatPrice(calculateTotal(), product?.currency || 'LKR')}?`,
+      t('payment.confirmation.title'),
+      `${t('payment.confirmation.message')} ${formatPrice(calculateTotal(), product?.currency || 'LKR')}?`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: common('cancel'), style: 'cancel' },
         {
-          text: 'Confirm Payment',
+          text: common('confirm'),
           onPress: processPayment
         }
       ]
@@ -145,9 +145,9 @@ export default function PaymentScreen() {
         navigateToFailure();
       } else {
         Alert.alert(
-          'Payment Failed',
-          `Invalid card details. You have ${2 - newAttemptCount} attempt(s) remaining.\n\nSample valid card:\nCard: 4444 4444 4444 4444\nExpiry: 25/25\nCVV: 444`,
-          [{ text: 'Try Again' }]
+          t('paymentFailure.title'),
+          `${t('payment.validation.invalidCard')}. You have ${2 - newAttemptCount} ${t('payment.validation.attemptsRemaining')}.\n\n${t('paymentFailure.sampleCard.description')}\n${t('payment.cardNumber')}: 4444 4444 4444 4444\n${t('payment.expiryDate')}: 25/25\nCVV: 444`,
+          [{ text: t('paymentFailure.actions.tryAgain') }]
         );
       }
     }
@@ -191,7 +191,7 @@ export default function PaymentScreen() {
           onPress={() => router.back()}
           className="mt-4 bg-blue-600 px-6 py-2 rounded-lg"
         >
-          <Text className="text-white font-semibold">Go Back</Text>
+          <Text className="text-white font-semibold">{common('back')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -205,14 +205,14 @@ export default function PaymentScreen() {
           <TouchableOpacity onPress={() => router.back()} className="mr-3">
             <Ionicons name="arrow-back" size={24} color="#333" />
           </TouchableOpacity>
-          <Text className="text-lg font-bold text-gray-900">Payment</Text>
+          <Text className="text-lg font-bold text-gray-900">{t('payment.title')}</Text>
         </View>
       </View>
 
       <ScrollView className="flex-1">
         {/* Product Summary */}
         <View className="bg-white mx-4 mt-4 p-4 rounded-lg shadow-sm">
-          <Text className="text-lg font-bold mb-3">Order Summary</Text>
+          <Text className="text-lg font-bold mb-3">{t('payment.orderSummary')}</Text>
           <View className="flex-row">
             <Image
               source={product.imageUrl ? { uri: product.imageUrl } : { uri: 'https://placehold.co/80' }}
@@ -229,7 +229,7 @@ export default function PaymentScreen() {
 
           {/* Quantity Selector */}
           <View className="flex-row items-center justify-between mt-4 pt-4 border-t border-gray-200">
-            <Text className="font-semibold">Quantity:</Text>
+            <Text className="font-semibold">{t('payment.quantity')}:</Text>
             <View className="flex-row items-center">
               <TouchableOpacity
                 onPress={() => handleQuantityChange(-1)}
@@ -252,7 +252,7 @@ export default function PaymentScreen() {
 
         {/* Payment Method Selection */}
         <View className="bg-white mx-4 mt-4 p-4 rounded-lg shadow-sm">
-          <Text className="text-lg font-bold mb-3">Payment Method</Text>
+          <Text className="text-lg font-bold mb-3">{t('payment.paymentMethod')}</Text>
           {paymentMethods.map((method) => (
             <TouchableOpacity
               key={method.id}
@@ -281,24 +281,24 @@ export default function PaymentScreen() {
         {/* Payment Details Form */}
         {selectedPaymentMethod === 'card' && (
           <View className="bg-white mx-4 mt-4 p-4 rounded-lg shadow-sm">
-            <Text className="text-lg font-bold mb-3">Card Details</Text>
+            <Text className="text-lg font-bold mb-3">{t('payment.cardDetails')}</Text>
             
             <View className="space-y-3">
               <View>
-                <Text className="text-sm font-medium text-gray-700 mb-1">Cardholder Name</Text>
+                <Text className="text-sm font-medium text-gray-700 mb-1">{t('payment.cardholderName')}</Text>
                 <TextInput
                   className="border border-gray-300 rounded-lg px-3 py-2 bg-white"
-                  placeholder="Enter cardholder name"
+                  placeholder={t('payment.placeholders.cardholderName')}
                   value={paymentDetails.cardholderName}
                   onChangeText={(text) => setPaymentDetails({...paymentDetails, cardholderName: text})}
                 />
               </View>
 
               <View>
-                <Text className="text-sm font-medium text-gray-700 mb-1">Card Number</Text>
+                <Text className="text-sm font-medium text-gray-700 mb-1">{t('payment.cardNumber')}</Text>
                 <TextInput
                   className="border border-gray-300 rounded-lg px-3 py-2 bg-white"
-                  placeholder="4444 4444 4444 4444"
+                  placeholder={t('payment.placeholders.cardNumber')}
                   value={paymentDetails.cardNumber}
                   onChangeText={(text) => {
                     // Format card number with spaces
@@ -312,20 +312,20 @@ export default function PaymentScreen() {
 
               <View className="flex-row space-x-3">
                 <View className="flex-1">
-                  <Text className="text-sm font-medium text-gray-700 mb-1">Expiry Date</Text>
+                  <Text className="text-sm font-medium text-gray-700 mb-1">{t('payment.expiryDate')}</Text>
                   <TextInput
                     className="border border-gray-300 rounded-lg px-3 py-2 bg-white"
-                    placeholder="MM/YY"
+                    placeholder={t('payment.placeholders.expiryDate')}
                     value={paymentDetails.expiryDate}
                     onChangeText={(text) => setPaymentDetails({...paymentDetails, expiryDate: text})}
                     maxLength={5}
                   />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-sm font-medium text-gray-700 mb-1">CVV</Text>
+                  <Text className="text-sm font-medium text-gray-700 mb-1">{t('payment.cvv')}</Text>
                   <TextInput
                     className="border border-gray-300 rounded-lg px-3 py-2 bg-white"
-                    placeholder="123"
+                    placeholder={t('payment.placeholders.cvv')}
                     value={paymentDetails.cvv}
                     onChangeText={(text) => setPaymentDetails({...paymentDetails, cvv: text})}
                     keyboardType="numeric"
@@ -340,14 +340,14 @@ export default function PaymentScreen() {
 
         {/* Billing Information */}
         <View className="bg-white mx-4 mt-4 p-4 rounded-lg shadow-sm">
-          <Text className="text-lg font-bold mb-3">Billing Information</Text>
+          <Text className="text-lg font-bold mb-3">{t('payment.billingInfo')}</Text>
           
           <View className="space-y-3">
             <View>
-              <Text className="text-sm font-medium text-gray-700 mb-1">Phone Number</Text>
+              <Text className="text-sm font-medium text-gray-700 mb-1">{t('payment.phoneNumber')}</Text>
               <TextInput
                 className="border border-gray-300 rounded-lg px-3 py-2 bg-white"
-                placeholder="Enter phone number"
+                placeholder={t('payment.placeholders.phoneNumber')}
                 value={paymentDetails.phoneNumber}
                 onChangeText={(text) => setPaymentDetails({...paymentDetails, phoneNumber: text})}
                 keyboardType="phone-pad"
@@ -355,10 +355,10 @@ export default function PaymentScreen() {
             </View>
 
             <View>
-              <Text className="text-sm font-medium text-gray-700 mb-1">Billing Address</Text>
+              <Text className="text-sm font-medium text-gray-700 mb-1">{t('payment.billingAddress')}</Text>
               <TextInput
                 className="border border-gray-300 rounded-lg px-3 py-3 bg-white"
-                placeholder="Enter billing address"
+                placeholder={t('payment.placeholders.billingAddress')}
                 value={paymentDetails.billingAddress}
                 onChangeText={(text) => setPaymentDetails({...paymentDetails, billingAddress: text})}
                 multiline
@@ -371,23 +371,23 @@ export default function PaymentScreen() {
 
         {/* Price Breakdown */}
         <View className="bg-white mx-4 mt-4 p-4 rounded-lg shadow-sm">
-          <Text className="text-lg font-bold mb-3">Price Breakdown</Text>
+          <Text className="text-lg font-bold mb-3">{t('payment.priceBreakdown')}</Text>
           
           <View className="space-y-2">
             <View className="flex-row justify-between">
-              <Text className="text-gray-700">Subtotal ({quantity} item{quantity > 1 ? 's' : ''})</Text>
+              <Text className="text-gray-700">{t('payment.subtotal')} ({quantity} item{quantity > 1 ? 's' : ''})</Text>
               <Text className="font-medium">{formatPrice(product.price * quantity, product.currency)}</Text>
             </View>
             <View className="flex-row justify-between">
-              <Text className="text-gray-700">Shipping</Text>
+              <Text className="text-gray-700">{t('payment.shipping')}</Text>
               <Text className="font-medium">{formatPrice(200, product.currency)}</Text>
             </View>
             <View className="flex-row justify-between">
-              <Text className="text-gray-700">Tax (10%)</Text>
+              <Text className="text-gray-700">{t('payment.tax')} (10%)</Text>
               <Text className="font-medium">{formatPrice(product.price * quantity * 0.1, product.currency)}</Text>
             </View>
             <View className="border-t border-gray-200 pt-2 flex-row justify-between">
-              <Text className="text-lg font-bold">Total</Text>
+              <Text className="text-lg font-bold">{t('payment.total')}</Text>
               <Text className="text-lg font-bold text-blue-600">{formatPrice(calculateTotal(), product.currency)}</Text>
             </View>
           </View>
@@ -405,7 +405,7 @@ export default function PaymentScreen() {
         >
           <Ionicons name="card-outline" size={20} color="white" className="mr-2" />
           <Text className="text-white font-bold text-lg">
-            Pay {formatPrice(calculateTotal(), product.currency)}
+            {t('payment.payButton')} {formatPrice(calculateTotal(), product.currency)}
           </Text>
         </TouchableOpacity>
       </View>

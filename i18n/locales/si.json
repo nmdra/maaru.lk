@@ -104,5 +104,124 @@
     "dataLoaded": "දත්ත සාර්ථකව පූරණය විය",
     "dataError": "දත්ත පූරණය කිරීමේ දෝෂයක්",
     "changesSaved": "වෙනස්කම් සාර්ථකව සුරකින ලදී"
+  },
+  "payment": {
+    "title": "ගෙවීම",
+    "orderSummary": "ඇණවුම් සාරාංශය",
+    "quantity": "ප්‍රමාණය",
+    "paymentMethod": "ගෙවීම් ක්‍රමය",
+    "cardDetails": "කාඩ්පත් විස්තර",
+    "cardholderName": "කාඩ්පත් හිමියාගේ නම",
+    "cardNumber": "කාඩ්පත් අංකය",
+    "expiryDate": "කල් ඉකුත් වීමේ දිනය",
+    "cvv": "CVV",
+    "billingInfo": "බිල්පත් තොරතුරු",
+    "phoneNumber": "දුරකථන අංකය",
+    "billingAddress": "බිල්පත් ලිපිනය",
+    "priceBreakdown": "මිල බෙදීම",
+    "subtotal": "උප එකතුව",
+    "shipping": "නැව්ගතකිරීම",
+    "tax": "බදු",
+    "total": "මුළු එකතුව",
+    "payButton": "ගෙවන්න",
+    "paymentMethods": {
+      "card": "ක්‍රෙඩිට්/ඩෙබිට් කාඩ්",
+      "paypal": "PayPal",
+      "bank": "බැංකු මාරුව",
+      "cash": "භාණ්ඩ ලබාගන්නා විට ගෙවීම"
+    },
+    "placeholders": {
+      "cardholderName": "කාඩ්පත් හිමියාගේ නම ඇතුලත් කරන්න",
+      "cardNumber": "4444 4444 4444 4444",
+      "expiryDate": "MM/YY",
+      "cvv": "123",
+      "phoneNumber": "දුරකථන අංකය ඇතුලත් කරන්න",
+      "billingAddress": "බිල්පත් ලිපිනය ඇතුලත් කරන්න"
+    },
+    "validation": {
+      "selectPaymentMethod": "කරුණාකර ගෙවීම් ක්‍රමයක් තෝරන්න",
+      "fillCardDetails": "කරුණාකර සියලුම කාඩ්පත් විස්තර පුරවන්න",
+      "fillBillingInfo": "කරුණාකර බිල්පත් තොරතුරු පුරවන්න",
+      "invalidCard": "වලංගු නොවන කාඩ්පත් විස්තර",
+      "attemptsRemaining": "උත්සාහයන් ඉතිරිය"
+    },
+    "confirmation": {
+      "title": "ගෙවීම් තහවුරුකිරීම",
+      "message": "ඔබට නිශ්චිතව ගෙවීම ඉදිරියට කරගෙන යාමට අවශ්‍යද"
+    }
+  },
+  "paymentSuccess": {
+    "title": "ගෙවීම සාර්ථකයි!",
+    "subtitle": "ඔබගේ ඇණවුම තහවුරු කර ඇති අතර කෙටි කලකින් සැකසෙනු ඇත.",
+    "orderSummary": "ඇණවුම් සාරාංශය",
+    "orderNumber": "ඇණවුම් අංකය",
+    "product": "නිෂ්පාදනය",
+    "unitPrice": "ඒකක මිල",
+    "totalPaid": "මුළු ගෙවූ මුදල",
+    "deliveryInfo": "බෙදා හැරීමේ තොරතුරු",
+    "orderDate": "ඇණවුම් දිනය",
+    "estimatedDelivery": "ඇස්තමේන්තුගත බෙදා හැරීම",
+    "status": "තත්ත්වය",
+    "processing": "සැකසෙමින්",
+    "whatsNext": "ඊළඟට මොනවාද?",
+    "steps": {
+      "confirmation": {
+        "title": "ඇණවුම් තහවුරුකිරීම",
+        "description": "ඔබට කෙටි කලකින් ඊමේල් තහවුරුකිරීමක් ලැබෙනු ඇත"
+      },
+      "packaging": {
+        "title": "ඇසුරුම් කිරීම සහ යැවීම",
+        "description": "ඔබගේ ඇණවුම පැය 24ක් ඇතුළත ඇසුරුම් කර යවනු ඇත"
+      },
+      "tracking": {
+        "title": "ඔබගේ ඇණවුම නිරීක්ෂණය කරන්න",
+        "description": "SMS/ඊමේල් හරහා ඔබට නිරීක්ෂණ තොරතුරු ලැබෙනු ඇත"
+      }
+    },
+    "actions": {
+      "continueShopping": "සාප්පු සවාරිය ඉදිරියට",
+      "viewOrders": "මගේ ඇණවුම් බලන්න"
+    }
+  },
+  "paymentFailure": {
+    "title": "ගෙවීම අසාර්ථකයි",
+    "subtitle": "බහුවිධ උත්සාහයන්ගෙන් පසුව අපට ඔබගේ ගෙවීම සැකසීමට නොහැකි විය.",
+    "whatHappened": "මොකද වුණේ?",
+    "explanation": "වැරදි කාඩ්පත් විස්තර නිසා ඔබගේ ගෙවීම සැකසීමට නොහැකි විය. ඔබ වලංගු නොවන තොරතුරු සමඟ 2 වතාවක් ගෙවීමට උත්සාහ කළා.",
+    "commonReasons": {
+      "title": "ගෙවීම් අසාර්ථක වීමේ සාමාන්‍ය හේතු:",
+      "incorrectDetails": "වැරදි කාඩ්පත් අංකය, කල් ඉකුත් වීමේ දිනය, හෝ CVV",
+      "insufficientFunds": "ඔබගේ ගිණුමේ මුදල් ප්‍රමාණවත් නැත",
+      "expiredCard": "කාඩ්පත කල් ඉකුත් වී හෝ බැංකුව විසින් අවහිර කර ඇත",
+      "limitExceeded": "දෛනික ගණුදෙණු සීමාව ඉක්මවා ගොස් ඇත"
+    },
+    "sampleCard": {
+      "title": "නියැදි පරීක්ෂණ කාඩ්පත",
+      "description": "පරීක්ෂණ අරමුණු සඳහා, මෙම කාඩ්පත් විස්තර භාවිතා කරන්න:"
+    },
+    "whatCanYouDo": "ඔබට මොනවා කරන්න පුළුවන්ද?",
+    "options": {
+      "tryAgain": {
+        "title": "නැවත උත්සාහ කරන්න",
+        "description": "ආපසු ගොස් ඔබගේ ගෙවීම් විස්තර සත්‍යාපනය කරන්න"
+      },
+      "differentMethod": {
+        "title": "වෙනත් ගෙවීම් ක්‍රමයක් භාවිතා කරන්න",
+        "description": "PayPal, බැංකු මාරුව, හෝ භාණ්ඩ ලබාගන්නා විට ගෙවීම උත්සාහ කරන්න"
+      },
+      "contactSupport": {
+        "title": "සහාය අමතන්න",
+        "description": "අපගේ පාරිභෝගික සේවා කණ්ඩායමෙන් උදව් ලබාගන්න"
+      },
+      "tryLater": {
+        "title": "පසුව උත්සාහ කරන්න",
+        "description": "ඔබගේ භාණ්ඩය පසුව මිලදී ගැනීම සඳහා සුරකිනු ඇත"
+      }
+    },
+    "actions": {
+      "tryAgain": "නැවත උත්සාහ කරන්න",
+      "contactSupport": "සහාය අමතන්න",
+      "backToHome": "මුල් පිටුවට ආපසු"
+    }
   }
 }

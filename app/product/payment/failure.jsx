@@ -30,9 +30,9 @@ export default function PaymentFailureScreen() {
         <View className="bg-white rounded-full p-4 mb-4">
           <Ionicons name="close" size={48} color="#dc2626" />
         </View>
-        <Text className="text-white text-2xl font-bold mb-2">Payment Failed</Text>
+        <Text className="text-white text-2xl font-bold mb-2">{t('paymentFailure.title')}</Text>
         <Text className="text-red-100 text-center">
-          We couldn't process your payment after multiple attempts.
+          {t('paymentFailure.subtitle')}
         </Text>
       </View>
 
@@ -41,32 +41,32 @@ export default function PaymentFailureScreen() {
         <View className="bg-white mx-4 mt-6 p-6 rounded-lg shadow-sm">
           <View className="flex-row items-center mb-4">
             <Ionicons name="alert-circle-outline" size={24} color="#dc2626" />
-            <Text className="text-lg font-bold ml-2">What Happened?</Text>
+            <Text className="text-lg font-bold ml-2">{t('paymentFailure.whatHappened')}</Text>
           </View>
 
           <View className="space-y-4">
             <Text className="text-gray-700 leading-6">
-              Your payment could not be processed due to incorrect card details. You attempted to pay 2 times with invalid information.
+              {t('paymentFailure.explanation')}
             </Text>
 
             <View className="bg-gray-50 p-4 rounded-lg">
-              <Text className="font-semibold text-gray-800 mb-2">Common reasons for payment failure:</Text>
+              <Text className="font-semibold text-gray-800 mb-2">{t('paymentFailure.commonReasons.title')}</Text>
               <View className="space-y-2">
                 <View className="flex-row">
                   <Text className="text-gray-600">• </Text>
-                  <Text className="text-gray-600 flex-1">Incorrect card number, expiry date, or CVV</Text>
+                  <Text className="text-gray-600 flex-1">{t('paymentFailure.commonReasons.incorrectDetails')}</Text>
                 </View>
                 <View className="flex-row">
                   <Text className="text-gray-600">• </Text>
-                  <Text className="text-gray-600 flex-1">Insufficient funds in your account</Text>
+                  <Text className="text-gray-600 flex-1">{t('paymentFailure.commonReasons.insufficientFunds')}</Text>
                 </View>
                 <View className="flex-row">
                   <Text className="text-gray-600">• </Text>
-                  <Text className="text-gray-600 flex-1">Card expired or blocked by bank</Text>
+                  <Text className="text-gray-600 flex-1">{t('paymentFailure.commonReasons.expiredCard')}</Text>
                 </View>
                 <View className="flex-row">
                   <Text className="text-gray-600">• </Text>
-                  <Text className="text-gray-600 flex-1">Daily transaction limit exceeded</Text>
+                  <Text className="text-gray-600 flex-1">{t('paymentFailure.commonReasons.limitExceeded')}</Text>
                 </View>
               </View>
             </View>
@@ -77,23 +77,23 @@ export default function PaymentFailureScreen() {
         <View className="bg-white mx-4 mt-4 p-6 rounded-lg shadow-sm">
           <View className="flex-row items-center mb-4">
             <Ionicons name="card-outline" size={24} color="#2563eb" />
-            <Text className="text-lg font-bold ml-2">Sample Test Card</Text>
+            <Text className="text-lg font-bold ml-2">{t('paymentFailure.sampleCard.title')}</Text>
           </View>
 
-          <Text className="text-gray-700 mb-3">For testing purposes, use these card details:</Text>
+          <Text className="text-gray-700 mb-3">{t('paymentFailure.sampleCard.description')}</Text>
 
           <View className="bg-blue-50 p-4 rounded-lg">
             <View className="space-y-2">
               <View className="flex-row justify-between">
-                <Text className="font-medium text-gray-700">Card Number:</Text>
+                <Text className="font-medium text-gray-700">{t('payment.cardNumber')}:</Text>
                 <Text className="font-mono text-blue-600">4444 4444 4444 4444</Text>
               </View>
               <View className="flex-row justify-between">
-                <Text className="font-medium text-gray-700">Expiry Date:</Text>
+                <Text className="font-medium text-gray-700">{t('payment.expiryDate')}:</Text>
                 <Text className="font-mono text-blue-600">25/25</Text>
               </View>
               <View className="flex-row justify-between">
-                <Text className="font-medium text-gray-700">CVV:</Text>
+                <Text className="font-medium text-gray-700">{t('payment.cvv')}:</Text>
                 <Text className="font-mono text-blue-600">444</Text>
               </View>
             </View>
@@ -104,7 +104,7 @@ export default function PaymentFailureScreen() {
         <View className="bg-white mx-4 mt-4 p-6 rounded-lg shadow-sm">
           <View className="flex-row items-center mb-4">
             <Ionicons name="bulb-outline" size={24} color="#f59e0b" />
-            <Text className="text-lg font-bold ml-2">What Can You Do?</Text>
+            <Text className="text-lg font-bold ml-2">{t('paymentFailure.whatCanYouDo')}</Text>
           </View>
 
           <View className="space-y-3">
@@ -113,8 +113,8 @@ export default function PaymentFailureScreen() {
                 <Ionicons name="refresh-outline" size={16} color="#2563eb" />
               </View>
               <View className="flex-1">
-                <Text className="font-medium">Try Again</Text>
-                <Text className="text-sm text-gray-600">Go back and verify your payment details</Text>
+                <Text className="font-medium">{t('paymentFailure.options.tryAgain.title')}</Text>
+                <Text className="text-sm text-gray-600">{t('paymentFailure.options.tryAgain.description')}</Text>
               </View>
             </View>
 
@@ -123,8 +123,8 @@ export default function PaymentFailureScreen() {
                 <Ionicons name="card-outline" size={16} color="#16a34a" />
               </View>
               <View className="flex-1">
-                <Text className="font-medium">Use Different Payment Method</Text>
-                <Text className="text-sm text-gray-600">Try PayPal, bank transfer, or cash on delivery</Text>
+                <Text className="font-medium">{t('paymentFailure.options.differentMethod.title')}</Text>
+                <Text className="text-sm text-gray-600">{t('paymentFailure.options.differentMethod.description')}</Text>
               </View>
             </View>
 
@@ -133,8 +133,8 @@ export default function PaymentFailureScreen() {
                 <Ionicons name="call-outline" size={16} color="#8b5cf6" />
               </View>
               <View className="flex-1">
-                <Text className="font-medium">Contact Support</Text>
-                <Text className="text-sm text-gray-600">Get help from our customer service team</Text>
+                <Text className="font-medium">{t('paymentFailure.options.contactSupport.title')}</Text>
+                <Text className="text-sm text-gray-600">{t('paymentFailure.options.contactSupport.description')}</Text>
               </View>
             </View>
 
@@ -143,8 +143,8 @@ export default function PaymentFailureScreen() {
                 <Ionicons name="time-outline" size={16} color="#f59e0b" />
               </View>
               <View className="flex-1">
-                <Text className="font-medium">Try Later</Text>
-                <Text className="text-sm text-gray-600">Your item will be saved for later purchase</Text>
+                <Text className="font-medium">{t('paymentFailure.options.tryLater.title')}</Text>
+                <Text className="text-sm text-gray-600">{t('paymentFailure.options.tryLater.description')}</Text>
               </View>
             </View>
           </View>
@@ -157,7 +157,7 @@ export default function PaymentFailureScreen() {
             className="bg-blue-600 py-4 rounded-lg items-center justify-center flex-row"
           >
             <Ionicons name="refresh-outline" size={20} color="white" className="mr-2" />
-            <Text className="text-white font-bold text-lg">Try Again</Text>
+            <Text className="text-white font-bold text-lg">{t('paymentFailure.actions.tryAgain')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -165,7 +165,7 @@ export default function PaymentFailureScreen() {
             className="bg-purple-600 py-4 rounded-lg items-center justify-center flex-row"
           >
             <Ionicons name="chatbubble-outline" size={20} color="white" className="mr-2" />
-            <Text className="text-white font-bold text-lg">Contact Support</Text>
+            <Text className="text-white font-bold text-lg">{t('paymentFailure.actions.contactSupport')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -173,7 +173,7 @@ export default function PaymentFailureScreen() {
             className="bg-gray-200 py-4 rounded-lg items-center justify-center flex-row"
           >
             <Ionicons name="home-outline" size={20} color="#374151" className="mr-2" />
-            <Text className="text-gray-700 font-bold text-lg">Back to Home</Text>
+            <Text className="text-gray-700 font-bold text-lg">{t('paymentFailure.actions.backToHome')}</Text>
           </TouchableOpacity>
         </View>
 

@@ -34,13 +34,13 @@ export default function PaymentSuccessScreen() {
   const getPaymentMethodName = (method) => {
     switch (method) {
       case 'card':
-        return 'Credit/Debit Card';
+        return t('payment.paymentMethods.card');
       case 'paypal':
-        return 'PayPal';
+        return t('payment.paymentMethods.paypal');
       case 'bank':
-        return 'Bank Transfer';
+        return t('payment.paymentMethods.bank');
       case 'cash':
-        return 'Cash on Delivery';
+        return t('payment.paymentMethods.cash');
       default:
         return 'Unknown';
     }
@@ -53,9 +53,9 @@ export default function PaymentSuccessScreen() {
         <View className="bg-white rounded-full p-4 mb-4">
           <Ionicons name="checkmark" size={48} color="#16a34a" />
         </View>
-        <Text className="text-white text-2xl font-bold mb-2">Payment Successful!</Text>
+        <Text className="text-white text-2xl font-bold mb-2">{t('paymentSuccess.title')}</Text>
         <Text className="text-green-100 text-center">
-          Your order has been confirmed and will be processed shortly.
+          {t('paymentSuccess.subtitle')}
         </Text>
       </View>
 
@@ -64,37 +64,37 @@ export default function PaymentSuccessScreen() {
         <View className="bg-white mx-4 mt-6 p-6 rounded-lg shadow-sm">
           <View className="flex-row items-center mb-4">
             <Ionicons name="receipt-outline" size={24} color="#2563eb" />
-            <Text className="text-lg font-bold ml-2">Order Summary</Text>
+            <Text className="text-lg font-bold ml-2">{t('paymentSuccess.orderSummary')}</Text>
           </View>
 
           <View className="space-y-3">
             <View className="flex-row justify-between">
-              <Text className="text-gray-600">Order Number</Text>
+              <Text className="text-gray-600">{t('paymentSuccess.orderNumber')}</Text>
               <Text className="font-semibold text-blue-600">{orderDetails.orderNumber}</Text>
             </View>
 
             <View className="flex-row justify-between">
-              <Text className="text-gray-600">Product</Text>
+              <Text className="text-gray-600">{t('paymentSuccess.product')}</Text>
               <Text className="font-medium flex-1 text-right">{orderDetails.productName}</Text>
             </View>
 
             <View className="flex-row justify-between">
-              <Text className="text-gray-600">Quantity</Text>
+              <Text className="text-gray-600">{t('payment.quantity')}</Text>
               <Text className="font-medium">{orderDetails.quantity}</Text>
             </View>
 
             <View className="flex-row justify-between">
-              <Text className="text-gray-600">Unit Price</Text>
+              <Text className="text-gray-600">{t('paymentSuccess.unitPrice')}</Text>
               <Text className="font-medium">{formatPrice(orderDetails.price, orderDetails.currency)}</Text>
             </View>
 
             <View className="flex-row justify-between">
-              <Text className="text-gray-600">Payment Method</Text>
+              <Text className="text-gray-600">{t('payment.paymentMethod')}</Text>
               <Text className="font-medium">{getPaymentMethodName(orderDetails.paymentMethod)}</Text>
             </View>
 
             <View className="border-t border-gray-200 pt-3 flex-row justify-between">
-              <Text className="text-lg font-bold">Total Paid</Text>
+              <Text className="text-lg font-bold">{t('paymentSuccess.totalPaid')}</Text>
               <Text className="text-lg font-bold text-green-600">
                 {formatPrice(orderDetails.total, orderDetails.currency)}
               </Text>
@@ -106,24 +106,24 @@ export default function PaymentSuccessScreen() {
         <View className="bg-white mx-4 mt-4 p-6 rounded-lg shadow-sm">
           <View className="flex-row items-center mb-4">
             <Ionicons name="truck-outline" size={24} color="#f59e0b" />
-            <Text className="text-lg font-bold ml-2">Delivery Information</Text>
+            <Text className="text-lg font-bold ml-2">{t('paymentSuccess.deliveryInfo')}</Text>
           </View>
 
           <View className="space-y-3">
             <View className="flex-row justify-between">
-              <Text className="text-gray-600">Order Date</Text>
+              <Text className="text-gray-600">{t('paymentSuccess.orderDate')}</Text>
               <Text className="font-medium">{orderDetails.orderDate.toLocaleDateString()}</Text>
             </View>
 
             <View className="flex-row justify-between">
-              <Text className="text-gray-600">Estimated Delivery</Text>
+              <Text className="text-gray-600">{t('paymentSuccess.estimatedDelivery')}</Text>
               <Text className="font-medium text-orange-600">{estimatedDelivery.toLocaleDateString()}</Text>
             </View>
 
             <View className="flex-row justify-between">
-              <Text className="text-gray-600">Status</Text>
+              <Text className="text-gray-600">{t('paymentSuccess.status')}</Text>
               <View className="bg-yellow-100 px-3 py-1 rounded-full">
-                <Text className="text-yellow-800 text-sm font-medium">Processing</Text>
+                <Text className="text-yellow-800 text-sm font-medium">{t('paymentSuccess.processing')}</Text>
               </View>
             </View>
           </View>
@@ -133,7 +133,7 @@ export default function PaymentSuccessScreen() {
         <View className="bg-white mx-4 mt-4 p-6 rounded-lg shadow-sm">
           <View className="flex-row items-center mb-4">
             <Ionicons name="list-outline" size={24} color="#8b5cf6" />
-            <Text className="text-lg font-bold ml-2">What's Next?</Text>
+            <Text className="text-lg font-bold ml-2">{t('paymentSuccess.whatsNext')}</Text>
           </View>
 
           <View className="space-y-3">
@@ -142,8 +142,8 @@ export default function PaymentSuccessScreen() {
                 <Ionicons name="mail-outline" size={16} color="#2563eb" />
               </View>
               <View className="flex-1">
-                <Text className="font-medium">Order Confirmation</Text>
-                <Text className="text-sm text-gray-600">You'll receive an email confirmation shortly</Text>
+                <Text className="font-medium">{t('paymentSuccess.steps.confirmation.title')}</Text>
+                <Text className="text-sm text-gray-600">{t('paymentSuccess.steps.confirmation.description')}</Text>
               </View>
             </View>
 
@@ -152,8 +152,8 @@ export default function PaymentSuccessScreen() {
                 <Ionicons name="cube-outline" size={16} color="#f59e0b" />
               </View>
               <View className="flex-1">
-                <Text className="font-medium">Packaging & Dispatch</Text>
-                <Text className="text-sm text-gray-600">Your order will be packed and dispatched within 24 hours</Text>
+                <Text className="font-medium">{t('paymentSuccess.steps.packaging.title')}</Text>
+                <Text className="text-sm text-gray-600">{t('paymentSuccess.steps.packaging.description')}</Text>
               </View>
             </View>
 
@@ -162,8 +162,8 @@ export default function PaymentSuccessScreen() {
                 <Ionicons name="location-outline" size={16} color="#16a34a" />
               </View>
               <View className="flex-1">
-                <Text className="font-medium">Track Your Order</Text>
-                <Text className="text-sm text-gray-600">You'll receive tracking information via SMS/email</Text>
+                <Text className="font-medium">{t('paymentSuccess.steps.tracking.title')}</Text>
+                <Text className="text-sm text-gray-600">{t('paymentSuccess.steps.tracking.description')}</Text>
               </View>
             </View>
           </View>
@@ -176,7 +176,7 @@ export default function PaymentSuccessScreen() {
             className="bg-blue-600 py-4 rounded-lg items-center justify-center flex-row"
           >
             <Ionicons name="home-outline" size={20} color="white" className="mr-2" />
-            <Text className="text-white font-bold text-lg">Continue Shopping</Text>
+            <Text className="text-white font-bold text-lg">{t('paymentSuccess.actions.continueShopping')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -184,7 +184,7 @@ export default function PaymentSuccessScreen() {
             className="bg-gray-200 py-4 rounded-lg items-center justify-center flex-row"
           >
             <Ionicons name="receipt-outline" size={20} color="#374151" className="mr-2" />
-            <Text className="text-gray-700 font-bold text-lg">View My Orders</Text>
+            <Text className="text-gray-700 font-bold text-lg">{t('paymentSuccess.actions.viewOrders')}</Text>
           </TouchableOpacity>
         </View>
 
