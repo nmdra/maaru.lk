@@ -25,6 +25,7 @@ export default function PaymentScreen() {
   const [loading, setLoading] = useState(true);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('card');
   const [quantity, setQuantity] = useState(1);
+  const [attemptCount, setAttemptCount] = useState(0);
   const [paymentDetails, setPaymentDetails] = useState({
     cardNumber: '',
     expiryDate: '',
@@ -77,6 +78,21 @@ export default function PaymentScreen() {
     }
   };
 
+  const validateCardDetails = () => {
+    const validCard = '4444444444444444';
+    const validExpiry = '25/25';
+    const validCVV = '444';
+    
+    // Remove spaces from card number for comparison
+    const cardNumberClean = paymentDetails.cardNumber.replace(/\s/g, '');
+    
+    return (
+      cardNumberClean === validCard &&
+      paymentDetails.expiryDate === validExpiry &&
+      paymentDetails.cvv === validCVV
+    );
+  };
+
   const handlePayment = () => {
     if (!selectedPaymentMethod) {
       Alert.alert('Error', 'Please select a payment method');
@@ -84,10 +100,15 @@ export default function PaymentScreen() {
     }
 
     if (selectedPaymentMethod === 'card') {
-      if (!paymentDetails.cardNumber || !paymentDetails.expiryDate || !paymentDetails.cvv) {
+      if (!paymentDetails.cardNumber || !paymentDetails.expiryDate || !paymentDetails.cvv || !paymentDetails.cardholderName) {
         Alert.alert('Error', 'Please fill in all card details');
         return;
       }
+    }
+
+    if (!paymentDetails.phoneNumber || !paymentDetails.billingAddress) {
+      Alert.alert('Error', 'Please fill in billing information');
+      return;
     }
 
     Alert.alert(
@@ -97,15 +118,61 @@ export default function PaymentScreen() {
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Confirm Payment',
-          onPress: () => {
-            // Simulate payment processing
-            Alert.alert('Success', 'Payment processed successfully!', [
-              { text: 'OK', onPress: () => router.back() }
-            ]);
-          }
+          onPress: processPayment
         }
       ]
     );
+  };
+
+  const processPayment = () => {
+    // For non-card payments, always succeed
+    if (selectedPaymentMethod !== 'card') {
+      navigateToSuccess();
+      return;
+    }
+
+    // Validate card details
+    const isValidCard = validateCardDetails();
+    
+    if (isValidCard) {
+      navigateToSuccess();
+    } else {
+      const newAttemptCount = attemptCount + 1;
+      setAttemptCount(newAttemptCount);
+      
+      if (newAttemptCount >= 2) {
+        // After 2 failed attempts, go to failure page
+        navigateToFailure();
+      } else {
+        Alert.alert(
+          'Payment Failed',
+          `Invalid card details. You have ${2 - newAttemptCount} attempt(s) remaining.\n\nSample valid card:\nCard: 4444 4444 4444 4444\nExpiry: 25/25\nCVV: 444`,
+          [{ text: 'Try Again' }]
+        );
+      }
+    }
+  };
+
+  const navigateToSuccess = () => {
+    const orderData = {
+      productId: product.id,
+      productName: product.name,
+      quantity,
+      price: product.price,
+      currency: product.currency,
+      total: calculateTotal(),
+      paymentMethod: selectedPaymentMethod,
+      orderDate: new Date().toISOString(),
+    };
+    
+    router.push({
+      pathname: '/product/payment/success',
+      params: orderData
+    });
+  };
+
+  const navigateToFailure = () => {
+    router.push('/product/payment/failure');
   };
 
   if (loading) {
@@ -231,9 +298,13 @@ export default function PaymentScreen() {
                 <Text className="text-sm font-medium text-gray-700 mb-1">Card Number</Text>
                 <TextInput
                   className="border border-gray-300 rounded-lg px-3 py-2 bg-white"
-                  placeholder="1234 5678 9012 3456"
+                  placeholder="4444 4444 4444 4444"
                   value={paymentDetails.cardNumber}
-                  onChangeText={(text) => setPaymentDetails({...paymentDetails, cardNumber: text})}
+                  onChangeText={(text) => {
+                    // Format card number with spaces
+                    const formatted = text.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
+                    setPaymentDetails({...paymentDetails, cardNumber: formatted});
+                  }}
                   keyboardType="numeric"
                   maxLength={19}
                 />

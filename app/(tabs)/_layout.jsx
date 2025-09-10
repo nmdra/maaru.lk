@@ -69,6 +69,15 @@ export default function TabLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="language"
+        options={{
+          title: 'Language',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="language-outline" size={size ?? 24} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

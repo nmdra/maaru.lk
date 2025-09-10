@@ -26,6 +26,12 @@ const BottomNavigation = ({ currentRoute }) => {
       icon: 'star-outline',
       activeIcon: 'star',
     },
+    {
+      name: 'Language',
+      route: '/(tabs)/language',
+      icon: 'language-outline',
+      activeIcon: 'language',
+    },
   ];
 
   const isActive = (route) => {
