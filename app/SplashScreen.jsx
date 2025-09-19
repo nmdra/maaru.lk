@@ -1,57 +1,47 @@
-import React, { useEffect } from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
+import { useEffect, useRef } from "react";
+import { Animated, Image, StyleSheet, Text } from "react-native";
 import { auth } from "../services/firebaseConfig"; // adjust this path if your firebase config is elsewhere
 
 export default function SplashScreen() {
   const router = useRouter();
-
-/*   useEffect(() => {
-    const timer = setTimeout(() => {
-      router.replace('/(auth)/Login'); // Adjust the path if needed
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  return (
-    <View style={styles.container}>
-      <Image
-        source={require("../assets/images/maaru_splash.png")}
-        style={styles.logo}
-      />
-      <Text style={styles.title}>Welcome to Maaru.LK</Text>
-      <Text style={styles.subtitle}>Loading...</Text>
-    </View>
-  );
-} */
+  const fadeAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
+    let userToRoute = null;
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // logged in -> go to home (app/(tabs)/index maps to "/")
-        router.replace('/Home');
-      } else {
-        // not logged in -> go to login (app/(auth)/login maps to "/login")
-        router.replace('/Login');
-      }
+      userToRoute = user ? "/Home" : "/Login";
     });
 
-    return () => unsubscribe();
+    // Always show splash at least 1 second, then fade out
+    const timer = setTimeout(() => {
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 600, // fade out duration (ms)
+        useNativeDriver: true,
+      }).start(() => {
+        router.replace(userToRoute || "/Login");
+      });
+    }, 1000);
+
+    return () => {
+      clearTimeout(timer);
+      unsubscribe();
+    };
   }, []);
 
   return (
-    <View style={styles.container}>
+    <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
       <Image
         source={require("../assets/images/maaru_splash.png")}
         style={styles.logo}
       />
       <Text style={styles.title}>Welcome to Maaru.LK</Text>
       <Text style={styles.subtitle}>Loading...</Text>
-    </View>
+    </Animated.View>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
