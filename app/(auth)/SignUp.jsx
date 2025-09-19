@@ -1,22 +1,22 @@
 // ...existing code...
-import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
 import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth';
-import { doc, setDoc, updateDoc } from 'firebase/firestore';
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import React, { useState } from 'react';
+import { doc, setDoc } from 'firebase/firestore';
+import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Pressable,
   ScrollView,
   Text,
   TextInput,
   View,
-  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { db, auth } from '../../services/firebaseConfig';
+import { db } from '../../services/firebaseConfig';
 
 export default function SignUp() {
   const router = useRouter();
@@ -31,11 +31,39 @@ export default function SignUp() {
   const [photo, setPhoto] = useState(null);
   const [photoURL, setPhotoURL] = useState('');
 
+  const validateEmail = (email) => {
+  // Simple email regex
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
+
+const validatePhone = (phone) => {
+  // Accepts 10-15 digits, can start with +, no spaces
+  return /^(\+?\d{10,15})$/.test(phone);
+};
+
+const validateAge = (age) => {
+  const n = Number(age);
+  return Number.isInteger(n) && n >= 10 && n <= 120;
+};
+
+
   const handleRegister = async () => {
     if (!email || !password || !firstName || !lastName || !address || !age || !phone) {
       Alert.alert('Error', 'Please fill all fields.');
       return;
     }
+      if (!validateEmail(email)) {
+    Alert.alert('Invalid Email', 'Please enter a valid email address.');
+    return;
+  }
+  if (!validatePhone(phone)) {
+    Alert.alert('Invalid Phone', 'Please enter a valid phone number (10-15 digits, numbers only).');
+    return;
+  }
+  if (!validateAge(age)) {
+    Alert.alert('Invalid Age', 'Please enter a valid age (between 10 and 120).');
+    return;
+  }
 let uploadedPhotoURL = '';
 if (photo) {
   const response = await fetch(photo.uri);
@@ -103,6 +131,20 @@ if (photo) {
   }
 };
 
+// For Age: allow only digits
+const handleAgeChange = (text) => {
+  // Remove any non-digit characters
+  const filtered = text.replace(/[^0-9]/g, '');
+  setAge(filtered);
+};
+
+// For Phone: allow only digits and +
+const handlePhoneChange = (text) => {
+  // Remove any character that's not a digit or +
+  const filtered = text.replace(/[^0-9+]/g, '');
+  setPhone(filtered);
+};
+
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <ScrollView className="flex-1">
@@ -141,7 +183,9 @@ if (photo) {
             {/* Name Fields */}
             <View className="flex-row space-x-3">
               <View className="flex-1">
-                <Text className="text-gray-700 font-medium mb-2">First Name</Text>
+                <Text className="text-gray-700 font-medium mb-2">
+                  First Name <Text className="text-red-500">*</Text>
+                </Text>
                 <TextInput
                   value={firstName}
                   onChangeText={setFirstName}
@@ -149,6 +193,7 @@ if (photo) {
                   autoCapitalize="words"
                   className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base"
                 />
+                <Text className="text-xs text-gray-400 mt-1">Enter your first name</Text>
               </View>
 
               <View className="flex-1">
@@ -165,7 +210,9 @@ if (photo) {
 
             {/* Email */}
             <View>
-              <Text className="text-gray-700 font-medium mb-2">Email Address</Text>
+              <Text className="text-gray-700 font-medium mb-2">
+                Email Address <Text className="text-red-500">*</Text>
+              </Text>
               <TextInput
                 value={email}
                 onChangeText={setEmail}
@@ -174,30 +221,37 @@ if (photo) {
                 autoCapitalize="none"
                 className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base"
               />
+              <Text className="text-xs text-gray-400 mt-1">Enter a valid email address</Text>
             </View>
 
             {/* Phone and Age */}
             <View className="flex-row space-x-3">
               <View className="flex-1">
-                <Text className="text-gray-700 font-medium mb-2">Phone</Text>
+                <Text className="text-gray-700 font-medium mb-2">
+                  Phone <Text className="text-red-500">*</Text>
+                </Text>
                 <TextInput
                   value={phone}
-                  onChangeText={setPhone}
+                  onChangeText={handlePhoneChange}
                   placeholder="Phone number"
                   keyboardType="phone-pad"
                   className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base"
                 />
+                <Text className="text-xs text-gray-400 mt-1">0-15 digits</Text>
               </View>
 
               <View className="flex-1">
-                <Text className="text-gray-700 font-medium mb-2">Age</Text>
+                <Text className="text-gray-700 font-medium mb-2">
+                  Age <Text className="text-red-500">*</Text>
+                </Text>
                 <TextInput
                   value={age}
-                  onChangeText={setAge}
+                  onChangeText={handleAgeChange}
                   placeholder="Age"
                   keyboardType="numeric"
                   className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base"
                 />
+                <Text className="text-xs text-gray-400 mt-1">Enter your age (10-120)</Text>
               </View>
             </View>
 
@@ -214,7 +268,9 @@ if (photo) {
 
             {/* Password */}
             <View>
-              <Text className="text-gray-700 font-medium mb-2">Password</Text>
+              <Text className="text-gray-700 font-medium mb-2">
+                Password <Text className="text-red-500">*</Text>
+              </Text>
               <TextInput
                 value={password}
                 onChangeText={setPassword}
@@ -222,6 +278,7 @@ if (photo) {
                 secureTextEntry
                 className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base"
               />
+              <Text className="text-xs text-gray-400 mt-1">At least 6 characters</Text>
             </View>
 
             {/* Register Button */}
