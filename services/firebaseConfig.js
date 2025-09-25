@@ -1,6 +1,6 @@
 import { getAI, GoogleAIBackend } from 'firebase/ai';
 import { getApps, initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { CACHE_SIZE_UNLIMITED, getFirestore, initializeFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
@@ -29,7 +29,7 @@ if (!getApps().length) {
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 export const auth = getAuth(app);
-
+export const googleAuthProvider = new GoogleAuthProvider();
 export const ai = getAI(app, { backend: new GoogleAIBackend() });
 
 export default app;
