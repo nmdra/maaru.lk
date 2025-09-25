@@ -43,7 +43,7 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="Home"
         options={{
           title: 'Home',
           tabBarIcon: ({ color, size }) => (
@@ -61,20 +61,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="cart"
+        name="Reviews"
         options={{
-          title: 'Cart',
+          title: 'Reviews',
           tabBarIcon: ({ color, size }) => (
-            <CartTabIcon color={color} size={size} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size ?? 24} color={color} />
+            <Ionicons name="star-outline" size={size ?? 24} color={color} />
           ),
         }}
       />
