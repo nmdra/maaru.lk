@@ -3,9 +3,11 @@ import { onAuthStateChanged } from "firebase/auth";
 import { useEffect, useRef } from "react";
 import { Animated, Image, StyleSheet, Text } from "react-native";
 import { auth } from "../services/firebaseConfig"; // adjust this path if your firebase config is elsewhere
+import { useAppI18n } from "../utils/i18n";
 
 export default function SplashScreen() {
   const router = useRouter();
+  const { common } = useAppI18n();
   const fadeAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -38,7 +40,7 @@ export default function SplashScreen() {
         style={styles.logo}
       />
       <Text style={styles.title}>Welcome to Maaru.LK</Text>
-      <Text style={styles.subtitle}>Loading...</Text>
+      <Text style={styles.subtitle}>{common('loading')}</Text>
     </Animated.View>
   );
 }
