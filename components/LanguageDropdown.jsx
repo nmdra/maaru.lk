@@ -1,18 +1,3 @@
-<<<<<<< HEAD
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Modal, FlatList } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-
-const languages = [
-  { code: 'en', name: 'English', nativeName: 'English' },
-  { code: 'si', name: 'Sinhala', nativeName: 'සිංහල' },
-];
-
-export default function LanguageDropdown({ selectedLanguage, onLanguageChange }) {
-  const [isOpen, setIsOpen] = useState(false);
-  
-  const selectedLang = languages.find(lang => lang.code === selectedLanguage) || languages[0];
-=======
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { FlatList, Modal, Text, TouchableOpacity, View } from 'react-native';
@@ -23,7 +8,6 @@ export default function LanguageDropdown({ selectedLanguage, onLanguageChange })
   const { t, common } = useAppI18n();
   
   const selectedLang = LANGUAGE_OPTIONS.find(lang => lang.code === selectedLanguage) || LANGUAGE_OPTIONS[0];
->>>>>>> master
 
   const handleLanguageSelect = (languageCode) => {
     onLanguageChange(languageCode);
@@ -90,20 +74,12 @@ export default function LanguageDropdown({ selectedLanguage, onLanguageChange })
           <View className="bg-white rounded-xl mx-4 max-w-sm w-full shadow-xl">
             <View className="p-4 border-b border-gray-200">
               <Text className="text-lg font-semibold text-gray-900 text-center">
-<<<<<<< HEAD
-                Select Language
-=======
                 {t('language.selectLanguage')}
->>>>>>> master
               </Text>
             </View>
             
             <FlatList
-<<<<<<< HEAD
-              data={languages}
-=======
               data={LANGUAGE_OPTIONS}
->>>>>>> master
               renderItem={renderLanguageItem}
               keyExtractor={(item) => item.code}
               className="max-h-64"
@@ -114,11 +90,7 @@ export default function LanguageDropdown({ selectedLanguage, onLanguageChange })
               onPress={() => setIsOpen(false)}
             >
               <Text className="text-center text-gray-600 font-medium">
-<<<<<<< HEAD
-                Cancel
-=======
                 {common('cancel')}
->>>>>>> master
               </Text>
             </TouchableOpacity>
           </View>
