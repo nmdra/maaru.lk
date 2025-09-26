@@ -1,8 +1,7 @@
 import { useRouter } from 'expo-router';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { useEffect, useState } from 'react';
 
 import {
   ActivityIndicator,

@@ -12,9 +12,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import ChatBubble from '../../components/chat/ChatBubble';
 import { fetchProducts } from '../../services/productService';
 import formatPrice from '../../utils/formatPrice';
-import ChatBubble from '../../components/chat/ChatBubble';
 
 const CATEGORIES = ['All', 'Shoes', 'Clothes', 'Accessories', 'Electronics', 'Books', 'Others'];
 
@@ -51,21 +51,19 @@ export default function HomeScreen() {
   // Header + Search + Category Chips as FlatList header
   const renderHeader = () => (
     <View className="bg-white px-4 pt-4 pb-2">
-      {/* Top Bar */}
+      {/* Search Bar */}
       <View className="flex-row justify-between items-center mb-4">
         <Text className="text-2xl font-bold text-gray-900">Maaru.LK</Text>
 
-        {/* Profile */}
+        {/* Add profile button  */}
         <Pressable
-          onPress={() => router.push('/profile')}
+          onPress={() => router.push('/Profile')}
           className="bg-blue-600 p-2 rounded-full"
           accessibilityLabel="Go to Profile"
         >
-          <Ionicons name="person" size={24} color="white" />
-        </Pressable>
-      </View>
-
-      {/* Search */}
+         <Ionicons name="person" size={24} color="white" />
+       </Pressable>
+     </View>
       <TouchableOpacity
         onPress={() => router.push('/search')}
         className="flex-row items-center bg-gray-100 rounded-lg p-3 mb-3"

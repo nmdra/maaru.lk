@@ -1,13 +1,14 @@
 import { useRouter } from 'expo-router';
 import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView,Image, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { auth } from '../../services/firebaseConfig';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { useAppI18n } from '../../utils/i18n';
 
 export default function Login() {
   const router = useRouter();
+  const { t, auth: authT, common, error, message } = useAppI18n();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);

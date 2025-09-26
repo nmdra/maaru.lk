@@ -1,11 +1,13 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { useAppI18n } from '../../utils/i18n';
 
 export default function CreateReview() {
+  const { t } = useAppI18n();
+  
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Create Review</Text>
-      <Text style={styles.subtitle}>This page is under development</Text>
+      <Text style={styles.title}>{t('reviews.create')}</Text>
+      <Text style={styles.subtitle}>{t('reviews.underDevelopment')}</Text>
     </View>
   );
 }

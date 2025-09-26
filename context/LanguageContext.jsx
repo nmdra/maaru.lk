@@ -1,26 +1,45 @@
-import React, { createContext, useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import i18n from '../i18n';
 
 export const LanguageContext = createContext();
 
 const LANGUAGE_STORAGE_KEY = 'app_language_preference';
 
-// Simple storage implementation for demo purposes
-// In production, you would use AsyncStorage or expo-secure-store
+// Storage implementation with AsyncStorage for React Native and localStorage for web
 const storage = {
   async getItem(key) {
-    // For now, return null to use default language
-    // This can be replaced with actual AsyncStorage when properly installed
-    return null;
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        // Web environment - use localStorage
+        return window.localStorage.getItem(key);
+      } else {
+        // React Native environment - use AsyncStorage
+        return await AsyncStorage.getItem(key);
+      }
+    } catch (error) {
+      console.error('Error getting item from storage:', error);
+      return null;
+    }
   },
   async setItem(key, value) {
-    // For now, just log the action
-    console.log(`Saving ${key}: ${value}`);
-    return Promise.resolve();
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        // Web environment - use localStorage
+        window.localStorage.setItem(key, value);
+      } else {
+        // React Native environment - use AsyncStorage
+        await AsyncStorage.setItem(key, value);
+      }
+    } catch (error) {
+      console.error('Error saving item to storage:', error);
+    }
   }
 };
 
 export const LanguageProvider = ({ children }) => {
-  const [currentLanguage, setCurrentLanguage] = useState('en'); // Default to English
+  const [currentLanguage, setCurrentLanguage] = useState(i18n.language || 'en');
   const [isLoading, setIsLoading] = useState(true);
 
   // Load saved language preference on app start
@@ -31,8 +50,8 @@ export const LanguageProvider = ({ children }) => {
   const loadLanguagePreference = async () => {
     try {
       const savedLanguage = await storage.getItem(LANGUAGE_STORAGE_KEY);
-      if (savedLanguage) {
-        setCurrentLanguage(savedLanguage);
+      if (savedLanguage && savedLanguage !== currentLanguage) {
+        await changeLanguage(savedLanguage);
       }
     } catch (error) {
       console.error('Error loading language preference:', error);
@@ -43,6 +62,8 @@ export const LanguageProvider = ({ children }) => {
 
   const changeLanguage = async (languageCode) => {
     try {
+      // Change language in i18next
+      await i18n.changeLanguage(languageCode);
       setCurrentLanguage(languageCode);
       await storage.setItem(LANGUAGE_STORAGE_KEY, languageCode);
     } catch (error) {
@@ -50,6 +71,7 @@ export const LanguageProvider = ({ children }) => {
     }
   };
 
+  // Legacy support for old translation format
   const getLocalizedText = (translations) => {
     return translations[currentLanguage] || translations['en'] || '';
   };
@@ -80,7 +102,20 @@ export const useLanguage = () => {
   return context;
 };
 
-// Translation helper - can be expanded with actual translation files
+// Enhanced hook that combines language context with i18next
+export const useAppTranslation = () => {
+  const { t, i18n: i18nInstance } = useTranslation();
+  const languageContext = useLanguage();
+  
+  return {
+    t, // i18next translation function
+    ...languageContext, // language context functions
+    i18n: i18nInstance, // i18next instance
+  };
+};
+
+// Legacy translation helper for backward compatibility
+// Deprecated: Use useAppTranslation hook instead
 export const translations = {
   // Common UI elements
   save: {
