@@ -83,7 +83,6 @@ export default function AddItemScreen() {
 
       let details;
 
-      // If AI returns text, try to parse it as JSON
       if (typeof result === 'string') {
         try {
           details = JSON.parse(result);
@@ -93,13 +92,11 @@ export default function AddItemScreen() {
           return;
         }
       } else {
-        // Already JSON object
         details = result;
       }
 
       console.log('Parsed AI Details:', details);
 
-      // Update form fields
       setName(details.name || '');
       setDescription(details.description || '');
       setCategory(CATEGORIES.includes(details.category) ? details.category : CATEGORIES[0]);
@@ -118,7 +115,6 @@ export default function AddItemScreen() {
     }
   };
 
-  // Add item to Firestore
   const handleAddItem = async () => {
     if (!name || !description) {
       alert('Please fill all required fields.');
@@ -137,7 +133,7 @@ export default function AddItemScreen() {
         imageUrl: imageUri || 'https://placehold.co/600x400',
         tags,
         stock: Number(stock) || 1,
-        ownerId: 'mockUserId2', // Replace with actual user ID
+        ownerId: 'mockUserId2',
         createdAt: serverTimestamp(),
       };
 
@@ -156,55 +152,50 @@ export default function AddItemScreen() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-gray-50 p-4">
-      <Text className="text-2xl font-bold text-gray-900 mb-4">Add New Item</Text>
+    <ScrollView className="flex-1 bg-gradient-to-b from-white to-gray-100 p-5">
+      <Text className="text-3xl font-extrabold text-gray-900 mb-6">Add New Item</Text>
 
       {/* Image Picker */}
-      <View className="mb-4 items-center">
+      <View className="mb-6 items-center">
         <Image
           source={imageUri ? { uri: imageUri } : { uri: 'https://placehold.co/200x200' }}
-          className="w-44 h-44 rounded-xl shadow-md mb-3"
+          className="w-48 h-48 rounded-2xl shadow-lg mb-4"
+          style={{ borderWidth: 1, borderColor: '#e5e7eb' }}
         />
-        <View className="flex-row space-x-3 mb-2">
+        <View className="flex-row space-x-4 mb-3">
           <TouchableOpacity
             onPress={() => handlePickImage(true)}
-            className="bg-blue-600 px-5 py-3 rounded-xl flex-row items-center shadow-md"
+            className="bg-blue-500 px-6 py-3 rounded-full flex-row items-center shadow-lg hover:bg-blue-600 transition-all"
           >
-            <Ionicons name="camera-outline" size={20} color="white" />
+            <Ionicons name="camera-outline" size={22} color="white" />
             <Text className="text-white font-semibold text-base ml-2">Camera</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => handlePickImage(false)}
-            className="bg-green-600 px-5 py-3 rounded-xl flex-row items-center shadow-md"
+            className="bg-green-500 px-6 py-3 rounded-full flex-row items-center shadow-lg hover:bg-green-600 transition-all"
           >
-            <Ionicons name="images-outline" size={20} color="white" />
+            <Ionicons name="images-outline" size={22} color="white" />
             <Text className="text-white font-semibold text-base ml-2">Gallery</Text>
           </TouchableOpacity>
         </View>
 
         {/* AI Autofill */}
-       
-<TouchableOpacity
-  onPress={handleAIAutofill}
-  disabled={aiLoading}
-  className={`flex-row items-center justify-center rounded-2xl px-6 py-3 shadow-lg
-    ${aiLoading ? 'bg-purple-400 opacity-70' : 'bg-purple-600 active:bg-purple-700'}`}
->
-  <Ionicons
-    name="hardware-chip-outline"
-    size={22}
-    color="white"
-    style={{ marginRight: 8 }}
-  />
-  <Text className="text-white text-base font-semibold">
-    {aiLoading ? 'Generating...' : 'AI Autofill'}
-  </Text>
-</TouchableOpacity>
+        <TouchableOpacity
+          onPress={handleAIAutofill}
+          disabled={aiLoading}
+          className={`flex-row items-center justify-center rounded-full px-6 py-3 shadow-lg transition-all
+            ${aiLoading ? 'bg-purple-400 opacity-70' : 'bg-purple-500 hover:bg-purple-600'}`}
+        >
+          <Ionicons name="hardware-chip-outline" size={22} color="white" style={{ marginRight: 8 }} />
+          <Text className="text-white font-semibold text-base">
+            {aiLoading ? 'Generating...' : 'AI Autofill'}
+          </Text>
+        </TouchableOpacity>
       </View>
 
       {!imageUri && (
-        <Text className="text-red-500 mb-4 text-center">
-          Select an image first to use AI autofill.
+        <Text className="text-red-500 mb-5 text-center font-medium">
+          Select an image to enable AI autofill.
         </Text>
       )}
 
@@ -213,7 +204,7 @@ export default function AddItemScreen() {
         value={name}
         onChangeText={setName}
         placeholder="Item Name*"
-        className="bg-white border border-gray-300 rounded-xl px-4 py-3 mb-4 shadow-sm"
+        className="bg-white border border-gray-200 rounded-2xl px-5 py-4 mb-5 shadow-sm text-gray-900 placeholder-gray-400"
       />
 
       {/* Description */}
@@ -222,20 +213,20 @@ export default function AddItemScreen() {
         onChangeText={setDescription}
         placeholder="Description*"
         multiline
-        className="bg-white border border-gray-300 rounded-xl px-4 py-3 mb-4 shadow-sm h-24"
+        className="bg-white border border-gray-200 rounded-2xl px-5 py-4 mb-5 shadow-sm text-gray-900 placeholder-gray-400 h-28"
       />
 
       {/* Category */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-4 space-x-2">
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-5 space-x-3">
         {CATEGORIES.map((cat) => (
           <TouchableOpacity
             key={cat}
             onPress={() => setCategory(cat)}
-            className={`px-4 py-2 rounded-full border ${
-              category === cat ? 'bg-blue-600 border-blue-600' : 'bg-white border-gray-300'
-            }`}
+            className={`px-5 py-2.5 rounded-full border transition-all ${
+              category === cat ? 'bg-blue-500 border-blue-500' : 'bg-white border-gray-200'
+            } shadow-sm`}
           >
-            <Text className={`${category === cat ? 'text-white font-semibold' : 'text-gray-700'}`}>
+            <Text className={`font-semibold ${category === cat ? 'text-white' : 'text-gray-700'}`}>
               {cat}
             </Text>
           </TouchableOpacity>
@@ -243,9 +234,14 @@ export default function AddItemScreen() {
       </ScrollView>
 
       {/* Swap Only */}
-      <View className="flex-row justify-between items-center mb-4 px-1">
-        <Text className="text-gray-700 font-medium">Swap Only</Text>
-        <Switch value={swapOnly} onValueChange={setSwapOnly} />
+      <View className="flex-row justify-between items-center mb-5 px-2">
+        <Text className="text-gray-800 font-semibold text-lg">Swap Only</Text>
+        <Switch
+          value={swapOnly}
+          onValueChange={setSwapOnly}
+          trackColor={{ false: '#d1d5db', true: '#3b82f6' }}
+          thumbColor={swapOnly ? '#ffffff' : '#f3f4f6'}
+        />
       </View>
 
       {/* Price */}
@@ -255,7 +251,7 @@ export default function AddItemScreen() {
           onChangeText={setPrice}
           placeholder="Price (optional)"
           keyboardType="numeric"
-          className="bg-white border border-gray-300 rounded-xl px-4 py-3 mb-4 shadow-sm"
+          className="bg-white border border-gray-200 rounded-2xl px-5 py-4 mb-5 shadow-sm text-gray-900 placeholder-gray-400"
         />
       )}
 
@@ -264,7 +260,7 @@ export default function AddItemScreen() {
         value={condition}
         onChangeText={setCondition}
         placeholder="Condition"
-        className="bg-white border border-gray-300 rounded-xl px-4 py-3 mb-4 shadow-sm"
+        className="bg-white border border-gray-200 rounded-2xl px-5 py-4 mb-5 shadow-sm text-gray-900 placeholder-gray-400"
       />
 
       {/* Stock */}
@@ -273,23 +269,25 @@ export default function AddItemScreen() {
         onChangeText={(val) => setStock(Number(val))}
         placeholder="Stock"
         keyboardType="numeric"
-        className="bg-white border border-gray-300 rounded-xl px-4 py-3 mb-4 shadow-sm"
+        className="bg-white border border-gray-200 rounded-2xl px-5 py-4 mb-5 shadow-sm text-gray-900 placeholder-gray-400"
       />
 
-{/* Tags */}
-<View className="flex-row flex-wrap mb-4 space-x-2">
-  {[...MOCK_TAGS, ...tags.filter((tag) => !MOCK_TAGS.includes(tag))].map((tag) => (
-    <TouchableOpacity
-      key={tag}
-      onPress={() => toggleTag(tag)}
-      className={`px-3 py-1 rounded-full border ${
-        tags.includes(tag) ? 'bg-green-600 border-green-600' : 'bg-white border-gray-300'
-      } mb-2`}
-    >
-      <Text className={`${tags.includes(tag) ? 'text-white' : 'text-gray-700'}`}>{tag}</Text>
-    </TouchableOpacity>
-  ))}
-</View>
+      {/* Tags */}
+      <View className="flex-row flex-wrap mb-5 space-x-2">
+        {[...MOCK_TAGS, ...tags.filter((tag) => !MOCK_TAGS.includes(tag))].map((tag) => (
+          <TouchableOpacity
+            key={tag}
+            onPress={() => toggleTag(tag)}
+            className={`px-4 py-2 rounded-full border transition-all ${
+              tags.includes(tag) ? 'bg-green-500 border-green-500' : 'bg-white border-gray-200'
+            } mb-2 shadow-sm`}
+          >
+            <Text className={`font-medium ${tags.includes(tag) ? 'text-white' : 'text-gray-700'}`}>
+              {tag}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
       {/* Custom Tag */}
       <View className="flex-row mb-6">
@@ -297,13 +295,13 @@ export default function AddItemScreen() {
           value={customTag}
           onChangeText={setCustomTag}
           placeholder="Add custom tag"
-          className="flex-1 bg-white border border-gray-300 rounded-l-xl px-4 py-3 shadow-sm"
+          className="flex-1 bg-white border border-gray-200 rounded-l-2xl px-5 py-4 shadow-sm text-gray-900 placeholder-gray-400"
         />
         <TouchableOpacity
           onPress={handleAddCustomTag}
-          className="bg-blue-600 px-4 py-3 rounded-r-xl flex-row items-center"
+          className="bg-blue-500 px-5 py-4 rounded-r-2xl flex-row items-center shadow-lg hover:bg-blue-600 transition-all"
         >
-          <Ionicons name="add-outline" size={20} color="white" />
+          <Ionicons name="add-outline" size={22} color="white" />
         </TouchableOpacity>
       </View>
 
@@ -311,11 +309,11 @@ export default function AddItemScreen() {
       <TouchableOpacity
         onPress={handleAddItem}
         disabled={loading}
-        className={`bg-green-600 py-4 rounded-2xl items-center justify-center flex-row shadow-md mb-8 ${
-          loading ? 'opacity-50' : ''
+        className={`bg-green-500 py-4 rounded-full items-center justify-center flex-row shadow-lg mb-10 transition-all ${
+          loading ? 'opacity-50' : 'hover:bg-green-600'
         }`}
       >
-        <Ionicons name="add-circle-outline" size={22} color="white" className="mr-2" />
+        <Ionicons name="add-circle-outline" size={24} color="white" className="mr-2" />
         <Text className="text-white font-semibold text-lg">
           {loading ? 'Adding...' : 'Add Item'}
         </Text>
