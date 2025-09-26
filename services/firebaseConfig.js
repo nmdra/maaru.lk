@@ -1,21 +1,10 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getAI, GoogleAIBackend } from 'firebase/ai';
 import { getApps, initializeApp } from 'firebase/app';
-import {
-  getAuth, // native
-  getReactNativePersistence,
-  GoogleAuthProvider, // web
-  initializeAuth, // native
-} from 'firebase/auth';
-import {
-  CACHE_SIZE_UNLIMITED,
-  getFirestore,
-  initializeFirestore,
-} from 'firebase/firestore';
+import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import { CACHE_SIZE_UNLIMITED, getFirestore, initializeFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-import { Platform } from 'react-native';
 
-// ---- Firebase config (envs via app.json / eas.json) ----
+// Firebase config
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -26,31 +15,20 @@ const firebaseConfig = {
   measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// ---- App init ----
+// Initialize Firebase app
 let app;
 if (!getApps().length) {
   app = initializeApp(firebaseConfig);
-  // Firestore with unlimited cache (good for RN)
+  // Firestore with unlimited cache (recommended for React Native)
   initializeFirestore(app, { cacheSizeBytes: CACHE_SIZE_UNLIMITED });
 } else {
   app = getApps()[0];
 }
 
-// ---- Auth init (platform-safe) ----
-// Web uses getAuth(); Native uses initializeAuth() with AsyncStorage persistence
-let auth;
-if (Platform.OS === 'web') {
-  auth = getAuth(app);
-} else {
-  auth = initializeAuth(app, {
-    persistence: getReactNativePersistence(AsyncStorage),
-  });
-}
-
-// ---- Services ----
+// Initialize Firebase services
 export const db = getFirestore(app);
 export const storage = getStorage(app);
-export { auth };
+export const auth = getAuth(app);
 export const googleAuthProvider = new GoogleAuthProvider();
 export const ai = getAI(app, { backend: new GoogleAIBackend() });
 
