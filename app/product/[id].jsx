@@ -1,10 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { collection, doc, getDoc, getDocs, limit, query, where } from 'firebase/firestore';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Alert,
-  Animated,
   Image,
   Modal,
   ScrollView,
@@ -23,13 +22,6 @@ export default function ProductDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [relatedItems, setRelatedItems] = useState([]);
   const [swapGuidelinesVisible, setSwapGuidelinesVisible] = useState(false);
-
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-  const pressInInfo = () =>
-    Animated.spring(scaleAnim, { toValue: 0.9, useNativeDriver: true }).start();
-  const pressOutInfo = () =>
-    Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true }).start();
-  const openGuidelines = () => setSwapGuidelinesVisible(true);
 
   const mockTags = product?.tags || [];
 
@@ -78,33 +70,33 @@ export default function ProductDetailScreen() {
   }
 
   const handleSwap = () => product && router.push(`/swap/${product.id}`);
-  const handlePay = () => Alert.alert('Payment', `Pay for ${product.name}`);
+  const handlePay = () => product && router.push(`/product/payment/${product.id}`);
   const handleChat = () => product && router.push(`/chat/${product.ownerId}`);
   const handleFavorite = () => Alert.alert('Favorite', `${product.name} added to favorites.`);
 
   return (
     <View className="flex-1 bg-white">
-      {/* Info Button */}
-      <Animated.View
-        style={{
-          position: 'absolute',
-          top: 16,
-          right: 16,
-          zIndex: 10,
-          transform: [{ scale: scaleAnim }],
-        }}
-      >
+      {/* Transparent Header */}
+      <View className="absolute top-12 left-4 right-4 z-20 flex-row justify-between items-center">
         <TouchableOpacity
-          onPress={openGuidelines}
-          onPressIn={pressInInfo}
-          onPressOut={pressOutInfo}
-          className="bg-gray-300 bg-opacity-80 p-2 rounded-full shadow-md"
+          onPress={() => {
+            if (router.canGoBack()) router.back();
+            else router.push('/');
+          }}
+          className="bg-black/40 p-2 rounded-full"
         >
-          <Ionicons name="information-circle-outline" size={20} color="#333" />
+          <Ionicons name="arrow-back" size={20} color="white" />
         </TouchableOpacity>
-      </Animated.View>
 
-      <ScrollView>
+        <TouchableOpacity
+          onPress={() => setSwapGuidelinesVisible(true)}
+          className="bg-black/40 p-2 rounded-full"
+        >
+          <Ionicons name="information-circle-outline" size={22} color="white" />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView className="pt-0">
         {/* Product Image */}
         <View className="relative">
           <Image
@@ -144,16 +136,30 @@ export default function ProductDetailScreen() {
         <View className="p-4 space-y-4">
           <Text className="text-2xl font-bold text-gray-900">{product.name}</Text>
 
-          {/* Swap Only / Condition */}
-          <View className="flex-row items-center space-x-2">
+          {/* Info Chips */}
+          <View className="flex-row flex-wrap gap-2 mt-2">
+            <View className="flex-row items-center bg-gray-100 px-3 py-1 rounded-full shadow-sm">
+              <Ionicons name="pricetag-outline" size={16} color="#4B5563" />
+              <Text className="ml-1 text-xs font-medium text-gray-700">{product.category}</Text>
+            </View>
+
+            <View className="flex-row items-center bg-gray-100 px-3 py-1 rounded-full shadow-sm">
+              <Ionicons name="cube-outline" size={16} color="#4B5563" />
+              <Text className="ml-1 text-xs font-medium text-gray-700">
+                Stock: {product.stock}
+              </Text>
+            </View>
+
+            {product.condition && (
+              <View className="flex-row items-center bg-gray-100 px-3 py-1 rounded-full shadow-sm">
+                <Ionicons name="alert-circle-outline" size={16} color="#4B5563" />
+                <Text className="ml-1 text-xs font-medium text-gray-700">{product.condition}</Text>
+              </View>
+            )}
+
             {product.swapOnly && (
               <View className="bg-red-500 px-3 py-1 rounded-full">
                 <Text className="text-xs font-bold text-white">SWAP ONLY</Text>
-              </View>
-            )}
-            {product.condition && (
-              <View className="bg-gray-200 px-3 py-1 rounded-full">
-                <Text className="text-xs font-semibold text-gray-800">{product.condition}</Text>
               </View>
             )}
           </View>
@@ -165,40 +171,44 @@ export default function ProductDetailScreen() {
             </Text>
           )}
 
-          {/* Info Chips */}
-          <View className="flex-row space-x-3 mt-2">
-            <View className="flex-row items-center bg-gray-100 px-3 py-1 rounded-full shadow-sm">
-              <Ionicons name="pricetag-outline" size={16} color="#4B5563" className="mr-1" />
-              <Text className="text-xs font-medium text-gray-700">{product.category}</Text>
-            </View>
-            <View className="flex-row items-center bg-gray-100 px-3 py-1 rounded-full shadow-sm">
-              <Ionicons name="cube-outline" size={16} color="#4B5563" className="mr-1" />
-              <Text className="text-xs font-medium text-gray-700">Stock: {product.stock}</Text>
-            </View>
-            {product.ownerName && (
-              <View className="flex-row items-center bg-gray-100 px-3 py-1 rounded-full shadow-sm">
-                <Ionicons name="person-outline" size={16} color="#4B5563" className="mr-1" />
-                <Text className="text-xs font-medium text-gray-700">{product.ownerName}</Text>
-              </View>
-            )}
-          </View>
-
           {/* Description */}
           <View className="bg-gray-50 p-4 rounded-xl shadow-sm mt-4">
             <Text className="text-gray-800 leading-6">{product.description}</Text>
+          </View>
+
+          {/* Owner Details Card */}
+          <View className="bg-white p-4 rounded-xl shadow-md mt-4 border border-gray-200">
+            <Text className="text-lg font-semibold mb-2">Owner Details</Text>
+
+            <View className="flex-row items-center mb-2">
+              <Ionicons name="person-circle-outline" size={40} color="#4B5563" />
+              <View className="ml-3">
+                <Text className="text-base font-medium text-gray-900">
+                  {product.ownerName || 'John Doe'}
+                </Text>
+                <Text className="text-sm text-gray-600">User Rating: ⭐⭐⭐⭐☆</Text>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              onPress={handleChat}
+              className="mt-2 bg-blue-600 py-2 rounded-lg flex-row items-center justify-center"
+            >
+              <Ionicons name="chatbubble-outline" size={18} color="white" />
+              <Text className="text-white font-semibold ml-2">Chat with Owner</Text>
+            </TouchableOpacity>
           </View>
         </View>
 
         {/* Action Buttons */}
         <View className="flex-row justify-between px-4 py-3 space-x-3 items-center">
-          {/* Swap / Pay Buttons */}
           {product.swapOnly ? (
             <TouchableOpacity
               onPress={handleSwap}
               className="flex-1 bg-green-600 py-3 rounded-lg flex-row items-center justify-center"
             >
-              <Ionicons name="swap-horizontal-outline" size={20} color="white" className="mr-2" />
-              <Text className="text-white font-semibold">Swap</Text>
+              <Ionicons name="swap-horizontal-outline" size={20} color="white" />
+              <Text className="text-white font-semibold ml-2">Swap</Text>
             </TouchableOpacity>
           ) : (
             <>
@@ -206,28 +216,19 @@ export default function ProductDetailScreen() {
                 onPress={handleSwap}
                 className="flex-1 bg-green-600 py-3 rounded-lg flex-row items-center justify-center"
               >
-                <Ionicons name="swap-horizontal-outline" size={20} color="white" className="mr-2" />
-                <Text className="text-white font-semibold">Swap</Text>
+                <Ionicons name="swap-horizontal-outline" size={20} color="white" />
+                <Text className="text-white font-semibold ml-2">Swap</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={handlePay}
                 className="flex-1 bg-yellow-500 py-3 rounded-lg flex-row items-center justify-center"
               >
-                <Ionicons name="card-outline" size={20} color="white" className="mr-2" />
-                <Text className="text-white font-semibold">Pay</Text>
+                <Ionicons name="card-outline" size={20} color="white" />
+                <Text className="text-white font-semibold ml-2">Pay</Text>
               </TouchableOpacity>
             </>
           )}
-
-          {/* Chat Button */}
-          <TouchableOpacity
-            onPress={handleChat}
-            className="bg-blue-600 py-3 px-4 rounded-lg flex-row items-center justify-center"
-          >
-            <Ionicons name="chatbubble-outline" size={20} color="white" className="mr-2" />
-            <Text className="text-white font-semibold">Chat</Text>
-          </TouchableOpacity>
         </View>
 
         {/* Related Items */}
@@ -254,29 +255,25 @@ export default function ProductDetailScreen() {
 
       {/* Swap Guidelines Modal */}
       <Modal
-        animationType="slide"
-        transparent={true}
         visible={swapGuidelinesVisible}
+        transparent
+        animationType="fade"
         onRequestClose={() => setSwapGuidelinesVisible(false)}
       >
-        <View className="flex-1 justify-center items-center bg-black bg-opacity-40 p-4">
-          <View className="bg-white rounded-lg p-6 w-full">
+        <View className="flex-1 bg-black/50 justify-center items-center">
+          <View className="bg-white w-11/12 p-6 rounded-2xl">
             <Text className="text-lg font-bold mb-4">Swap Guidelines</Text>
-            <Text className="text-gray-700 mb-2">
-              1. Use chat to negotiate swap terms with the owner.
+            <Text className="text-gray-700 mb-6">
+              • Ensure your item matches the listed condition.{"\n"}
+              • Communicate clearly with the other user.{"\n"}
+              • Meet in safe, public places for swaps.{"\n"}
+              • Report any suspicious activity.
             </Text>
-            <Text className="text-gray-700 mb-2">
-              2. Make sure your item is in good condition before offering it.
-            </Text>
-            <Text className="text-gray-700 mb-2">
-              3. Confirm meeting place and time before finalizing swap.
-            </Text>
-            <Text className="text-gray-700 mb-2">4. Be polite and clear in communication.</Text>
             <TouchableOpacity
               onPress={() => setSwapGuidelinesVisible(false)}
-              className="mt-4 bg-blue-600 py-3 rounded-lg items-center justify-center"
+              className="bg-purple-600 py-3 rounded-xl"
             >
-              <Text className="text-white font-semibold">Close</Text>
+              <Text className="text-white text-center font-semibold">Got it</Text>
             </TouchableOpacity>
           </View>
         </View>

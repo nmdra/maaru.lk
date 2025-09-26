@@ -1,31 +1,53 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
-import React, { useContext, useState } from 'react';
-import { View, Text, Modal, ScrollView, TouchableOpacity } from 'react-native';
-import { useAppI18n, LANGUAGE_OPTIONS, getLanguageName } from '../../utils/i18n';
-// import { CartContext } from '../../context/CartContext';
+import { useRouter, usePathname } from 'expo-router';
+import React, { useState } from 'react';
+import { Text, TouchableOpacity, View, Modal, ScrollView } from 'react-native';
+import { useAppI18n, LANGUAGE_OPTIONS, getLanguageName } from '../utils/i18n';
 
-function CartTabIcon({ color, size }) {
-  const { getCartItemCount } = useContext(CartContext);
-  const itemCount = getCartItemCount();
-
-  return (
-    <View className="relative">
-      <Ionicons name="cart-outline" size={size ?? 24} color={color} />
-      {itemCount > 0 && (
-        <View className="absolute -top-1 -right-2 bg-red-500 rounded-full min-w-[18px] h-[18px] items-center justify-center">
-          <Text className="text-white text-[10px] font-bold">
-            {itemCount > 99 ? '99+' : itemCount}
-          </Text>
-        </View>
-      )}
-    </View>
-  );
-}
-
-export default function TabLayout() {
+const BottomNavigation = ({ currentRoute }) => {
+  const router = useRouter();
+  const pathname = usePathname();
   const { t, currentLanguage, changeLanguage } = useAppI18n();
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
+
+  const tabs = [
+    {
+      name: 'Home',
+      route: '/(tabs)/Home',
+      icon: 'home-outline',
+      activeIcon: 'home',
+    },
+    {
+      name: 'Search',
+      route: '/(tabs)/search',
+      icon: 'search-outline',
+      activeIcon: 'search',
+    },
+    {
+      name: 'Reviews',
+      route: '/(tabs)/Reviews',
+      icon: 'star-outline',
+      activeIcon: 'star',
+    },
+    {
+      name: 'Language',
+      route: '/(tabs)/language',
+      icon: 'language-outline',
+      activeIcon: 'language',
+    },
+  ];
+
+  const isActive = (route) => {
+    return pathname === route || currentRoute === route;
+  };
+
+  const handleNavigation = (route, tabName) => {
+    if (tabName === 'Language') {
+      setLanguageModalVisible(true);
+    } else {
+      router.push(route);
+    }
+  };
 
   const handleLanguageSelect = (languageCode) => {
     changeLanguage(languageCode);
@@ -33,7 +55,50 @@ export default function TabLayout() {
   };
 
   return (
-    <>
+    <View className="bg-white border-t border-gray-200 px-2 py-1">
+      <View 
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-around',
+          alignItems: 'center',
+          paddingVertical: 8,
+          paddingHorizontal: 8,
+          height: 60,
+        }}
+      >
+        {tabs.map((tab) => {
+          const active = isActive(tab.route);
+          return (
+            <TouchableOpacity
+              key={tab.name}
+              onPress={() => handleNavigation(tab.route, tab.name)}
+              style={{
+                flex: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingVertical: 4,
+              }}
+            >
+              <Ionicons
+                name={active ? tab.activeIcon : tab.icon}
+                size={24}
+                color={active ? '#2f6feb' : '#555'}
+              />
+              <Text
+                style={{
+                  fontSize: 12,
+                  fontWeight: '500',
+                  color: active ? '#2f6feb' : '#555',
+                  marginTop: 2,
+                }}
+              >
+                {tab.name}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
       {/* Language Selection Modal */}
       <Modal
         animationType="slide"
@@ -44,7 +109,7 @@ export default function TabLayout() {
         <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <View style={{ backgroundColor: 'white', borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingTop: 20 }}>
             {/* Header */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 20 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'between', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 20 }}>
               <Text style={{ fontSize: 18, fontWeight: 'bold', flex: 1 }}>{t('language.settings')}</Text>
               <TouchableOpacity onPress={() => setLanguageModalVisible(false)}>
                 <Ionicons name="close" size={24} color="#666" />
@@ -102,67 +167,8 @@ export default function TabLayout() {
           </View>
         </View>
       </Modal>
-    <Tabs
-      screenOptions={{
-        headerShown: true,
-        tabBarActiveTintColor: '#2f6feb',
-        tabBarInactiveTintColor: '#555',
-        tabBarStyle: {
-          backgroundColor: '#fff',
-          height: 60,
-          paddingBottom: 6,
-          paddingTop: 4,
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '500',
-        },
-        tabBarHideOnKeyboard: true,
-      }}
-    >
-      <Tabs.Screen
-        name="Home"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" size={size ?? 24} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="search"
-        options={{
-          title: 'Search',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="search-outline" size={size ?? 24} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="Reviews"
-        options={{
-          title: 'Reviews',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="star-outline" size={size ?? 24} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="language"
-        options={{
-          title: 'Language',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="language-outline" size={size ?? 24} color={color} />
-          ),
-        }}
-        listeners={{
-          tabPress: (e) => {
-            e.preventDefault();
-            setLanguageModalVisible(true);
-          },
-        }}
-      />
-    </Tabs>
-    </>
+    </View>
   );
-}
+};
+
+export default BottomNavigation;

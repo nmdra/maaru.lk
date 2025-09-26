@@ -1,16 +1,13 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Modal, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-
-const languages = [
-  { code: 'en', name: 'English', nativeName: 'English' },
-  { code: 'si', name: 'Sinhala', nativeName: 'සිංහල' },
-];
+import { useState } from 'react';
+import { FlatList, Modal, Text, TouchableOpacity, View } from 'react-native';
+import { LANGUAGE_OPTIONS, useAppI18n } from '../utils/i18n';
 
 export default function LanguageDropdown({ selectedLanguage, onLanguageChange }) {
   const [isOpen, setIsOpen] = useState(false);
+  const { t, common } = useAppI18n();
   
-  const selectedLang = languages.find(lang => lang.code === selectedLanguage) || languages[0];
+  const selectedLang = LANGUAGE_OPTIONS.find(lang => lang.code === selectedLanguage) || LANGUAGE_OPTIONS[0];
 
   const handleLanguageSelect = (languageCode) => {
     onLanguageChange(languageCode);
@@ -77,12 +74,12 @@ export default function LanguageDropdown({ selectedLanguage, onLanguageChange })
           <View className="bg-white rounded-xl mx-4 max-w-sm w-full shadow-xl">
             <View className="p-4 border-b border-gray-200">
               <Text className="text-lg font-semibold text-gray-900 text-center">
-                Select Language
+                {t('language.selectLanguage')}
               </Text>
             </View>
             
             <FlatList
-              data={languages}
+              data={LANGUAGE_OPTIONS}
               renderItem={renderLanguageItem}
               keyExtractor={(item) => item.code}
               className="max-h-64"
@@ -93,7 +90,7 @@ export default function LanguageDropdown({ selectedLanguage, onLanguageChange })
               onPress={() => setIsOpen(false)}
             >
               <Text className="text-center text-gray-600 font-medium">
-                Cancel
+                {common('cancel')}
               </Text>
             </TouchableOpacity>
           </View>

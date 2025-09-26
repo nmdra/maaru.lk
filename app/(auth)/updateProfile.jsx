@@ -1,7 +1,13 @@
-import React, { useEffect, useState } from "react";
+import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from "expo-router";
+import { updateProfile } from "firebase/auth";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Pressable,
   ScrollView,
   Text,
@@ -9,13 +15,7 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from "../../services/firebaseConfig";
-import * as ImagePicker from 'expo-image-picker';
-import { Image } from 'react-native';
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { updateProfile } from "firebase/auth";
 
 export default function UpdateProfile() {
   const router = useRouter();
@@ -110,7 +110,7 @@ export default function UpdateProfile() {
       });
     
     Alert.alert("Success", "Profile updated!");
-    router.push("/profile"); // Make sure this matches your route
+    router.push("/Profile"); // Make sure this matches your route
 
   } catch (error) {
     Alert.alert("Error", error.message);

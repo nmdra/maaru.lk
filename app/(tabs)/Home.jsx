@@ -56,7 +56,7 @@ export default function HomeScreen() {
 
         {/* Add profile button  */}
         <Pressable
-          onPress={() => router.push('/profile')}
+          onPress={() => router.push('/Profile')}
           className="bg-blue-600 p-2 rounded-full"
           accessibilityLabel="Go to Profile"
         >
