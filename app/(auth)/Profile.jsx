@@ -26,7 +26,7 @@ export default function Profile() {
       if (!user) {
         setProfile(null);
         setLoading(false);
-        router.replace('/Login');
+        router.replace('/login');
         return;
       }
 
