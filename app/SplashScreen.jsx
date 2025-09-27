@@ -13,7 +13,7 @@ export default function SplashScreen() {
   useEffect(() => {
     let userToRoute = null;
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      userToRoute = user ? "/Home" : "/login";
+      userToRoute = user ? "/Home" : "/Login";
     });
 
     // Always show splash at least 1 second, then fade out
