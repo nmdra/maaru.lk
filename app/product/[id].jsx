@@ -3,20 +3,20 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { collection, doc, getDoc, getDocs, limit, query, where } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import {
-  Alert,
-  Image,
-  Modal,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
+    Alert,
+    Image,
+    Modal,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import ProductCard from '../../components/product/ProductCard';
 import { db } from '../../services/firebaseConfig';
 import formatPrice from '../../utils/formatPrice';
-
 // 🔗 chat helpers + auth
 import { useAuth } from '../../context/AuthContext';
+import { ensureConversation } from '../../services/chatService';
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -75,7 +75,15 @@ export default function ProductDetailScreen() {
 
   const handleSwap = () => product && router.push(`/swap/${product.id}`);
   const handlePay = () => product && router.push(`/product/payment/${product.id}`);
-  const handleChat = () => product && router.push(`/chat/${product.ownerId}`);
+  const handleChat = async () => {
+    if (!product || !user?.uid || !product.ownerId) return;
+    try {
+      const { id: roomId } = await ensureConversation(user.uid, product.ownerId, product.id);
+      router.push(`/chat/${roomId}`);
+    } catch (e) {
+      console.error('Failed to open chat:', e);
+    }
+  };
   const handleFavorite = () => Alert.alert('Favorite', `${product.name} added to favorites.`);
 
   return (
