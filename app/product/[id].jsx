@@ -15,9 +15,13 @@ import ProductCard from '../../components/product/ProductCard';
 import { db } from '../../services/firebaseConfig';
 import formatPrice from '../../utils/formatPrice';
 
+// 🔗 chat helpers + auth
+import { useAuth } from '../../context/AuthContext';
+
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { user } = useAuth(); // expects user?.uid
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [relatedItems, setRelatedItems] = useState([]);
@@ -49,7 +53,7 @@ export default function ProductDetailScreen() {
         const q = query(productsRef, where('category', '==', category), limit(10));
         const snapshot = await getDocs(q);
         const items = snapshot.docs
-          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .map((d) => ({ id: d.id, ...d.data() }))
           .filter((item) => item.id !== excludeId)
           .sort(() => Math.random() - 0.5);
         setRelatedItems(items.slice(0, 5));
