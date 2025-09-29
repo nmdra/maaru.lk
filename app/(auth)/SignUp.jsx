@@ -1,4 +1,5 @@
 // ...existing code...
+import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth';
@@ -6,14 +7,15 @@ import { doc, setDoc } from 'firebase/firestore';
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import { useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  Pressable,
-  ScrollView,
-  Text,
-  TextInput,
-  View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    Pressable,
+    ScrollView,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { db } from '../../services/firebaseConfig';
@@ -126,7 +128,7 @@ if (photo) {
     aspect: [1, 1],
     quality: 0.7,
   });
-  if (!result.cancelled && result.assets?.length > 0) {
+  if (!result.canceled && result.assets?.length > 0) {
     setPhoto(result.assets[0]);
   }
 };
@@ -151,6 +153,14 @@ const handlePhoneChange = (text) => {
         
         {/* Header Section */}
         <View className="bg-blue-600 px-6 pt-8 pb-20">
+          <View className="flex-row items-center mb-4">
+            <TouchableOpacity 
+              onPress={() => router.push('/(tabs)/Home')} 
+              className="p-2 -ml-2"
+            >
+              <Ionicons name="arrow-back" size={24} color="white" />
+            </TouchableOpacity>
+          </View>
           <View className="items-center">
             <Text className="text-white text-3xl font-bold">Join Maaru.LK</Text>
             <Text className="text-white text-opacity-80 text-base mb-2">Create your account today</Text>
@@ -296,7 +306,7 @@ const handlePhoneChange = (text) => {
 
             {/* moved bottom actions up into the card */}
             <View className="mt-4 space-y-3">
-              <Pressable onPress={() => router.replace('/Login')} className="border border-gray-200 py-4 rounded-xl">
+              <Pressable onPress={() => router.replace('/login')} className="border border-gray-200 py-4 rounded-xl">
                 <Text className="text-gray-700 font-semibold text-center">Already have an account? Sign In</Text>
               </Pressable>
 

@@ -57,7 +57,7 @@ export default function HomeScreen() {
 
         {/* Add profile button  */}
         <Pressable
-          onPress={() => router.push('/Profile')}
+          onPress={() => router.push('/profile')}
           className="bg-blue-600 p-2 rounded-full"
           accessibilityLabel="Go to Profile"
         >
@@ -127,13 +127,10 @@ export default function HomeScreen() {
           )}
         />
 
-        {/* Floating Chat Bubble (opens chat list) */}
-        <ChatBubble to="/chat" />
-
         {/* Floating Add New Item Button (shifted left so it doesn't overlap the chat bubble) */}
         <TouchableOpacity
           onPress={() => router.push('/AddProduct')}
-          className="absolute bottom-6 right-24 bg-blue-600 w-16 h-16 rounded-full items-center justify-center shadow-lg"
+          className="absolute bottom-6 right-6 bg-blue-600 w-16 h-16 rounded-full items-center justify-center shadow-lg"
         >
           <Ionicons name="add" size={32} color="#fff" />
         </TouchableOpacity>
