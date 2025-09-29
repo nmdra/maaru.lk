@@ -15,6 +15,7 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import ChatBubble from '../../components/chat/ChatBubble';
 import { auth, db } from '../../services/firebaseConfig';
 
 export default function Profile() {
@@ -137,6 +138,7 @@ const handleSignOut = async () => {
               >
                 <Ionicons name="arrow-back" size={24} color="white" />
               </TouchableOpacity>
+              <Text className="text-white text-2xl font-bold">Profile</Text>
             </View>
 <TouchableOpacity 
     onPress={() => {
@@ -181,7 +183,7 @@ const handleSignOut = async () => {
                 className="absolute bottom-0 right-0 bg-blue-600 w-10 h-10 rounded-full items-center justify-center shadow-lg"
                 onPress={() => router.push("/updateProfile")}
               >
-                <Text className="text-white text-lg font-bold">+</Text>
+                <Ionicons name="pencil" size={16} color="white" />
               </Pressable>
             </View>
             
@@ -212,7 +214,7 @@ const handleSignOut = async () => {
           </View>
 
           {/* Action Buttons */}
-          <View className="space-y-3">            
+          <View className="space-y-3">
             <Pressable className="border border-gray-200 py-4 rounded-xl">
               <Text className="text-gray-700 font-semibold text-base text-center">Settings</Text>
             </Pressable>
@@ -262,6 +264,11 @@ const handleSignOut = async () => {
           </View>
         </View>
       </ScrollView>
+
+      {/* Floating Chat Bubble - Fixed position in bottom right */}
+      <View className="absolute bottom-6 right-6">
+        <ChatBubble to="/chat" />
+      </View>
     </SafeAreaView>
   );
 }

@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React, { useContext, useState } from 'react';
-import { View, Text, Modal, ScrollView, TouchableOpacity } from 'react-native';
-import { useAppI18n, LANGUAGE_OPTIONS, getLanguageName } from '../../utils/i18n';
+import { Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { LANGUAGE_OPTIONS, getLanguageName, useAppI18n } from '../../utils/i18n';
 // import { CartContext } from '../../context/CartContext';
 
 function CartTabIcon({ color, size }) {

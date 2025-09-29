@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import ChatBubble from '../../components/chat/ChatBubble';
 import { fetchProducts } from '../../services/productService';
 import formatPrice from '../../utils/formatPrice';
 
@@ -101,37 +102,39 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
-      <FlatList
-        data={filteredItems}
-        keyExtractor={(item) => item.id}
-        ListHeaderComponent={renderHeader}
-        contentContainerStyle={{ paddingBottom: 120, paddingHorizontal: 16 }}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            onPress={() => router.push(`/product/${item.id}`)}
-            className="mb-4 bg-white rounded-xl shadow-md overflow-hidden"
-          >
-            <Image source={{ uri: item.imageUrl }} className="w-full h-48" resizeMode="cover" />
-            <View className="p-4">
-              <Text className="text-lg font-semibold text-gray-800">{item.name}</Text>
-              <Text className="text-gray-600 mt-1" numberOfLines={2}>
-                {item.description}
-              </Text>
-              <Text className="mt-2 font-bold text-blue-600">
-                {formatPrice(item.price, item.currency)}
-              </Text>
-            </View>
-          </TouchableOpacity>
-        )}
-      />
+      <View className="flex-1">
+        <FlatList
+          data={filteredItems}
+          keyExtractor={(item) => item.id}
+          ListHeaderComponent={renderHeader}
+          contentContainerStyle={{ paddingBottom: 140, paddingHorizontal: 16 }}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              onPress={() => router.push(`/product/${item.id}`)}
+              className="mb-4 bg-white rounded-xl shadow-md overflow-hidden"
+            >
+              <Image source={{ uri: item.imageUrl }} className="w-full h-48" resizeMode="cover" />
+              <View className="p-4">
+                <Text className="text-lg font-semibold text-gray-800">{item.name}</Text>
+                <Text className="text-gray-600 mt-1" numberOfLines={2}>
+                  {item.description}
+                </Text>
+                <Text className="mt-2 font-bold text-blue-600">
+                  {formatPrice(item.price, item.currency)}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          )}
+        />
 
-      {/* Floating Add New Item Button */}
-      <TouchableOpacity
-        onPress={() => router.push('/AddProduct')}
-        className="absolute bottom-6 right-6 bg-blue-600 w-16 h-16 rounded-full items-center justify-center shadow-lg"
-      >
-        <Ionicons name="add" size={32} color="#fff" />
-      </TouchableOpacity>
+        {/* Floating Add New Item Button (shifted left so it doesn't overlap the chat bubble) */}
+        <TouchableOpacity
+          onPress={() => router.push('/AddProduct')}
+          className="absolute bottom-6 right-6 bg-blue-600 w-16 h-16 rounded-full items-center justify-center shadow-lg"
+        >
+          <Ionicons name="add" size={32} color="#fff" />
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 }
