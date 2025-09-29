@@ -1,15 +1,18 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
 import {
-  ActivityIndicator,
-  Image,
-  Pressable,
-  ScrollView,
-  Text,
-  View,
+    ActivityIndicator,
+    Alert,
+    Image,
+    Pressable,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { auth, db } from '../../services/firebaseConfig';
@@ -26,7 +29,7 @@ export default function Profile() {
       if (!user) {
         setProfile(null);
         setLoading(false);
-        router.replace('/Login');
+        router.push('/login');
         return;
       }
 
@@ -57,14 +60,37 @@ export default function Profile() {
     return () => unsubscribe();
   }, []);
 
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-      router.replace('/Login');
-    } catch (error) {
-      console.error('Sign out error:', error);
-    }
-  };
+const handleSignOut = async () => {
+    console.log('Sign out initiated');
+  Alert.alert(
+    "Sign Out",
+    "Are you sure you want to sign out?",
+    [
+      {
+        text: "Cancel",
+        style: "cancel"
+      },
+      {
+        text: "Sign Out",
+        style: "destructive",
+        onPress: async () => {
+            console.log('Sign out confirmed');
+          try {
+            setSigningOut(true);
+            await signOut(auth);
+            console.log('User signed out');
+            router.replace('/login');
+          } catch (error) {
+            console.error('Sign out error:', error);
+            Alert.alert("Error", "Failed to sign out. Please try again.");
+          } finally {
+            setSigningOut(false);
+          }
+        }
+      }
+    ]
+  );
+};
 
   if (loading) {
     return (
@@ -84,7 +110,7 @@ export default function Profile() {
           <Text className="text-red-600 text-lg font-semibold mb-2">Error loading profile</Text>
           <Text className="text-gray-600 text-center mb-6">Could not load profile information</Text>
           <Pressable 
-            onPress={() => router.replace('/Login')}
+            onPress={() => router.replace('/login')}
             className="bg-blue-600 px-8 py-3 rounded-lg"
           >
             <Text className="text-white font-semibold">Back to Login</Text>
@@ -104,15 +130,29 @@ export default function Profile() {
         {/* Header Section */}
         <View className="bg-blue-600 px-6 pt-4 pb-20">
           <View className="flex-row justify-between items-center">
-            <View>
-              <Text className="text-white text-2xl font-bold">Profile</Text>
+            <View className="flex-row items-center">
+              <TouchableOpacity 
+                onPress={() => router.push('/(tabs)/Home')} 
+                className="p-2 -ml-2 mr-2"
+              >
+                <Ionicons name="arrow-back" size={24} color="white" />
+              </TouchableOpacity>
             </View>
-            <Pressable 
-              onPress={handleSignOut}
-              className="bg-white bg-opacity-20 px-4 py-2 rounded-lg"
-            >
-              <Text className="text-white font-medium text-sm">Sign Out</Text>
-            </Pressable>
+<TouchableOpacity 
+    onPress={() => {
+        console.log("Signout button pressed");
+        handleSignOut();
+    }}
+    className="p-2"
+    disabled={signingOut}
+    activeOpacity={0.7}
+>
+    <Ionicons 
+        name="log-out-outline" 
+        size={24} 
+        color={signingOut ? "#94A3B8" : "white"} 
+    />
+</TouchableOpacity>
           </View>
         </View>
 
@@ -172,12 +212,7 @@ export default function Profile() {
           </View>
 
           {/* Action Buttons */}
-          <View className="space-y-3">
-            <Pressable className="bg-blue-600 py-4 rounded-xl"
-              onPress={() => router.push("/updateProfile")}>
-              <Text className="text-white font-semibold text-base text-center">Edit Profile</Text>
-            </Pressable>
-            
+          <View className="space-y-3">            
             <Pressable className="border border-gray-200 py-4 rounded-xl">
               <Text className="text-gray-700 font-semibold text-base text-center">Settings</Text>
             </Pressable>

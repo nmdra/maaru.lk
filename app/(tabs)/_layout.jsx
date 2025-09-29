@@ -124,6 +124,7 @@ export default function TabLayout() {
         name="Home"
         options={{
           title: 'Home',
+          headerShown: false,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="home-outline" size={size ?? 24} color={color} />
           ),
