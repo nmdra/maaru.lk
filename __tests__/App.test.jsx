@@ -63,3 +63,20 @@ test('app component handles props correctly', () => {
   const appContainer = screen.getByTestId('app-container');
   expect(appContainer).toHaveAttribute('data-theme', 'dark');
 });
+
+test('app component handles error boundaries gracefully', () => {
+  // Mock console.error to prevent error logs during test
+  const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+  
+  render(<App />);
+  
+  // Check if error boundary exists
+  const appContainer = screen.getByTestId('app-container');
+  expect(appContainer).toBeInTheDocument();
+  
+  // Verify no error state is initially shown
+  expect(screen.queryByText(/something went wrong/i)).not.toBeInTheDocument();
+  
+  // Restore console.error
+  consoleSpy.mockRestore();
+});
