@@ -32,3 +32,17 @@ test('app component renders with correct accessibility attributes', () => {
   // Check if app has accessible name
   expect(appElement).toHaveAccessibleName();
 });
+
+test('app component has proper CSS classes applied', () => {
+  render(<App />);
+  
+  // Check if the app has expected CSS classes
+  const appElement = screen.getByTestId('app-container');
+  expect(appElement).toHaveClass('app', 'container');
+  
+  // Verify component styling
+  expect(appElement).toHaveStyle({
+    display: 'flex',
+    minHeight: '100vh'
+  });
+});
