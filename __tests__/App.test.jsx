@@ -46,3 +46,20 @@ test('app component has proper CSS classes applied', () => {
     minHeight: '100vh'
   });
 });
+
+test('app component handles props correctly', () => {
+  const mockProps = {
+    title: 'Test App',
+    theme: 'dark'
+  };
+  
+  render(<App {...mockProps} />);
+  
+  // Check if props are applied correctly
+  const titleElement = screen.getByText('Test App');
+  expect(titleElement).toBeInTheDocument();
+  
+  // Check if theme is applied
+  const appContainer = screen.getByTestId('app-container');
+  expect(appContainer).toHaveAttribute('data-theme', 'dark');
+});
