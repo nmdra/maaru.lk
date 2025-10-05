@@ -80,3 +80,20 @@ test('app component handles error boundaries gracefully', () => {
   // Restore console.error
   consoleSpy.mockRestore();
 });
+
+test('app component unmounts cleanly without memory leaks', () => {
+  const { unmount } = render(<App />);
+  
+  // Verify component renders initially
+  const appContainer = screen.getByTestId('app-container');
+  expect(appContainer).toBeInTheDocument();
+  
+  // Unmount component
+  unmount();
+  
+  // Verify component is no longer in document
+  expect(screen.queryByTestId('app-container')).not.toBeInTheDocument();
+  
+  // Check that no timers or listeners are left running
+  expect(jest.getTimerCount()).toBe(0);
+});
