@@ -81,6 +81,13 @@ test('app component handles error boundaries gracefully', () => {
   consoleSpy.mockRestore();
 });
 
+test('renders without console errors', () => {
+  const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+  render(<App />);
+  expect(errorSpy).not.toHaveBeenCalled();
+  errorSpy.mockRestore();
+});
+
 test('app component unmounts cleanly without memory leaks', () => {
   const { unmount } = render(<App />);
   
