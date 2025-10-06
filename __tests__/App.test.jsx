@@ -88,6 +88,13 @@ test('renders without console errors', () => {
   errorSpy.mockRestore();
 });
 
+test('renders without console warnings', () => {
+  const warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+  render(<App />);
+  expect(warnSpy).not.toHaveBeenCalled();
+  warnSpy.mockRestore();
+});
+
 test('app component unmounts cleanly without memory leaks', () => {
   const { unmount } = render(<App />);
   
