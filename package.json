@@ -18,6 +18,7 @@
     "@react-navigation/elements": "^2.3.8",
     "@react-navigation/native": "^7.1.6",
     "@shopify/flash-list": "1.7.6",
+    "@stripe/stripe-react-native": "^0.54.1",
     "expo": "~53.0.23",
     "expo-blur": "~14.1.5",
     "expo-constants": "~17.1.7",
@@ -47,7 +48,8 @@
     "react-native-screens": "~4.11.1",
     "react-native-vector-icons": "^10.3.0",
     "react-native-web": "~0.20.0",
-    "react-native-webview": "13.13.5"
+    "react-native-webview": "13.13.5",
+    "stripe": "^19.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
