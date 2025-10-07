@@ -138,7 +138,6 @@ const handleSignOut = async () => {
               >
                 <Ionicons name="arrow-back" size={24} color="white" />
               </TouchableOpacity>
-              <Text className="text-white text-2xl font-bold">Profile</Text>
             </View>
 <TouchableOpacity 
     onPress={() => {
