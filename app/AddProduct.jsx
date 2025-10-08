@@ -153,7 +153,17 @@ export default function AddItemScreen() {
 
   return (
     <ScrollView className="flex-1 bg-gradient-to-b from-white to-gray-100 p-5">
-      <Text className="text-3xl font-extrabold text-gray-900 mb-6">Add New Item</Text>
+      
+      {/* Header with back button */}
+      <View className="flex-row items-center mb-6">
+        <TouchableOpacity 
+          onPress={() => router.push('/(tabs)/Home')} 
+          className="mr-3 p-2"
+        >
+          <Ionicons name="arrow-back" size={24} color="#333" />
+        </TouchableOpacity>
+        <Text className="text-3xl font-extrabold text-gray-900 flex-1">Add New Item</Text>
+      </View>
 
       {/* Image Picker */}
       <View className="mb-6 items-center">
