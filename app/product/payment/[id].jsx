@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import BottomNavigation from '../../../components/BottomNavigation';
+import { useAuth } from '../../../context/AuthContext';
 import { db } from '../../../services/firebaseConfig';
 import formatPrice from '../../../utils/formatPrice';
 import { useAppI18n } from '../../../utils/i18n';
@@ -29,6 +30,7 @@ export default function PaymentScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const { t, common } = useAppI18n();
+  const { user, loading: authLoading } = useAuth();
   
   // Conditionally use Stripe hooks only on native platforms
   let stripeHooks = null;
@@ -101,6 +103,22 @@ export default function PaymentScreen() {
   };
 
   const handlePayment = () => {
+    // Check if user is logged in
+    if (!user) {
+      Alert.alert(
+        'Login Required',
+        'You must be logged in to make a purchase. Please login to continue.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Login',
+            onPress: () => router.push('/(auth)/login')
+          }
+        ]
+      );
+      return;
+    }
+
     if (!selectedPaymentMethod) {
       Alert.alert(common('error'), t('payment.validation.selectPaymentMethod'));
       return;
@@ -206,6 +224,7 @@ export default function PaymentScreen() {
   const navigateToSuccess = () => {
     const orderData = {
       productId: product.id,
+      productOwnerId: product.ownerId,
       productName: product.name,
       quantity,
       price: product.price,
@@ -213,6 +232,10 @@ export default function PaymentScreen() {
       total: calculateTotal(),
       paymentMethod: selectedPaymentMethod,
       orderDate: new Date().toISOString(),
+      buyerId: user.uid,
+      buyerEmail: user.email,
+      shippingAddress: paymentDetails.billingAddress,
+      phoneNumber: paymentDetails.phoneNumber,
     };
     
     router.push({
@@ -228,7 +251,7 @@ export default function PaymentScreen() {
     });
   };
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <View className="flex-1 justify-center items-center bg-white">
         <Text className="text-gray-500">{common('loading')}</Text>

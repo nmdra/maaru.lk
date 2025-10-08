@@ -1,13 +1,17 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+  Alert,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
 import BottomNavigation from '../../../components/BottomNavigation';
+import { updateProductAvailability } from '../../../services/itemService';
+import { createOrder } from '../../../services/orderService';
+import { createTransaction } from '../../../services/transactionService';
 import formatPrice from '../../../utils/formatPrice';
 import { useAppI18n } from '../../../utils/i18n';
 
@@ -15,13 +19,13 @@ export default function PaymentSuccessScreen() {
   const params = useLocalSearchParams();
   const router = useRouter();
   const { t, common } = useAppI18n();
+  const [orderCreated, setOrderCreated] = useState(false);
+  const [orderNumber, setOrderNumber] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  // Generate order ID
-  const orderNumber = `MR-${Date.now().toString().slice(-8)}`;
   const estimatedDelivery = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000); // 3 days from now
 
   const orderDetails = {
-    orderNumber,
     productName: params.productName || 'Product',
     quantity: parseInt(params.quantity) || 1,
     price: parseFloat(params.price) || 0,
@@ -30,6 +34,81 @@ export default function PaymentSuccessScreen() {
     paymentMethod: params.paymentMethod || 'card',
     orderDate: params.orderDate ? new Date(params.orderDate) : new Date(),
   };
+
+  // Create order and transaction on component mount
+  useEffect(() => {
+    const createOrderAndTransaction = async () => {
+      try {
+        setLoading(true);
+
+        // Create order
+        const orderData = {
+          productId: params.productId,
+          productOwnerId: params.productOwnerId,
+          buyerId: params.buyerId,
+          buyerEmail: params.buyerEmail,
+          productName: params.productName,
+          quantity: parseInt(params.quantity) || 1,
+          price: parseFloat(params.price) || 0,
+          currency: params.currency || 'LKR',
+          total: parseFloat(params.total) || 0,
+          paymentMethod: params.paymentMethod || 'card',
+          shippingAddress: params.shippingAddress,
+          phoneNumber: params.phoneNumber,
+        };
+
+        const orderId = await createOrder(orderData);
+        
+        // Create transaction
+        const transactionData = {
+          orderId: orderId,
+          productId: params.productId,
+          buyerId: params.buyerId,
+          sellerId: params.productOwnerId,
+          amount: parseFloat(params.total) || 0,
+          currency: params.currency || 'LKR',
+          paymentMethod: params.paymentMethod || 'card',
+          paymentDetails: {
+            shippingAddress: params.shippingAddress,
+            phoneNumber: params.phoneNumber,
+            buyerEmail: params.buyerEmail,
+          },
+        };
+
+        await createTransaction(transactionData);
+
+        // Update product availability to false
+        await updateProductAvailability(params.productId, false);
+
+        // Generate order number for display
+        const generatedOrderNumber = `MR-${Date.now().toString().slice(-8)}`;
+        setOrderNumber(generatedOrderNumber);
+        setOrderCreated(true);
+
+      } catch (error) {
+        console.error('Error creating order and transaction:', error);
+        Alert.alert(
+          'Error',
+          'There was an issue processing your order. Please contact support.',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.push('/(tabs)/Home')
+            }
+          ]
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Only create order if we have the required parameters and haven't created it yet
+    if (params.productId && params.buyerId && !orderCreated) {
+      createOrderAndTransaction();
+    } else if (!params.productId || !params.buyerId) {
+      setLoading(false);
+    }
+  }, [params, orderCreated]);
 
   const getPaymentMethodName = (method) => {
     switch (method) {
@@ -45,6 +124,38 @@ export default function PaymentSuccessScreen() {
         return 'Unknown';
     }
   };
+
+  // Show loading state while processing order
+  if (loading) {
+    return (
+      <View className="flex-1 justify-center items-center bg-gray-50">
+        <Ionicons name="hourglass-outline" size={48} color="#2563eb" />
+        <Text className="text-lg font-semibold mt-4 mb-2">Processing your order...</Text>
+        <Text className="text-gray-600 text-center px-8">
+          Please wait while we create your order and process the payment.
+        </Text>
+      </View>
+    );
+  }
+
+  // Show error state if required parameters are missing
+  if (!params.productId || !params.buyerId) {
+    return (
+      <View className="flex-1 justify-center items-center bg-gray-50">
+        <Ionicons name="alert-circle-outline" size={48} color="#ef4444" />
+        <Text className="text-lg font-semibold mt-4 mb-2">Invalid Order</Text>
+        <Text className="text-gray-600 text-center px-8 mb-6">
+          There was an issue with your order. Please try again.
+        </Text>
+        <TouchableOpacity
+          onPress={() => router.push('/(tabs)/Home')}
+          className="bg-blue-600 px-6 py-3 rounded-lg"
+        >
+          <Text className="text-white font-semibold">Return to Home</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-gray-50">
@@ -70,7 +181,7 @@ export default function PaymentSuccessScreen() {
           <View className="space-y-3">
             <View className="flex-row justify-between">
               <Text className="text-gray-600">{t('paymentSuccess.orderNumber')}</Text>
-              <Text className="font-semibold text-blue-600">{orderDetails.orderNumber}</Text>
+              <Text className="font-semibold text-blue-600">{orderNumber}</Text>
             </View>
 
             <View className="flex-row justify-between">

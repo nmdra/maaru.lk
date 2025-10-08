@@ -1,4 +1,4 @@
-import { addDoc, collection, Timestamp } from 'firebase/firestore';
+import { addDoc, collection, doc, Timestamp, updateDoc } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { db, storage } from './firebaseConfig';
 
@@ -25,4 +25,18 @@ export const addItemToFirestore = async (product) => {
     createdAt: Timestamp.now(),
   });
   return docRef.id;
+};
+
+// Update product availability
+export const updateProductAvailability = async (productId, availability = false) => {
+  try {
+    const productRef = doc(db, 'products', productId);
+    await updateDoc(productRef, {
+      availability: availability,
+      updatedAt: Timestamp.now(),
+    });
+  } catch (error) {
+    console.error('Error updating product availability:', error);
+    throw error;
+  }
 };
