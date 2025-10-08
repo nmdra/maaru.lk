@@ -1,7 +1,8 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { auth } from '../../services/firebaseConfig';
 import { useAppI18n } from '../../utils/i18n';
@@ -73,6 +74,14 @@ export default function Login() {
         
         {/* Header Section */}
         <View className="bg-blue-600 px-6 pt-8 pb-20">
+          <View className="flex-row items-center mb-4">
+            <TouchableOpacity 
+              onPress={() => router.push('/(tabs)/Home')} 
+              className="p-2 -ml-2"
+            >
+              <Ionicons name="arrow-back" size={24} color="white" />
+            </TouchableOpacity>
+          </View>
           <View className="items-center">
             <Text className="text-white text-3xl font-bold">Welcome Back</Text>
             <Text className="text-white text-opacity-80 text-base mb-2">Sign in to continue to Maaru.LK</Text>
@@ -156,14 +165,14 @@ export default function Login() {
             </Pressable>
 
             {/* Forgot Password */}
-            <Pressable onPress={() => router.push('/ForgotPassword')} className="py-2 items-center">
+            <Pressable onPress={() => router.push('/forgotPassword')} className="py-2 items-center">
               <Text className="text-gray-500">Forgot Password?</Text>
             </Pressable>
 
             {/* Create account*/}
             <View className="items-center mt-3">
               <Text className="text-sm text-gray-500">Don't have an account?</Text>
-              <Pressable onPress={() => router.push('/SignUp')} className="mt-2">
+              <Pressable onPress={() => router.push('/signUp')} className="mt-2">
                 <Text className="text-blue-600 font-semibold">Create Account</Text>
               </Pressable>
             </View>

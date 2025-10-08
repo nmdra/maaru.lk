@@ -13,7 +13,7 @@ export default function SplashScreen() {
   useEffect(() => {
     let userToRoute = null;
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      userToRoute = user ? "/Home" : "/login";
+      userToRoute = user ? "/login" : "/Home";
     });
 
     // Always show splash at least 1 second, then fade out
@@ -23,7 +23,7 @@ export default function SplashScreen() {
         duration: 600, // fade out duration (ms)
         useNativeDriver: true,
       }).start(() => {
-        router.replace(userToRoute || "/Login");
+        router.replace(userToRoute || "/login");
       });
     }, 1000);
 
