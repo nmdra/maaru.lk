@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import {
   Alert,
   Image,
+  Platform,
   ScrollView,
   Text,
   TextInput,
@@ -12,31 +13,47 @@ import {
   View,
 } from 'react-native';
 import BottomNavigation from '../../../components/BottomNavigation';
+import { useAuth } from '../../../context/AuthContext';
 import { db } from '../../../services/firebaseConfig';
 import formatPrice from '../../../utils/formatPrice';
 import { useAppI18n } from '../../../utils/i18n';
+
+import { useStripe } from '../../../utils/stripe';
+
+const STRIPE_API_BASE = 'https://maaru-stripe-api.vercel.app';
 
 export default function PaymentScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const { t, common } = useAppI18n();
+  const { user, loading: authLoading } = useAuth();
+  
+  // Get Stripe hooks (will return null on web)
+  const stripeHooks = useStripe();
   
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('card');
+  const [processingPayment, setProcessingPayment] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(
+    Platform.OS === 'web' ? 'paypal' : 'stripe'
+  );
   const [quantity, setQuantity] = useState(1);
-  const [attemptCount, setAttemptCount] = useState(0);
   const [paymentDetails, setPaymentDetails] = useState({
-    cardNumber: '',
-    expiryDate: '',
-    cvv: '',
+    email: '',
     cardholderName: '',
     billingAddress: '',
     phoneNumber: '',
   });
 
   const paymentMethods = [
-    { id: 'card', name: t('payment.paymentMethods.card'), icon: 'card-outline' },
+    { 
+      id: 'stripe', 
+      name: Platform.OS === 'web' 
+        ? 'Stripe (Mobile Only)' 
+        : 'Stripe (Card/Apple Pay/Google Pay)', 
+      icon: 'card-outline',
+      disabled: Platform.OS === 'web'
+    },
     { id: 'paypal', name: t('payment.paymentMethods.paypal'), icon: 'logo-paypal' },
     { id: 'bank', name: t('payment.paymentMethods.bank'), icon: 'business-outline' },
     { id: 'cash', name: t('payment.paymentMethods.cash'), icon: 'cash-outline' },
@@ -78,37 +95,38 @@ export default function PaymentScreen() {
     }
   };
 
-  const validateCardDetails = () => {
-    const validCard = '4444444444444444';
-    const validExpiry = '25/25';
-    const validCVV = '444';
-    
-    // Remove spaces from card number for comparison
-    const cardNumberClean = paymentDetails.cardNumber.replace(/\s/g, '');
-    
-    return (
-      cardNumberClean === validCard &&
-      paymentDetails.expiryDate === validExpiry &&
-      paymentDetails.cvv === validCVV
-    );
-  };
-
   const handlePayment = () => {
+    // Check if user is logged in
+    if (!user) {
+      Alert.alert(
+        'Login Required',
+        'You must be logged in to make a purchase. Please login to continue.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Login',
+            onPress: () => router.push('/(auth)/login')
+          }
+        ]
+      );
+      return;
+    }
+
     if (!selectedPaymentMethod) {
       Alert.alert(common('error'), t('payment.validation.selectPaymentMethod'));
       return;
     }
 
-    if (selectedPaymentMethod === 'card') {
-      if (!paymentDetails.cardNumber || !paymentDetails.expiryDate || !paymentDetails.cvv || !paymentDetails.cardholderName) {
-        Alert.alert(common('error'), t('payment.validation.fillCardDetails'));
-        return;
-      }
-    }
-
     if (!paymentDetails.phoneNumber || !paymentDetails.billingAddress) {
       Alert.alert(common('error'), t('payment.validation.fillBillingInfo'));
       return;
+    }
+
+    if (selectedPaymentMethod === 'stripe') {
+      if (!paymentDetails.cardholderName) {
+        Alert.alert(common('error'), 'Please enter cardholder name');
+        return;
+      }
     }
 
     Alert.alert(
@@ -124,38 +142,82 @@ export default function PaymentScreen() {
     );
   };
 
-  const processPayment = () => {
-    // For non-card payments, always succeed
-    if (selectedPaymentMethod !== 'card') {
-      navigateToSuccess();
-      return;
-    }
+  const processPayment = async () => {
+    if (processingPayment) return;
+    setProcessingPayment(true);
 
-    // Validate card details
-    const isValidCard = validateCardDetails();
-    
-    if (isValidCard) {
-      navigateToSuccess();
-    } else {
-      const newAttemptCount = attemptCount + 1;
-      setAttemptCount(newAttemptCount);
-      
-      if (newAttemptCount >= 2) {
-        // After 2 failed attempts, go to failure page
-        navigateToFailure();
+    try {
+      if (selectedPaymentMethod === 'stripe') {
+        // Check if we're on web or if Stripe is not available
+        if (Platform.OS === 'web' || !stripeHooks) {
+          Alert.alert(
+            'Payment Not Available',
+            'Stripe payments are only available on mobile apps. Please use the mobile version or choose another payment method.',
+            [{ text: 'OK' }]
+          );
+          return;
+        }
+
+        const { initPaymentSheet, presentPaymentSheet } = stripeHooks;
+
+        // 1) Amount in the smallest currency unit (USD cents for now)
+        const total = calculateTotal();
+        const amountInCents = Math.round(Number(total) * 100);
+
+        // 2) Ask your Vercel backend to create a PaymentIntent
+        const r = await fetch(`${STRIPE_API_BASE}/api/create-payment-intent`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: amountInCents,
+            currency: 'usd',
+            description: `Order • ${product?.name} × ${quantity}`,
+            receipt_email: paymentDetails?.email,
+            metadata: {
+              order_id: `${product?.id}-${Date.now()}`,
+              productId: product?.id,
+              productName: product?.name
+            }
+          })
+        });
+
+        const { clientSecret, error } = await r.json();
+        if (error || !clientSecret) throw new Error(error || 'No client secret');
+
+        // 3) Initialize PaymentSheet
+        const { error: initErr } = await initPaymentSheet({
+          paymentIntentClientSecret: clientSecret,
+          merchantDisplayName: 'maaru.lk',
+          defaultBillingDetails: { name: paymentDetails?.cardholderName || 'Customer' }
+        });
+        if (initErr) throw new Error(initErr.message);
+
+        // 4) Present PaymentSheet
+        const { error: payErr } = await presentPaymentSheet();
+        if (payErr) {
+          Alert.alert('Payment failed', payErr.message);
+          return;
+        }
+
+        // 5) Success: navigate to your success screen
+        navigateToSuccess();
       } else {
-        Alert.alert(
-          t('paymentFailure.title'),
-          `${t('payment.validation.invalidCard')}. You have ${2 - newAttemptCount} ${t('payment.validation.attemptsRemaining')}.\n\n${t('paymentFailure.sampleCard.description')}\n${t('payment.cardNumber')}: 4444 4444 4444 4444\n${t('payment.expiryDate')}: 25/25\nCVV: 444`,
-          [{ text: t('paymentFailure.actions.tryAgain') }]
-        );
+        // For non-Stripe payments, simulate success
+        navigateToSuccess();
       }
+    } catch (e) {
+      console.error(e);
+      Alert.alert('Payment Error', e.message);
+      navigateToFailure('stripe_error', e.message);
+    } finally {
+      setProcessingPayment(false);
     }
   };
 
   const navigateToSuccess = () => {
     const orderData = {
       productId: product.id,
+      productOwnerId: product.ownerId,
       productName: product.name,
       quantity,
       price: product.price,
@@ -163,6 +225,10 @@ export default function PaymentScreen() {
       total: calculateTotal(),
       paymentMethod: selectedPaymentMethod,
       orderDate: new Date().toISOString(),
+      buyerId: user.uid,
+      buyerEmail: user.email,
+      shippingAddress: paymentDetails.billingAddress,
+      phoneNumber: paymentDetails.phoneNumber,
     };
     
     router.push({
@@ -171,11 +237,14 @@ export default function PaymentScreen() {
     });
   };
 
-  const navigateToFailure = () => {
-    router.push('/product/payment/failure');
+  const navigateToFailure = (errorType, errorMessage) => {
+    router.push({
+      pathname: '/product/payment/failure',
+      params: { errorType, errorMessage }
+    });
   };
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <View className="flex-1 justify-center items-center bg-white">
         <Text className="text-gray-500">{common('loading')}</Text>
@@ -256,22 +325,37 @@ export default function PaymentScreen() {
           {paymentMethods.map((method) => (
             <TouchableOpacity
               key={method.id}
-              onPress={() => setSelectedPaymentMethod(method.id)}
+              onPress={() => !method.disabled && setSelectedPaymentMethod(method.id)}
+              disabled={method.disabled}
               className={`flex-row items-center p-3 rounded-lg mb-2 ${
-                selectedPaymentMethod === method.id ? 'bg-blue-50 border-2 border-blue-500' : 'bg-gray-50 border border-gray-200'
+                method.disabled 
+                  ? 'bg-gray-100 border border-gray-300 opacity-50'
+                  : selectedPaymentMethod === method.id 
+                    ? 'bg-blue-50 border-2 border-blue-500' 
+                    : 'bg-gray-50 border border-gray-200'
               }`}
             >
               <Ionicons 
                 name={method.icon} 
                 size={24} 
-                color={selectedPaymentMethod === method.id ? '#2563eb' : '#666'} 
+                color={
+                  method.disabled 
+                    ? '#ccc' 
+                    : selectedPaymentMethod === method.id 
+                      ? '#2563eb' 
+                      : '#666'
+                } 
               />
               <Text className={`ml-3 font-medium ${
-                selectedPaymentMethod === method.id ? 'text-blue-600' : 'text-gray-700'
+                method.disabled
+                  ? 'text-gray-400'
+                  : selectedPaymentMethod === method.id 
+                    ? 'text-blue-600' 
+                    : 'text-gray-700'
               }`}>
                 {method.name}
               </Text>
-              {selectedPaymentMethod === method.id && (
+              {selectedPaymentMethod === method.id && !method.disabled && (
                 <Ionicons name="checkmark-circle" size={20} color="#2563eb" className="ml-auto" />
               )}
             </TouchableOpacity>
@@ -279,9 +363,10 @@ export default function PaymentScreen() {
         </View>
 
         {/* Payment Details Form */}
-        {selectedPaymentMethod === 'card' && (
+        {selectedPaymentMethod === 'stripe' && (
           <View className="bg-white mx-4 mt-4 p-4 rounded-lg shadow-sm">
-            <Text className="text-lg font-bold mb-3">{t('payment.cardDetails')}</Text>
+            <Text className="text-lg font-bold mb-3">Payment Details</Text>
+            <Text className="text-sm text-gray-600 mb-3">Stripe will securely collect your payment information in the next step</Text>
             
             <View className="space-y-3">
               <View>
@@ -295,44 +380,15 @@ export default function PaymentScreen() {
               </View>
 
               <View>
-                <Text className="text-sm font-medium text-gray-700 mb-1">{t('payment.cardNumber')}</Text>
+                <Text className="text-sm font-medium text-gray-700 mb-1">Email (optional - for receipt)</Text>
                 <TextInput
                   className="border border-gray-300 rounded-lg px-3 py-2 bg-white"
-                  placeholder={t('payment.placeholders.cardNumber')}
-                  value={paymentDetails.cardNumber}
-                  onChangeText={(text) => {
-                    // Format card number with spaces
-                    const formatted = text.replace(/\s/g, '').replace(/(.{4})/g, '$1 ').trim();
-                    setPaymentDetails({...paymentDetails, cardNumber: formatted});
-                  }}
-                  keyboardType="numeric"
-                  maxLength={19}
+                  placeholder="your-email@example.com"
+                  value={paymentDetails.email}
+                  onChangeText={(text) => setPaymentDetails({...paymentDetails, email: text})}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
                 />
-              </View>
-
-              <View className="flex-row space-x-3">
-                <View className="flex-1">
-                  <Text className="text-sm font-medium text-gray-700 mb-1">{t('payment.expiryDate')}</Text>
-                  <TextInput
-                    className="border border-gray-300 rounded-lg px-3 py-2 bg-white"
-                    placeholder={t('payment.placeholders.expiryDate')}
-                    value={paymentDetails.expiryDate}
-                    onChangeText={(text) => setPaymentDetails({...paymentDetails, expiryDate: text})}
-                    maxLength={5}
-                  />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-sm font-medium text-gray-700 mb-1">{t('payment.cvv')}</Text>
-                  <TextInput
-                    className="border border-gray-300 rounded-lg px-3 py-2 bg-white"
-                    placeholder={t('payment.placeholders.cvv')}
-                    value={paymentDetails.cvv}
-                    onChangeText={(text) => setPaymentDetails({...paymentDetails, cvv: text})}
-                    keyboardType="numeric"
-                    maxLength={4}
-                    secureTextEntry
-                  />
-                </View>
               </View>
             </View>
           </View>
@@ -401,11 +457,22 @@ export default function PaymentScreen() {
       <View className="bg-white px-4 py-3 border-t border-gray-200">
         <TouchableOpacity
           onPress={handlePayment}
-          className="bg-blue-600 py-4 rounded-lg items-center justify-center flex-row"
+          disabled={processingPayment}
+          className={`py-4 rounded-lg items-center justify-center flex-row ${
+            processingPayment ? 'bg-gray-400' : 'bg-blue-600'
+          }`}
         >
-          <Ionicons name="card-outline" size={20} color="white" className="mr-2" />
+          <Ionicons 
+            name={processingPayment ? "hourglass-outline" : "card-outline"} 
+            size={20} 
+            color="white" 
+            className="mr-2" 
+          />
           <Text className="text-white font-bold text-lg">
-            {t('payment.payButton')} {formatPrice(calculateTotal(), product.currency)}
+            {processingPayment 
+              ? 'Processing...' 
+              : `${t('payment.payButton')} ${formatPrice(calculateTotal(), product.currency)}`
+            }
           </Text>
         </TouchableOpacity>
       </View>
