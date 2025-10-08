@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Alert,
   ScrollView,
@@ -14,8 +14,8 @@ import { updateProductAvailability } from '../../../services/itemService';
 import { createOrder } from '../../../services/orderService';
 import { createTransaction } from '../../../services/transactionService';
 import { getUserById } from '../../../services/userService';
-import formatPrice from '../../../utils/formatPrice';
 import { sendOrderConfirmationEmail, sendSellerNotificationEmail } from '../../../utils/emailService';
+import formatPrice from '../../../utils/formatPrice';
 import { useAppI18n } from '../../../utils/i18n';
 
 export default function PaymentSuccessScreen() {

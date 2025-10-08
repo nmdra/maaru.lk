@@ -18,11 +18,7 @@ import { db } from '../../../services/firebaseConfig';
 import formatPrice from '../../../utils/formatPrice';
 import { useAppI18n } from '../../../utils/i18n';
 
-// Conditionally import useStripe only on native platforms
-let useStripe;
-if (Platform.OS !== 'web') {
-  useStripe = require('@stripe/stripe-react-native').useStripe;
-}
+import { useStripe } from '../../../utils/stripe';
 
 const STRIPE_API_BASE = 'https://maaru-stripe-api.vercel.app';
 
@@ -32,11 +28,8 @@ export default function PaymentScreen() {
   const { t, common } = useAppI18n();
   const { user, loading: authLoading } = useAuth();
   
-  // Conditionally use Stripe hooks only on native platforms
-  let stripeHooks = null;
-  if (Platform.OS !== 'web' && useStripe) {
-    stripeHooks = useStripe();
-  }
+  // Get Stripe hooks (will return null on web)
+  const stripeHooks = useStripe();
   
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
