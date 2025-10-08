@@ -1,9 +1,11 @@
+// app/Login.jsx
 import { useRouter } from 'expo-router';
 import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { auth } from '../../services/firebaseConfig';
+import { ensureMinimalUserFields } from '../../services/userService';
 import { useAppI18n } from '../../utils/i18n';
 
 export default function Login() {
@@ -23,54 +25,58 @@ export default function Login() {
     setIsSubmitting(true);
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      console.log('User signed in:', userCredential.user.uid);
+      const user = userCredential.user;
+
+      // 👇 ensure minimal fields used by chat (safe merge, won’t break your schema)
+      await ensureMinimalUserFields(user.uid, {
+        displayName: user.displayName || undefined,
+        avatarUrl: user.photoURL || undefined,
+        // role left default ('buyer') unless you want to pass one here
+      });
+
+      console.log('User signed in:', user.uid);
       Alert.alert('Success', 'Logged in');
       router.replace('/Home');
-    } catch (error) {
-      console.error('Login error:', error);
-      Alert.alert('Login failed', error?.message || 'An error occurred');
+    } catch (err) {
+      console.error('Login error:', err);
+      Alert.alert('Login failed', err?.message || 'An error occurred');
     } finally {
       setIsSubmitting(false);
     }
   };
-  
-  // Google login 
+
+  // Google login (note: signInWithPopup works on web; use Expo AuthSession for native)
   const handleGoogleLogin = async () => {
     setIsGoogleSubmitting(true);
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      
-      // This gives you a Google Access Token
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      const token = credential.accessToken;
-      
-      // The signed-in user info
       const user = result.user;
-      
+
+      // optional: const credential = GoogleAuthProvider.credentialFromResult(result);
+      // optional: const token = credential?.accessToken;
+
+      // 👇 ensure minimal fields for chat
+      await ensureMinimalUserFields(user.uid, {
+        displayName: user.displayName || undefined,
+        avatarUrl: user.photoURL || undefined,
+      });
+
       console.log('Google sign-in successful:', user.uid);
       Alert.alert('Success', 'Signed in with Google');
       router.replace('/Home');
-      
-    } catch (error) {
-      console.error('Google sign-in error:', error);
-      
-      // Handle Errors here
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      const email = error.customData?.email;
-      const credential = GoogleAuthProvider.credentialFromError(error);
-      
+    } catch (err) {
+      console.error('Google sign-in error:', err);
+      const errorMessage = err?.message;
       Alert.alert('Google Sign-In Failed', errorMessage || 'An error occurred during Google authentication');
     } finally {
-            setIsGoogleSubmitting(false);
+      setIsGoogleSubmitting(false);
     }
-};
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <ScrollView className="flex-1">
-        
         {/* Header Section */}
         <View className="bg-blue-600 px-6 pt-8 pb-20">
           <View className="items-center">
@@ -81,7 +87,6 @@ export default function Login() {
 
         {/* Login Card */}
         <View className="mx-6 -mt-12 bg-white rounded-2xl shadow-lg p-6">
-          
           {/* Logo/Icon Section */}
           <View className="items-center -mt-16 mb-8">
             <View className="w-32 h-32 rounded-full bg-white p-1 shadow-lg">
@@ -129,7 +134,7 @@ export default function Login() {
               )}
             </Pressable>
 
-            {/* devide */}
+            {/* divide */}
             <View className="flex-row items-center my-6">
               <View className="flex-1 h-px bg-gray-200" />
               <Text className="mx-4 text-gray-500 text-sm">or</Text>
@@ -160,7 +165,7 @@ export default function Login() {
               <Text className="text-gray-500">Forgot Password?</Text>
             </Pressable>
 
-            {/* Create account*/}
+            {/* Create account */}
             <View className="items-center mt-3">
               <Text className="text-sm text-gray-500">Don't have an account?</Text>
               <Pressable onPress={() => router.push('/SignUp')} className="mt-2">
@@ -169,12 +174,13 @@ export default function Login() {
             </View>
           </View>
         </View>
-       {/* Continue as Guest (small link) */}
-       <View className="mx-6 mt-6 mb-8 items-center">
-         <Pressable onPress={() => router.push('/Home')} >
-           <Text className="text-gray-500">Continue as Guest</Text>
-         </Pressable>
-       </View>
+
+        {/* Continue as Guest */}
+        <View className="mx-6 mt-6 mb-8 items-center">
+          <Pressable onPress={() => router.push('/Home')}>
+            <Text className="text-gray-500">Continue as Guest</Text>
+          </Pressable>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

@@ -1,9 +1,12 @@
-import { db } from './firebaseConfig';
+// services/chatService.js
 import {
   addDoc,
+  arrayUnion,
   collection,
   doc,
   getDoc,
+  getDocs,
+  limit,
   onSnapshot,
   orderBy,
   query,
@@ -11,278 +14,228 @@ import {
   setDoc,
   updateDoc,
   where,
-  limit,
+  writeBatch,
 } from 'firebase/firestore';
+import { db } from './firebaseConfig';
 
-export const roomIdFor = (a, b) => [a, b].sort().join('_');
+/**
+ * Stable, canonical conversation ID:
+ * exactly ONE thread per (buyerUid × sellerUid × productId)
+ * Keep buyer first to simplify analytics (not sorted alphabetically).
+ */
 
-// Toggle mock chats (true = in-memory mock with auto-replies)
-const USE_MOCK_CHATS = true;
-
-// ---------------- Mock store + helpers ----------------
-const mockStore = { byUser: new Map() }; // uid -> { convs, messagesByRoom, convSubs, msgSubsByRoom, initialized }
-
-function ensureUserStore(uid) {
-  if (mockStore.byUser.has(uid)) return mockStore.byUser.get(uid);
-  const store = {
-    convs: [],
-    messagesByRoom: new Map(), // roomId -> [{ id, text, fromUid, createdAt, status }]
-    convSubs: new Set(),       // Set<cb(convs[])>
-    msgSubsByRoom: new Map(),  // roomId -> Set<cb(msgs[])>
-    initialized: false,
-  };
-  mockStore.byUser.set(uid, store);
-  return store;
-}
-
-function seedMockDataFor(uid) {
-  const store = ensureUserStore(uid);
-  if (store.initialized) return;
-
-  const sellers = [
-    { uid: 'seller_1', name: 'Alice' },
-    { uid: 'seller_2', name: 'Bob' },
-    { uid: 'seller_3', name: 'Carol' },
-  ];
-  const items = ['iPhone 15 Pro Max', 'Nike Air Max 270', 'MacBook Air M2'];
-  const now = Date.now();
-
-  sellers.forEach((seller, idx) => {
-    const rid = roomIdFor(uid, seller.uid);
-    const itemName = items[idx % items.length];
-    const msgsAsc = [
-      { id: `${rid}-m1`, text: 'Hi', fromUid: uid, createdAt: new Date(now - 5 * 60 * 1000), status: 'sent' },
-      { id: `${rid}-m2`, text: 'Hi, how can I help you?', fromUid: seller.uid, createdAt: new Date(now - 4 * 60 * 1000), status: 'sent' },
-      { id: `${rid}-m3`, text: `I need info about ${itemName}`, fromUid: uid, createdAt: new Date(now - 3 * 60 * 1000), status: 'sent' },
-    ];
-    const msgsDesc = msgsAsc.sort((a, b) => b.createdAt - a.createdAt);
-    store.messagesByRoom.set(rid, msgsDesc);
-    store.convs.push({
-      id: rid,
-      participants: [uid, seller.uid],
-      productId: null,
-      createdAt: new Date(now - 10 * 60 * 1000),
-      updatedAt: msgsDesc[0].createdAt,
-      lastMessage: { text: msgsDesc[0].text, fromUid: msgsDesc[0].fromUid, at: msgsDesc[0].createdAt },
-      itemName,
-    });
-  });
-
-  store.convs.sort((a, b) => b.updatedAt - a.updatedAt);
-  store.initialized = true;
-}
-
-function notifyConvSubs(uid) {
-  const store = ensureUserStore(uid);
-  const payload = store.convs.slice().sort((a, b) => b.updatedAt - a.updatedAt);
-  store.convSubs.forEach((cb) => cb(payload));
-}
-
-function notifyMsgSubs(roomId) {
-  for (const [, store] of mockStore.byUser.entries()) {
-    const subs = store.msgSubsByRoom.get(roomId);
-    if (!subs?.size) continue;
-    const rows = store.messagesByRoom.get(roomId) || [];
-    subs.forEach((cb) => cb(rows.slice()));
+export function roomIdFor(buyerUid, sellerUid, productId) {
+  if (!buyerUid || !sellerUid || !productId) {
+    throw new Error('roomIdFor: missing buyerUid/sellerUid/productId');
   }
+  return `${buyerUid}_${sellerUid}_${productId}`;
 }
 
-function findConversationInAnyStore(roomId) {
-  for (const [, store] of mockStore.byUser.entries()) {
-    const conv = store.convs.find((c) => c.id === roomId);
-    if (conv) return { conv, store };
-  }
-  return { conv: null, store: null };
-}
-
-function autoReplyForText(text, itemName) {
-  const lower = (text || '').toLowerCase();
-  if (/\b(hi|hello|hey)\b/.test(lower)) return 'Hi, how can I help you?';
-  if (/\b(price|cost|how much)\b/.test(lower))
-    return `The price is in the listing. Any specific questions about ${itemName || 'the item'}?`;
-  if (/\b(info|information|details|spec)\b/.test(lower))
-    return `Sure, what information about ${itemName || 'the item'} do you need?`;
-  return `Got it. Happy to help with ${itemName || 'your request'}.`;
-}
-
-function scheduleSellerAutoReply(roomId, buyerUid, incomingText) {
-  const { conv } = findConversationInAnyStore(roomId);
-  if (!conv) return;
-
-  const [a, b] = conv.participants || [];
-  const sellerUid =
-    a?.startsWith('seller_') ? a : b?.startsWith('seller_') ? b : buyerUid === a ? b : a;
-
-  const replyText = autoReplyForText(incomingText, conv.itemName);
-  const delay = 600 + Math.floor(Math.random() * 800);
-
-  setTimeout(() => {
-    const msg = {
-      id: `${roomId}-auto-${Math.random().toString(36).slice(2)}`,
-      text: replyText,
-      fromUid: sellerUid,
-      createdAt: new Date(),
-      status: 'sent',
-    };
-
-    for (const [uid, store] of mockStore.byUser.entries()) {
-      const list = store.messagesByRoom.get(roomId);
-      if (!list) continue;
-      store.messagesByRoom.set(roomId, [msg, ...list]);
-
-      const c = store.convs.find((x) => x.id === roomId);
-      if (c) {
-        c.updatedAt = msg.createdAt;
-        c.lastMessage = { text: msg.text, fromUid: msg.fromUid, at: msg.createdAt };
-      }
-      notifyConvSubs(uid);
-    }
-    notifyMsgSubs(roomId);
-  }, delay);
-}
-
-// ---------------- Public API ----------------
-export async function ensureConversation(currentUid, otherUid, productId = null) {
-  if (USE_MOCK_CHATS) {
-    seedMockDataFor(currentUid);
-    const store = ensureUserStore(currentUid);
-    const id = roomIdFor(currentUid, otherUid);
-
-    let found = store.convs.find((c) => c.id === id);
-    if (!found) {
-      found = {
-        id,
-        participants: [currentUid, otherUid],
-        productId,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        lastMessage: null,
-        itemName: null,
-      };
-      store.convs.push(found);
-      store.messagesByRoom.set(id, []); // start empty for brand-new chat
-      notifyConvSubs(currentUid);
-    }
-    return { id, ref: null };
+/**
+ * Ensure the conversation document exists with the core fields.
+ * - Creates if missing, idempotent if exists.
+ * - productCard is a small object used for list previews: { title, price, thumbnailUrl }
+ *
+ * Returns the canonical conversationId (string).
+ */
+export async function ensureConversation({
+  buyerUid,
+  sellerUid,
+  productId,
+  productCard,
+}) {
+  if (!buyerUid || !sellerUid || !productId) {
+    throw new Error('ensureConversation: missing buyerUid/sellerUid/productId');
   }
 
-  const id = roomIdFor(currentUid, otherUid);
-  const ref = doc(db, 'conversations', id);
+  const conversationId = roomIdFor(buyerUid, sellerUid, productId);
+  const ref = doc(db, 'conversations', conversationId);
   const snap = await getDoc(ref);
+
   if (!snap.exists()) {
+    const now = serverTimestamp();
     await setDoc(ref, {
-      id,
-      participants: [currentUid, otherUid],
+      // identity
+      participants: [buyerUid, sellerUid],
       productId,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-      lastMessage: null,
+      productCard: productCard || null,
+
+      // order & summary
+      lastMessage: null,                // { text, type: 'text'|'image'|'system', at }
+      lastAt: now,                      // used for inbox sort
+      createdAt: now,
+
+      // notification state per user
+      unread: { [buyerUid]: 0, [sellerUid]: 0 },
+      muted: { [buyerUid]: false, [sellerUid]: false },
+
+      // lifecycle
+      orderId: null,
+      status: 'active', // 'active' | 'blocked' | 'archived'
     });
   }
-  return { id, ref };
+
+  return conversationId;
 }
 
-export function listenConversations(uid, cb) {
-  if (USE_MOCK_CHATS) {
-    seedMockDataFor(uid);
-    const store = ensureUserStore(uid);
-    cb(store.convs.slice().sort((a, b) => b.updatedAt - a.updatedAt));
-    store.convSubs.add(cb);
-    return () => store.convSubs.delete(cb);
-  }
+/**
+ * Real-time stream of conversations for the current user, ordered by last activity (desc).
+ * onData receives an array of { id, ...conversationDoc }.
+ */
+export function listenConversations(currentUid, onData, onError) {
+  if (!currentUid) throw new Error('listenConversations: missing currentUid');
 
   const q = query(
     collection(db, 'conversations'),
-    where('participants', 'array-contains', uid),
-    orderBy('updatedAt', 'desc')
+    where('participants', 'array-contains', currentUid),
+    orderBy('lastAt', 'desc'),
   );
-  return onSnapshot(q, (snap) => {
-    cb(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-  });
+
+  return onSnapshot(
+    q,
+    (snap) => {
+      const rows = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      onData(rows);
+    },
+    (err) => onError && onError(err),
+  );
 }
 
-export function listenMessages(roomId, cb, count = 50) {
-  if (USE_MOCK_CHATS) {
-    // attach to any store that has the room
-    for (const [, store] of mockStore.byUser.entries()) {
-      const msgs = store.messagesByRoom.get(roomId) || [];
-      cb(msgs.slice(0, count));
-      let set = store.msgSubsByRoom.get(roomId);
-      if (!set) {
-        set = new Set();
-        store.msgSubsByRoom.set(roomId, set);
-      }
-      set.add(cb);
-      return () => {
-        const s = store.msgSubsByRoom.get(roomId);
-        s?.delete(cb);
-      };
-    }
-    // fallback empty subscription if no store yet owns this room
-    const fallback = ensureUserStore('mock_fallback');
-    fallback.messagesByRoom.set(roomId, []);
-    let set = fallback.msgSubsByRoom.get(roomId);
-    if (!set) {
-      set = new Set();
-      fallback.msgSubsByRoom.set(roomId, set);
-    }
-    set.add(cb);
-    cb([]);
-    return () => {
-      const s = fallback.msgSubsByRoom.get(roomId);
-      s?.delete(cb);
-    };
-  }
+/**
+ * Real-time stream of messages in a conversation, oldest → newest.
+ * onData receives an array of { id, ...messageDoc }.
+ * Use opts.pageSize for initial page (default 30).
+ */
+export function listenMessages(conversationId, onData, onError, opts = { pageSize: 30 }) {
+  if (!conversationId) throw new Error('listenMessages: missing conversationId');
 
   const q = query(
-    collection(db, 'conversations', roomId, 'messages'),
-    orderBy('createdAt', 'desc'),
-    limit(count)
+    collection(db, 'conversations', conversationId, 'messages'),
+    orderBy('createdAt', 'asc'),
+    limit(opts.pageSize || 30),
   );
-  return onSnapshot(q, (snap) => cb(snap.docs.map((d) => ({ id: d.id, ...d.data() }))));
+
+  return onSnapshot(
+    q,
+    (snap) => {
+      const rows = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      onData(rows);
+    },
+    (err) => onError && onError(err),
+  );
 }
 
-export async function sendMessage(roomId, fromUid, text) {
-  if (USE_MOCK_CHATS) {
-    const msg = {
-      id: `${roomId}-m-${Math.random().toString(36).slice(2)}`,
-      text,
-      fromUid,
-      createdAt: new Date(),
-      status: 'sent',
-    };
-
-    // push to all stores that have this room
-    for (const [uid, store] of mockStore.byUser.entries()) {
-      const list = store.messagesByRoom.get(roomId);
-      if (!list) continue;
-
-      store.messagesByRoom.set(roomId, [msg, ...list]);
-
-      const conv = store.convs.find((c) => c.id === roomId);
-      if (conv) {
-        conv.updatedAt = msg.createdAt;
-        conv.lastMessage = { text: msg.text, fromUid: msg.fromUid, at: msg.createdAt };
-      }
-      notifyConvSubs(uid);
-    }
-
-    notifyMsgSubs(roomId);
-
-    // schedule seller auto-reply
-    scheduleSellerAutoReply(roomId, fromUid, text);
-    return;
+/**
+ * Send a message (text or image).
+ * - Writes the message to /conversations/{id}/messages
+ * - Updates parent conversation: lastMessage, lastAt
+ * - Increments unread for the *other* participant
+ *
+ * kind: 'text' | 'image' | 'system'
+ * If kind==='image', provide mediaUrl (Step 5 will handle upload).
+ */
+export async function sendMessage({ conversationId, senderId, kind, text, mediaUrl }) {
+  if (!conversationId || !senderId || !kind) {
+    throw new Error('sendMessage: missing conversationId/senderId/kind');
   }
 
-  const msgs = collection(db, 'conversations', roomId, 'messages');
-  await addDoc(msgs, {
-    text,
-    fromUid,
+  const convRef = doc(db, 'conversations', conversationId);
+  const convSnap = await getDoc(convRef);
+  if (!convSnap.exists()) {
+    throw new Error('sendMessage: conversation does not exist');
+  }
+
+  const conv = convSnap.data();
+  const [p0, p1] = conv.participants || [];
+  const otherUid = senderId === p0 ? p1 : p0;
+
+  const message = {
+    senderId,
+    type: kind,                        // 'text' | 'image' | 'system'
+    text: kind === 'text' ? (text || '').trim() : null,
+    mediaUrl: kind === 'image' ? (mediaUrl || null) : null,
     createdAt: serverTimestamp(),
-    status: 'sent',
+    deliveredTo: [],                   // Step 4: delivery receipts
+    readBy: [],                        // Step 4: read receipts
+  };
+
+  // 1) Write message
+  await addDoc(collection(db, 'conversations', conversationId, 'messages'), message);
+
+  // 2) Update conversation meta + unread for the other user
+  const previewText = kind === 'image' ? '📷 Photo' : (message.text || '');
+  const nextUnread = (conv.unread?.[otherUid] ?? 0) + 1;
+
+  await updateDoc(convRef, {
+    lastMessage: { text: previewText, type: kind, at: serverTimestamp() },
+    lastAt: serverTimestamp(),
+    [`unread.${otherUid}`]: nextUnread,
   });
-  await updateDoc(doc(db, 'conversations', roomId), {
-    updatedAt: serverTimestamp(),
-    lastMessage: { text, fromUid, at: serverTimestamp() },
+}
+
+/**
+ * Mark a set of messages as DELIVERED for a viewer (adds uid to deliveredTo[]).
+ * Use arrayUnion for race-safety.
+ */
+export async function markMessagesDelivered({ conversationId, uid, messageIds }) {
+  if (!conversationId || !uid || !Array.isArray(messageIds) || messageIds.length === 0) return;
+
+  const batch = writeBatch(db);
+  messageIds.forEach((mid) => {
+    const mref = doc(db, 'conversations', conversationId, 'messages', mid);
+    batch.update(mref, { deliveredTo: arrayUnion(uid) });
   });
+  await batch.commit();
+}
+
+/**
+ * Mark conversation READ for a user:
+ * - sets unread[currentUid] = 0
+ * - ALSO adds uid to readBy[] (and deliveredTo[]) for a recent slice of the most-recent messages
+ *   that were sent by the other participant.
+ */
+export async function markThreadRead({ conversationId, uid, recentCount = 40 }) {
+  if (!conversationId || !uid) {
+    throw new Error('markThreadRead: missing conversationId/uid');
+  }
+
+  const convRef = doc(db, 'conversations', conversationId);
+  const convSnap = await getDoc(convRef);
+  if (!convSnap.exists()) return;
+
+  const conv = convSnap.data();
+  const otherUid = (conv.participants || []).find((p) => p !== uid);
+
+  // 1) Clear unread for current user
+  await updateDoc(convRef, { [`unread.${uid}`]: 0 });
+
+  // 2) Mark a window of recent messages as read (and delivered) when viewing the thread
+  const q = query(
+    collection(db, 'conversations', conversationId, 'messages'),
+    orderBy('createdAt', 'desc'),
+    limit(recentCount)
+  );
+  const snap = await getDocs(q);
+
+  const toRead = [];
+  snap.forEach((d) => {
+    const m = d.data();
+    if (m.senderId === otherUid) {
+      // If we haven't read it yet, mark read & delivered
+      const alreadyRead = Array.isArray(m.readBy) && m.readBy.includes(uid);
+      if (!alreadyRead) toRead.push(d.id);
+    }
+  });
+
+  if (toRead.length) {
+    const batch = writeBatch(db);
+    toRead.forEach((mid) => {
+      const mref = doc(db, 'conversations', conversationId, 'messages', mid);
+      batch.update(mref, {
+        readBy: arrayUnion(uid),
+        deliveredTo: arrayUnion(uid),
+      });
+    });
+    await batch.commit();
+  }
 }

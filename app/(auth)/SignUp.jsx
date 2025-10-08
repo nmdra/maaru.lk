@@ -1,9 +1,10 @@
+// app/SignUp.jsx
 // ...existing code...
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
-import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth';
+import { createUserWithEmailAndPassword, getAuth, updateProfile } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -16,7 +17,8 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { db } from '../../services/firebaseConfig';
+import { db, storage } from '../../services/firebaseConfig';
+import { ensureMinimalUserFields } from '../../services/userService';
 
 export default function SignUp() {
   const router = useRouter();
@@ -29,69 +31,78 @@ export default function SignUp() {
   const [phone, setPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [photo, setPhoto] = useState(null);
-  const [photoURL, setPhotoURL] = useState('');
+  const [photoURL, setPhotoURL] = useState(''); // kept in case you show it later
 
-  const validateEmail = (email) => {
-  // Simple email regex
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-};
-
-const validatePhone = (phone) => {
-  // Accepts 10-15 digits, can start with +, no spaces
-  return /^(\+?\d{10,15})$/.test(phone);
-};
-
-const validateAge = (age) => {
-  const n = Number(age);
-  return Number.isInteger(n) && n >= 10 && n <= 120;
-};
-
+  const validateEmail = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+  const validatePhone = (val) => /^(\+?\d{10,15})$/.test(val);
+  const validateAge = (val) => {
+    const n = Number(val);
+    return Number.isInteger(n) && n >= 10 && n <= 120;
+  };
 
   const handleRegister = async () => {
     if (!email || !password || !firstName || !lastName || !address || !age || !phone) {
       Alert.alert('Error', 'Please fill all fields.');
       return;
     }
-      if (!validateEmail(email)) {
-    Alert.alert('Invalid Email', 'Please enter a valid email address.');
-    return;
-  }
-  if (!validatePhone(phone)) {
-    Alert.alert('Invalid Phone', 'Please enter a valid phone number (10-15 digits, numbers only).');
-    return;
-  }
-  if (!validateAge(age)) {
-    Alert.alert('Invalid Age', 'Please enter a valid age (between 10 and 120).');
-    return;
-  }
-let uploadedPhotoURL = '';
-if (photo) {
-  const response = await fetch(photo.uri);
-  const blob = await response.blob();
-  const storage = getStorage();
-  const storageRef = ref(storage, `profilePictures/${user.uid}.jpg`);
-  await uploadBytes(storageRef, blob);
-  uploadedPhotoURL = await getDownloadURL(storageRef);
-}
+    if (!validateEmail(email)) {
+      Alert.alert('Invalid Email', 'Please enter a valid email address.');
+      return;
+    }
+    if (!validatePhone(phone)) {
+      Alert.alert('Invalid Phone', 'Please enter a valid phone number (10-15 digits, numbers only).');
+      return;
+    }
+    if (!validateAge(age)) {
+      Alert.alert('Invalid Age', 'Please enter a valid age (between 10 and 120).');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
+      // 1) Create auth user first (so we have user.uid)
       const auth = getAuth();
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      const { user } = await createUserWithEmailAndPassword(auth, email, password);
 
-      console.log('Sending to Firestore, db present?', !!db);
-      await setDoc(doc(db, 'users', user.uid), {
-        firstName: firstName,
-        lastName: lastName,
-        email,
-        address,
-        born: age,
-        phone,
-        uid: user.uid,
-        createdAt: new Date().toISOString(),
-        photoURL: uploadedPhotoURL,
+      // optional: set display name in Auth profile
+      const displayName = `${firstName} ${lastName}`.trim();
+      await updateProfile(user, { displayName }).catch(() => {});
+
+      // 2) Upload photo (if chosen) now that we have uid
+      let uploadedPhotoURL = '';
+      if (photo?.uri) {
+        const response = await fetch(photo.uri);
+        const blob = await response.blob();
+        const storageRef = ref(storage, `profilePictures/${user.uid}.jpg`);
+        await uploadBytes(storageRef, blob);
+        uploadedPhotoURL = await getDownloadURL(storageRef);
+        setPhotoURL(uploadedPhotoURL);
+      }
+
+      // 3) Save your extended profile schema (merge safe)
+      await setDoc(
+        doc(db, 'users', user.uid),
+        {
+          firstName,
+          lastName,
+          email,
+          address,
+          born: age,
+          phone,
+          uid: user.uid,
+          createdAt: new Date().toISOString(),
+          photoURL: uploadedPhotoURL,
+        },
+        { merge: true }
+      );
+
+      // 4) Ensure minimal fields for chat UI (name/avatar/role) — merge, won’t conflict
+      await ensureMinimalUserFields(user.uid, {
+        displayName,
+        avatarUrl: uploadedPhotoURL || undefined,
+        role: 'buyer', // change if this sign-up is for sellers
       });
-      console.log('Document written with ID: ', user.uid);
+
       Alert.alert('Success', `User registered (id: ${user.uid})`);
 
       // Clear form
@@ -103,7 +114,6 @@ if (photo) {
       setAge('');
       setPhone('');
       setPhoto(null);
-      setPhotoURL('');
 
       router.replace('/Home');
     } catch (error) {
@@ -115,40 +125,34 @@ if (photo) {
   };
 
   const handlePickPhoto = async () => {
-  const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (!permissionResult.granted) {
-    Alert.alert("Permission required", "Camera roll permissions are required!");
-    return;
-  }
-  const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.Images,
-    allowsEditing: true,
-    aspect: [1, 1],
-    quality: 0.7,
-  });
-  if (!result.cancelled && result.assets?.length > 0) {
-    setPhoto(result.assets[0]);
-  }
-};
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      Alert.alert('Permission required', 'Camera roll permissions are required!');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
 
-// For Age: allow only digits
-const handleAgeChange = (text) => {
-  // Remove any non-digit characters
-  const filtered = text.replace(/[^0-9]/g, '');
-  setAge(filtered);
-};
+    // Expo SDK changed `cancelled` to `canceled` — handle both
+    const cancelled = result?.cancelled ?? result?.canceled;
+    if (!cancelled && result?.assets?.length > 0) {
+      setPhoto(result.assets[0]);
+    }
+  };
 
-// For Phone: allow only digits and +
-const handlePhoneChange = (text) => {
-  // Remove any character that's not a digit or +
-  const filtered = text.replace(/[^0-9+]/g, '');
-  setPhone(filtered);
-};
+  // For Age: allow only digits
+  const handleAgeChange = (text) => setAge(text.replace(/[^0-9]/g, ''));
+
+  // For Phone: allow only digits and +
+  const handlePhoneChange = (text) => setPhone(text.replace(/[^0-9+]/g, ''));
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <ScrollView className="flex-1">
-        
         {/* Header Section */}
         <View className="bg-blue-600 px-6 pt-8 pb-20">
           <View className="items-center">
@@ -159,27 +163,25 @@ const handlePhoneChange = (text) => {
 
         {/* Registration Card */}
         <View className="mx-6 -mt-12 bg-white rounded-2xl shadow-lg p-6">
-          
-<View className="items-center -mt-16 mb-8">
-  <Pressable onPress={handlePickPhoto}>
-    <View className="w-32 h-32 rounded-full bg-white p-1 shadow-lg">
-      {photo ? (
-        <Image source={{ uri: photo.uri }} className="w-full h-full rounded-full" />
-      ) : (
-        <View className="w-full h-full rounded-full bg-blue-500 items-center justify-center">
-          <Text className="text-white text-4xl font-bold">+</Text>
-        </View>
-      )}
-    </View>
-    <View className="items-center mt-2">
-      <Text className="text-blue-600">Add Photo</Text>
-    </View>
-  </Pressable>
-</View>
+          <View className="items-center -mt-16 mb-8">
+            <Pressable onPress={handlePickPhoto}>
+              <View className="w-32 h-32 rounded-full bg-white p-1 shadow-lg">
+                {photo ? (
+                  <Image source={{ uri: photo.uri }} className="w-full h-full rounded-full" />
+                ) : (
+                  <View className="w-full h-full rounded-full bg-blue-500 items-center justify-center">
+                    <Text className="text-white text-4xl font-bold">+</Text>
+                  </View>
+                )}
+              </View>
+              <View className="items-center mt-2">
+                <Text className="text-blue-600">Add Photo</Text>
+              </View>
+            </Pressable>
+          </View>
 
           {/* Form Section */}
           <View className="space-y-4">
-            
             {/* Name Fields */}
             <View className="flex-row space-x-3">
               <View className="flex-1">
