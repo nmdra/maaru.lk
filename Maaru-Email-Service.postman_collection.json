@@ -1,0 +1,123 @@
+{
+  "info": {
+    "name": "Maaru Email Service",
+    "description": "Email service endpoints for Maaru marketplace - buyer confirmations and seller notifications",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "frontendUrl", 
+      "value": "https://maaru.lk",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "health"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Send Test Email", 
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"to\": \"your-test-email@example.com\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/test-email",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "test-email"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Send Buyer Confirmation Email",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"emailType\": \"buyer_confirmation\",\n  \"to\": \"buyer@example.com\",\n  \"subject\": \"Order Confirmation - MR-12345678 | Maaru\",\n  \"templateData\": {\n    \"buyerName\": \"John Doe\",\n    \"orderNumber\": \"MR-12345678\",\n    \"productName\": \"duke 125\",\n    \"productImage\": \"data:image/jpeg;base64,/9j/4AAQdiRp6frzKvB7TTR7TTA9pogTRAgOhAGn/5J//Z\",\n    \"productCategory\": \"Others\",\n    \"productCondition\": \"good\",\n    \"quantity\": 1,\n    \"price\": 1230000,\n    \"total\": 1230000,\n    \"currency\": \"LKR\",\n    \"paymentMethod\": \"stripe\",\n    \"shippingAddress\": \"123 Main St, Colombo 07, Sri Lanka\",\n    \"phoneNumber\": \"+94771234567\",\n    \"orderDate\": \"October 8, 2025\",\n    \"estimatedDelivery\": \"October 15, 2025\",\n    \"trackingLink\": \"{{frontendUrl}}/orders/MR-12345678\",\n    \"supportEmail\": \"support@maaru.lk\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/send-email",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "send-email"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Send Seller Notification Email",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"emailType\": \"seller_notification\",\n  \"to\": \"seller@example.com\",\n  \"subject\": \"New Sale - duke 125 | Maaru\",\n  \"templateData\": {\n    \"sellerName\": \"Jane Smith\",\n    \"orderNumber\": \"MR-12345678\",\n    \"productName\": \"duke 125\",\n    \"productImage\": \"data:image/jpeg;base64,/9j/4AAQdiRp6frzKvB7TTR7TTA9pogTRAgOhAGn/5J//Z\",\n    \"productCategory\": \"Others\",\n    \"productCondition\": \"good\",\n    \"buyerName\": \"John Doe\",\n    \"buyerEmail\": \"buyer@example.com\",\n    \"buyerPhone\": \"+94771234567\",\n    \"quantity\": 1,\n    \"price\": 1230000,\n    \"total\": 1230000,\n    \"currency\": \"LKR\",\n    \"paymentMethod\": \"stripe\",\n    \"shippingAddress\": \"123 Main St, Colombo 07, Sri Lanka\",\n    \"orderDate\": \"October 8, 2025\",\n    \"orderDetailsLink\": \"{{frontendUrl}}/seller/orders/MR-12345678\",\n    \"supportEmail\": \"support@maaru.lk\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/send-email",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "send-email"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Duke 125 Sample - Buyer Email",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type", 
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"emailType\": \"buyer_confirmation\",\n  \"to\": \"lksnjw@gmail.com\",\n  \"subject\": \"Order Confirmation - MR-87654321 | Maaru\",\n  \"templateData\": {\n    \"buyerName\": \"Lakshan\",\n    \"orderNumber\": \"MR-87654321\",\n    \"productName\": \"duke 125\",\n    \"productImage\": \"data:image/jpeg;base64,/9j/4AAQdiRp6frzKvB7TTR7TTA9pogTRAgOhAGn/5J//Z\",\n    \"productCategory\": \"Others\",\n    \"productCondition\": \"good\",\n    \"quantity\": 1,\n    \"price\": 1230000,\n    \"total\": 1230000,\n    \"currency\": \"LKR\",\n    \"paymentMethod\": \"stripe\",\n    \"shippingAddress\": \"Sample Address, Colombo 07, Sri Lanka\",\n    \"phoneNumber\": \"+94771234567\",\n    \"orderDate\": \"October 8, 2025\",\n    \"estimatedDelivery\": \"October 15, 2025\",\n    \"trackingLink\": \"{{frontendUrl}}/orders/MR-87654321\",\n    \"supportEmail\": \"support@maaru.lk\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/send-email",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "send-email"]
+        }
+      },
+      "response": []
+    }
+  ]
+}

@@ -9,16 +9,20 @@ import {
   View,
 } from 'react-native';
 import BottomNavigation from '../../../components/BottomNavigation';
+import { useAuth } from '../../../context/AuthContext';
 import { updateProductAvailability } from '../../../services/itemService';
 import { createOrder } from '../../../services/orderService';
 import { createTransaction } from '../../../services/transactionService';
+import { getUserById } from '../../../services/userService';
 import formatPrice from '../../../utils/formatPrice';
+import { sendOrderConfirmationEmail, sendSellerNotificationEmail } from '../../../utils/emailService';
 import { useAppI18n } from '../../../utils/i18n';
 
 export default function PaymentSuccessScreen() {
   const params = useLocalSearchParams();
   const router = useRouter();
   const { t, common } = useAppI18n();
+  const { user } = useAuth(); // Get logged-in user
   const [orderCreated, setOrderCreated] = useState(false);
   const [orderNumber, setOrderNumber] = useState('');
   const [loading, setLoading] = useState(true);
@@ -40,13 +44,31 @@ export default function PaymentSuccessScreen() {
     const createOrderAndTransaction = async () => {
       try {
         setLoading(true);
+        
+        // Ensure user is logged in
+        if (!user?.uid) {
+          console.error('❌ No logged-in user found');
+          Alert.alert(
+            'Authentication Error',
+            'Please log in to complete your order.',
+            [{ text: 'OK', onPress: () => router.push('/(auth)/login') }]
+          );
+          return;
+        }
+        
+        console.log('👤 Current Firebase Auth user:', {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName,
+          emailVerified: user.emailVerified
+        });
 
         // Create order
         const orderData = {
           productId: params.productId,
           productOwnerId: params.productOwnerId,
-          buyerId: params.buyerId,
-          buyerEmail: params.buyerEmail,
+          buyerId: params.buyerId || user?.uid,
+          buyerEmail: user?.email || params.buyerEmail, // Use logged-in user's email
           productName: params.productName,
           quantity: parseInt(params.quantity) || 1,
           price: parseFloat(params.price) || 0,
@@ -63,7 +85,7 @@ export default function PaymentSuccessScreen() {
         const transactionData = {
           orderId: orderId,
           productId: params.productId,
-          buyerId: params.buyerId,
+          buyerId: params.buyerId || user?.uid,
           sellerId: params.productOwnerId,
           amount: parseFloat(params.total) || 0,
           currency: params.currency || 'LKR',
@@ -71,7 +93,7 @@ export default function PaymentSuccessScreen() {
           paymentDetails: {
             shippingAddress: params.shippingAddress,
             phoneNumber: params.phoneNumber,
-            buyerEmail: params.buyerEmail,
+            buyerEmail: user?.email || params.buyerEmail, // Use logged-in user's email
           },
         };
 
@@ -83,6 +105,93 @@ export default function PaymentSuccessScreen() {
         // Generate order number for display
         const generatedOrderNumber = `MR-${Date.now().toString().slice(-8)}`;
         setOrderNumber(generatedOrderNumber);
+        
+        // Send order confirmation emails
+        try {
+          console.log('📧 Preparing to send order emails...');
+          
+          // Get seller information and use logged-in user as buyer
+          const sellerData = await getUserById(params.productOwnerId);
+          
+          // Validate logged-in user email
+          if (!user?.email || user.email.includes('@example.com')) {
+            console.error('❌ Invalid or missing user email:', user?.email);
+            Alert.alert(
+              'Email Required',
+              'Please ensure you have a valid email address in your profile to receive order confirmations.',
+              [{ text: 'OK' }]
+            );
+            setLoading(false);
+            return;
+          }
+          
+          // Use logged-in user data for buyer
+          const buyerData = {
+            uid: user.uid,
+            email: user.email, // Only use the logged-in user's real email
+            displayName: user.displayName || user.email.split('@')[0],
+            name: user.displayName || user.email.split('@')[0]
+          };
+          
+          console.log('📧 Buyer email for confirmation:', buyerData.email);
+          console.log('👤 Logged-in user email:', user?.email);
+          console.log('✅ Email validation passed - using real email');
+          console.log('🔗 Email service URL:', 'https://maaru-stripe-api.vercel.app/api/send-email');
+          console.log('📦 Order data for email:', completeOrderData);
+          console.log('🛍️ Product data for email:', productData);
+          
+          // Create complete order data for email
+          const completeOrderData = {
+            ...orderData,
+            orderNumber: generatedOrderNumber,
+            orderId: orderId
+          };
+          
+          // Create product data for email
+          const productData = {
+            id: params.productId,
+            name: params.productName,
+            imageUrl: params.productImage,
+            category: params.productCategory || 'Others',
+            condition: params.productCondition || 'Good',
+            price: parseFloat(params.price) || 0,
+            ownerId: params.productOwnerId
+          };
+          
+          // Send buyer email first
+          console.log('📧 Sending buyer confirmation email to:', buyerData.email);
+          const buyerEmailResult = await sendOrderConfirmationEmail(
+            completeOrderData,
+            productData, 
+            buyerData
+          );
+          
+          if (buyerEmailResult.success) {
+            console.log('✅ Buyer confirmation email sent successfully');
+          } else {
+            console.error('❌ Buyer email failed:', buyerEmailResult.error);
+          }
+          
+          // Send seller email second
+          console.log('📧 Sending seller notification email to:', sellerData?.email);
+          const sellerEmailResult = await sendSellerNotificationEmail(
+            completeOrderData,
+            productData, 
+            buyerData,
+            sellerData
+          );
+          
+          if (sellerEmailResult.success) {
+            console.log('✅ Seller notification email sent successfully');
+          } else {
+            console.error('❌ Seller email failed:', sellerEmailResult.error);
+          }
+          
+        } catch (emailError) {
+          console.error('❌ Failed to send order emails (non-critical):', emailError);
+          // Email failure shouldn't break the order process
+        }
+        
         setOrderCreated(true);
 
       } catch (error) {
