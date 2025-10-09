@@ -18,12 +18,14 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebaseConfig';
 
+// 🔌 NEW: socket-based sender (Step 5)
+import { wsSendMessage } from './socket';
+
 /**
  * Stable, canonical conversation ID:
  * exactly ONE thread per (buyerUid × sellerUid × productId)
  * Keep buyer first to simplify analytics (not sorted alphabetically).
  */
-
 export function roomIdFor(buyerUid, sellerUid, productId) {
   if (!buyerUid || !sellerUid || !productId) {
     throw new Error('roomIdFor: missing buyerUid/sellerUid/productId');
@@ -126,13 +128,12 @@ export function listenMessages(conversationId, onData, onError, opts = { pageSiz
 }
 
 /**
- * Send a message (text or image).
- * - Writes the message to /conversations/{id}/messages
- * - Updates parent conversation: lastMessage, lastAt
- * - Increments unread for the *other* participant
+ * Send a message (text or image) DIRECTLY TO FIRESTORE.
+ * ⚠️ We now prefer the socket-based helper `sendMessageViaSocket(...)` below,
+ * but this remains for backward compatibility or offline fallbacks.
  *
  * kind: 'text' | 'image' | 'system'
- * If kind==='image', provide mediaUrl (Step 5 will handle upload).
+ * If kind==='image', provide mediaUrl.
  */
 export async function sendMessage({ conversationId, senderId, kind, text, mediaUrl }) {
   if (!conversationId || !senderId || !kind) {
@@ -155,8 +156,8 @@ export async function sendMessage({ conversationId, senderId, kind, text, mediaU
     text: kind === 'text' ? (text || '').trim() : null,
     mediaUrl: kind === 'image' ? (mediaUrl || null) : null,
     createdAt: serverTimestamp(),
-    deliveredTo: [],                   // Step 4: delivery receipts
-    readBy: [],                        // Step 4: read receipts
+    deliveredTo: [],                   // delivery receipts
+    readBy: [],                        // read receipts
   };
 
   // 1) Write message
@@ -170,6 +171,24 @@ export async function sendMessage({ conversationId, senderId, kind, text, mediaU
     lastMessage: { text: previewText, type: kind, at: serverTimestamp() },
     lastAt: serverTimestamp(),
     [`unread.${otherUid}`]: nextUnread,
+  });
+}
+
+/**
+ * 🔌 NEW — Send a message via WebSocket (preferred path).
+ * This calls your Socket.io backend which:
+ *  - verifies auth
+ *  - writes the message to Firestore (atomic with unread/lastMessage)
+ *  - emits to the room
+ *  - triggers auto-reply + push if recipient offline
+ *
+ * Usage:
+ *   await sendMessageViaSocket(conversationId, { text: "Hi" })
+ *   await sendMessageViaSocket(conversationId, { type: "image", mediaUrl })
+ */
+export function sendMessageViaSocket(conversationId, { text = '', type = 'text', mediaUrl = null } = {}) {
+  return new Promise((resolve) => {
+    wsSendMessage({ conversationId, type, text, mediaUrl }, (res) => resolve(res));
   });
 }
 
@@ -193,6 +212,8 @@ export async function markMessagesDelivered({ conversationId, uid, messageIds })
  * - sets unread[currentUid] = 0
  * - ALSO adds uid to readBy[] (and deliveredTo[]) for a recent slice of the most-recent messages
  *   that were sent by the other participant.
+ *
+ * (When using sockets, we additionally call wsMarkSeen in the screen for instant server updates.)
  */
 export async function markThreadRead({ conversationId, uid, recentCount = 40 }) {
   if (!conversationId || !uid) {
@@ -221,7 +242,6 @@ export async function markThreadRead({ conversationId, uid, recentCount = 40 }) 
   snap.forEach((d) => {
     const m = d.data();
     if (m.senderId === otherUid) {
-      // If we haven't read it yet, mark read & delivered
       const alreadyRead = Array.isArray(m.readBy) && m.readBy.includes(uid);
       if (!alreadyRead) toRead.push(d.id);
     }
