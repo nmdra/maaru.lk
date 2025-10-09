@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from "expo-router";
 import { updateProfile } from "firebase/auth";
@@ -12,6 +13,7 @@ import {
   ScrollView,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -38,7 +40,7 @@ export default function UpdateProfile() {
         const user = auth.currentUser;
         if (!user) {
           Alert.alert("Error", "No user logged in.");
-          router.replace("/Login");
+          router.replace("/login");
           return;
         }
         const docRef = doc(db, "users", user.uid);
@@ -110,7 +112,7 @@ export default function UpdateProfile() {
       });
     
     Alert.alert("Success", "Profile updated!");
-    router.push("/Profile"); // Make sure this matches your route
+    router.push("/profile"); // Make sure this matches your route
 
   } catch (error) {
     Alert.alert("Error", error.message);
@@ -133,9 +135,16 @@ export default function UpdateProfile() {
       <ScrollView className="flex-1">
         {/* Header Section */}
         <View className="bg-blue-600 px-6 pt-8 pb-20">
+          <View className="flex-row items-center mb-4">
+            <TouchableOpacity 
+              onPress={() => router.push('/profile')} 
+              className="p-2 -ml-2"
+            >
+              <Ionicons name="arrow-back" size={24} color="white" />
+            </TouchableOpacity>
+          </View>
           <View className="items-center">
-            <Text className="text-white text-3xl font-bold">Edit Profile</Text>
-            <Text className="text-white text-opacity-80 text-base mb-2">Update your details</Text>
+            <Text className="text-white text-3xl font-bold mb-6">Update your details</Text>
           </View>
         </View>
 

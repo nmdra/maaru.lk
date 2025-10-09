@@ -1,4 +1,4 @@
-import SplashScreen from "./SplashScreen";
+import SplashScreen  from './splashScreen';
 import '../global.css';
 
 const Home = () => {
