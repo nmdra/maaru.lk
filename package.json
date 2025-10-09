@@ -50,6 +50,7 @@
     "react-native-vector-icons": "^10.3.0",
     "react-native-web": "^0.20.0",
     "react-native-webview": "13.13.5",
+    "react-native-worklets": "^0.6.1",
     "react-native-worklets-core": "^1.6.2",
     "stripe": "^19.1.0"
   },
