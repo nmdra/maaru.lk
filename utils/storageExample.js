@@ -5,7 +5,7 @@
  * in your components.
  */
 
-import { getUserData, getUserId, getUserEmail, getUserName, isUserLoggedIn } from './storage';
+import { getUserData, getUserEmail, getUserId, getUserName, isUserLoggedIn } from './storage';
 
 // Example 1: Get complete user data
 export const exampleGetUserData = async () => {

@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Image, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,7 +9,6 @@ import { auth, db } from '../../services/firebaseConfig';
 import { ensureMinimalUserFields } from '../../services/userService';
 import { useAppI18n } from '../../utils/i18n';
 import { saveUserData } from '../../utils/storage';
-import { doc, getDoc } from 'firebase/firestore';
 
 export default function Login() {
   const router = useRouter();

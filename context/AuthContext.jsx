@@ -1,15 +1,15 @@
 // context/AuthContext.jsx
 import { getApps, initializeApp } from 'firebase/app';
 import {
-  createUserWithEmailAndPassword,
-  getAuth,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signOut,
+    createUserWithEmailAndPassword,
+    getAuth,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    signOut,
 } from 'firebase/auth';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { firebaseConfig } from '../services/firebaseConfig';
-import { initSocket, cleanupSocket } from '../services/socket';
+import { cleanupSocket, initSocket } from '../services/socket';
 import { clearUserData } from '../utils/storage';
 
 if (!getApps().length) initializeApp(firebaseConfig);

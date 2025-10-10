@@ -4,8 +4,7 @@
  * This demonstrates how to use the useUserData hook in your components
  */
 
-import React from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, Pressable } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useUserData } from '../hooks/useUserData';
 import { updateUserData } from '../utils/storage';
 
