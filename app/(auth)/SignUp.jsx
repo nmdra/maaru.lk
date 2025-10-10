@@ -305,7 +305,7 @@ export default function SignUp() {
 
             {/* moved bottom actions up into the card */}
             <View className="mt-4 space-y-3">
-              <Pressable onPress={() => router.replace('/login')} className="border border-gray-200 py-4 rounded-xl">
+              <Pressable onPress={() => router.replace('/(auth)/Login')} className="border border-gray-200 py-4 rounded-xl">
                 <Text className="text-gray-700 font-semibold text-center">Already have an account? Sign In</Text>
               </Pressable>
 

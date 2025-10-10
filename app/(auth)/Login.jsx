@@ -172,7 +172,7 @@ export default function Login() {
             {/* Create account */}
             <View className="items-center mt-3">
               <Text className="text-sm text-gray-500">Don't have an account?</Text>
-              <Pressable onPress={() => router.push('/signUp')} className="mt-2">
+              <Pressable onPress={() => router.push('/(auth)/SignUp')} className="mt-2">
                 <Text className="text-blue-600 font-semibold">Create Account</Text>
               </Pressable>
             </View>

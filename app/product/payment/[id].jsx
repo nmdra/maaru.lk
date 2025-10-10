@@ -105,7 +105,7 @@ export default function PaymentScreen() {
           { text: 'Cancel', style: 'cancel' },
           {
             text: 'Login',
-            onPress: () => router.push('/(auth)/login')
+            onPress: () => router.push('/(auth)/Login')
           }
         ]
       );

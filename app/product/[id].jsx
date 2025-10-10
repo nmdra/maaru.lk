@@ -92,7 +92,7 @@ export default function ProductDetailScreen() {
 
     if (!user?.uid) {
       Alert.alert('Please sign in', 'You need to login to chat with the owner.');
-      router.push('/Login');
+      router.push('/(auth)/Login');
       return;
     }
     if (!product.ownerId) {

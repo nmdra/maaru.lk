@@ -30,7 +30,7 @@ export default function Profile() {
       if (!user) {
         setProfile(null);
         setLoading(false);
-        router.push('/login');
+        router.push('/(auth)/Login');
         return;
       }
 
@@ -80,7 +80,7 @@ const handleSignOut = async () => {
             setSigningOut(true);
             await signOut(auth);
             console.log('User signed out');
-            router.replace('/login');
+            router.replace('/(auth)/Login');
           } catch (error) {
             console.error('Sign out error:', error);
             Alert.alert("Error", "Failed to sign out. Please try again.");
@@ -111,7 +111,7 @@ const handleSignOut = async () => {
           <Text className="text-red-600 text-lg font-semibold mb-2">Error loading profile</Text>
           <Text className="text-gray-600 text-center mb-6">Could not load profile information</Text>
           <Pressable 
-            onPress={() => router.replace('/login')}
+            onPress={() => router.replace('/(auth)/Login')}
             className="bg-blue-600 px-8 py-3 rounded-lg"
           >
             <Text className="text-white font-semibold">Back to Login</Text>

@@ -1,6 +1,6 @@
 
-import { collection, doc, getDoc, getDocs, query, setDoc, where } from 'firebase/firestore';
-import { db } from '../constants/firebase';
+import { collection, doc, getDoc, getDocs, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
+import { db } from './firebaseConfig';
 
 /**
  * Make sure /users/{uid} has the *minimal* fields chat needs.
