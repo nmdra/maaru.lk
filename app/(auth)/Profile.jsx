@@ -5,14 +5,14 @@ import { doc, getDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    Pressable,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  Pressable,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ChatBubble from '../../components/chat/ChatBubble';
