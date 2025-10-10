@@ -1,16 +1,13 @@
 // app/SignUp.jsx
 // ...existing code...
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { createUserWithEmailAndPassword, getAuth, updateProfile } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
-  Image,
   Pressable,
   ScrollView,
   Text,
@@ -19,8 +16,9 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { db, storage } from '../../services/firebaseConfig';
+import { db } from '../../services/firebaseConfig';
 import { ensureMinimalUserFields } from '../../services/userService';
+import { saveUserData } from '../../utils/storage';
 
 export default function SignUp() {
   const router = useRouter();
@@ -32,8 +30,6 @@ export default function SignUp() {
   const [age, setAge] = useState('');
   const [phone, setPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [photo, setPhoto] = useState(null);
-  const [photoURL, setPhotoURL] = useState(''); // kept in case you show it later
 
   const validateEmail = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
   const validatePhone = (val) => /^(\+?\d{10,15})$/.test(val);
@@ -70,18 +66,7 @@ export default function SignUp() {
       const displayName = `${firstName} ${lastName}`.trim();
       await updateProfile(user, { displayName }).catch(() => {});
 
-      // 2) Upload photo (if chosen) now that we have uid
-      let uploadedPhotoURL = '';
-      if (photo?.uri) {
-        const response = await fetch(photo.uri);
-        const blob = await response.blob();
-        const storageRef = ref(storage, `profilePictures/${user.uid}.jpg`);
-        await uploadBytes(storageRef, blob);
-        uploadedPhotoURL = await getDownloadURL(storageRef);
-        setPhotoURL(uploadedPhotoURL);
-      }
-
-      // 3) Save your extended profile schema (merge safe)
+      // 2) Save your extended profile schema (merge safe) - NO PHOTO UPLOAD
       await setDoc(
         doc(db, 'users', user.uid),
         {
@@ -93,16 +78,31 @@ export default function SignUp() {
           phone,
           uid: user.uid,
           createdAt: new Date().toISOString(),
-          photoURL: uploadedPhotoURL,
+          updatedAt: new Date().toISOString(),
+          displayName,
+          // No photoURL - not using Firebase Storage
         },
         { merge: true }
       );
 
-      // 4) Ensure minimal fields for chat UI (name/avatar/role) — merge, won’t conflict
+      // 3) Ensure minimal fields for chat UI (name/avatar/role) — merge, won't conflict
       await ensureMinimalUserFields(user.uid, {
         displayName,
-        avatarUrl: uploadedPhotoURL || undefined,
+        avatarUrl: undefined, // No profile photo
         role: 'buyer', // change if this sign-up is for sellers
+      });
+
+      // 4) Save user data to AsyncStorage (without profile photo)
+      await saveUserData({
+        userId: user.uid,
+        email: email,
+        name: displayName,
+        role: 'buyer',
+        firstName: firstName,
+        lastName: lastName,
+        phone: phone,
+        address: address,
+        createdAt: new Date().toISOString(),
       });
 
       Alert.alert('Success', `User registered (id: ${user.uid})`);
@@ -115,7 +115,6 @@ export default function SignUp() {
       setAddress('');
       setAge('');
       setPhone('');
-      setPhoto(null);
 
       router.replace('/Home');
     } catch (error) {
@@ -125,23 +124,6 @@ export default function SignUp() {
       setIsSubmitting(false);
     }
   };
-
-  const handlePickPhoto = async () => {
-  const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (!permissionResult.granted) {
-    Alert.alert("Permission required", "Camera roll permissions are required!");
-    return;
-  }
-  const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.Images,
-    allowsEditing: true,
-    aspect: [1, 1],
-    quality: 0.7,
-  });
-  if (!result.canceled && result.assets?.length > 0) {
-    setPhoto(result.assets[0]);
-  }
-};
 
   // For Age: allow only digits
   const handleAgeChange = (text) => setAge(text.replace(/[^0-9]/g, ''));
@@ -170,21 +152,13 @@ export default function SignUp() {
 
         {/* Registration Card */}
         <View className="mx-6 -mt-12 bg-white rounded-2xl shadow-lg p-6">
+          {/* Logo Section (No Photo Upload) */}
           <View className="items-center -mt-16 mb-8">
-            <Pressable onPress={handlePickPhoto}>
-              <View className="w-32 h-32 rounded-full bg-white p-1 shadow-lg">
-                {photo ? (
-                  <Image source={{ uri: photo.uri }} className="w-full h-full rounded-full" />
-                ) : (
-                  <View className="w-full h-full rounded-full bg-blue-500 items-center justify-center">
-                    <Text className="text-white text-4xl font-bold">+</Text>
-                  </View>
-                )}
+            <View className="w-32 h-32 rounded-full bg-white p-1 shadow-lg">
+              <View className="w-full h-full rounded-full bg-blue-500 items-center justify-center">
+                <Text className="text-white text-4xl font-bold">M</Text>
               </View>
-              <View className="items-center mt-2">
-                <Text className="text-blue-600">Add Photo</Text>
-              </View>
-            </Pressable>
+            </View>
           </View>
 
           {/* Form Section */}

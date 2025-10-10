@@ -10,6 +10,7 @@ import {
 import { createContext, useContext, useEffect, useState } from 'react';
 import { firebaseConfig } from '../services/firebaseConfig';
 import { initSocket, cleanupSocket } from '../services/socket';
+import { clearUserData } from '../utils/storage';
 
 if (!getApps().length) initializeApp(firebaseConfig);
 const auth = getAuth();
@@ -35,7 +36,10 @@ export function AuthProvider({ children }) {
 
   const login = (email, password) => signInWithEmailAndPassword(auth, email, password);
   const register = (email, password) => createUserWithEmailAndPassword(auth, email, password);
-  const logout = () => signOut(auth);
+  const logout = async () => {
+    await clearUserData(); // Clear AsyncStorage on logout
+    return signOut(auth);
+  };
 
   // Optional: gate children until auth is ready
   if (loading) return null;

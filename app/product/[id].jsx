@@ -28,6 +28,8 @@ export default function ProductDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [relatedItems, setRelatedItems] = useState([]);
   const [swapGuidelinesVisible, setSwapGuidelinesVisible] = useState(false);
+  const [ownerData, setOwnerData] = useState(null);
+  const [loadingOwner, setLoadingOwner] = useState(false);
 
   const mockTags = product?.tags || [];
 
@@ -41,11 +43,42 @@ export default function ProductDetailScreen() {
           const data = { id: docSnap.id, ...docSnap.data() };
           setProduct(data);
           fetchRelatedItems(data.category, data.id);
+          
+          // Fetch owner data if ownerId exists
+          if (data.ownerId) {
+            fetchOwnerData(data.ownerId);
+          }
         }
       } catch (err) {
         console.error('Error fetching product:', err);
       } finally {
         setLoading(false);
+      }
+    };
+
+    const fetchOwnerData = async (ownerId) => {
+      setLoadingOwner(true);
+      try {
+        const ownerRef = doc(db, 'users', ownerId);
+        const ownerSnap = await getDoc(ownerRef);
+        if (ownerSnap.exists()) {
+          const ownerInfo = ownerSnap.data();
+          setOwnerData({
+            name: ownerInfo.displayName || `${ownerInfo.firstName || ''} ${ownerInfo.lastName || ''}`.trim() || 'Unknown User',
+            email: ownerInfo.email || '',
+            phone: ownerInfo.phone || '',
+            rating: ownerInfo.rating || 0,
+          });
+          console.log('Owner data fetched:', ownerInfo);
+        } else {
+          console.warn('Owner not found in database');
+          setOwnerData({ name: 'Unknown User', email: '', phone: '', rating: 0 });
+        }
+      } catch (err) {
+        console.error('Error fetching owner data:', err);
+        setOwnerData({ name: 'Unknown User', email: '', phone: '', rating: 0 });
+      } finally {
+        setLoadingOwner(false);
       }
     };
 
@@ -227,15 +260,33 @@ export default function ProductDetailScreen() {
           <View className="bg-white p-4 rounded-xl shadow-md mt-4 border border-gray-200">
             <Text className="text-lg font-semibold mb-2">Owner Details</Text>
 
-            <View className="flex-row items-center mb-2">
-              <Ionicons name="person-circle-outline" size={40} color="#4B5563" />
-              <View className="ml-3">
-                <Text className="text-base font-medium text-gray-900">
-                  {product.ownerName || 'John Doe'}
-                </Text>
-                <Text className="text-sm text-gray-600">User Rating: ⭐⭐⭐⭐☆</Text>
+            {loadingOwner ? (
+              <View className="flex-row items-center mb-2">
+                <Ionicons name="person-circle-outline" size={40} color="#4B5563" />
+                <View className="ml-3">
+                  <Text className="text-sm text-gray-500">Loading owner info...</Text>
+                </View>
               </View>
-            </View>
+            ) : (
+              <View className="flex-row items-center mb-2">
+                <Ionicons name="person-circle-outline" size={40} color="#4B5563" />
+                <View className="ml-3">
+                  <Text className="text-base font-medium text-gray-900">
+                    {ownerData?.name || 'Unknown User'}
+                  </Text>
+                  <Text className="text-sm text-gray-600">
+                    {ownerData?.rating > 0 
+                      ? `User Rating: ${'⭐'.repeat(Math.round(ownerData.rating))}${'☆'.repeat(5 - Math.round(ownerData.rating))}`
+                      : 'No ratings yet'}
+                  </Text>
+                  {ownerData?.email && (
+                    <Text className="text-xs text-gray-500 mt-1">
+                      {ownerData.email}
+                    </Text>
+                  )}
+                </View>
+              </View>
+            )}
 
             <TouchableOpacity
               onPress={handleChat}

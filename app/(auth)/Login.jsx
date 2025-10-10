@@ -4,9 +4,11 @@ import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from 
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Image, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { auth } from '../../services/firebaseConfig';
+import { auth, db } from '../../services/firebaseConfig';
 import { ensureMinimalUserFields } from '../../services/userService';
 import { useAppI18n } from '../../utils/i18n';
+import { saveUserData } from '../../utils/storage';
+import { doc, getDoc } from 'firebase/firestore';
 
 export default function Login() {
   const router = useRouter();
@@ -27,11 +29,29 @@ export default function Login() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // 👇 ensure minimal fields used by chat (safe merge, won’t break your schema)
+      // 👇 ensure minimal fields used by chat (safe merge, won't break your schema)
       await ensureMinimalUserFields(user.uid, {
         displayName: user.displayName || undefined,
-        avatarUrl: user.photoURL || undefined,
+        avatarUrl: undefined, // Don't store profile photo
         // role left default ('buyer') unless you want to pass one here
+      });
+
+      // Get additional user data from Firestore
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+      const userData = userDoc.exists() ? userDoc.data() : {};
+
+      // Save user data to AsyncStorage (without profile photo)
+      await saveUserData({
+        userId: user.uid,
+        email: user.email,
+        name: user.displayName || userData.displayName || userData.firstName || 'User',
+        role: userData.role || 'buyer',
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        phone: userData.phone,
+        address: userData.address || '',
+        createdAt: userData.createdAt || new Date().toISOString(),
       });
 
       console.log('User signed in:', user.uid);
@@ -53,9 +73,43 @@ export default function Login() {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
+      // Check if user profile exists and is complete
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+      
+      if (!userDoc.exists() || !userDoc.data().firstName || !userDoc.data().lastName || !userDoc.data().phone) {
+        // Profile incomplete - redirect to complete profile page
+        console.log('Profile incomplete, redirecting to complete profile');
+        router.push({
+          pathname: '/(auth)/CompleteProfile',
+          params: {
+            userId: user.uid,
+            email: user.email,
+            displayName: user.displayName || '',
+          }
+        });
+        return;
+      }
+
+      // Profile exists and is complete
+      const userData = userDoc.data();
+
       await ensureMinimalUserFields(user.uid, {
-        displayName: user.displayName || undefined,
-        avatarUrl: user.photoURL || undefined,
+        displayName: userData.displayName || user.displayName || undefined,
+        avatarUrl: undefined, // Don't use profile photo from Google
+      });
+
+      // Save user data to AsyncStorage (without profile photo)
+      await saveUserData({
+        userId: user.uid,
+        email: user.email,
+        name: userData.displayName || `${userData.firstName} ${userData.lastName}`.trim(),
+        role: userData.role || 'buyer',
+        firstName: userData.firstName,
+        lastName: userData.lastName,
+        phone: userData.phone,
+        address: userData.address || '',
+        createdAt: userData.createdAt || new Date().toISOString(),
       });
 
       console.log('Google sign-in successful:', user.uid);

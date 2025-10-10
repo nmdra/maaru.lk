@@ -17,6 +17,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ChatBubble from '../../components/chat/ChatBubble';
 import { auth, db } from '../../services/firebaseConfig';
+import { clearUserData } from '../../utils/storage';
 
 export default function Profile() {
   const router = useRouter();
@@ -79,7 +80,8 @@ const handleSignOut = async () => {
           try {
             setSigningOut(true);
             await signOut(auth);
-            console.log('User signed out');
+            await clearUserData(); // Clear AsyncStorage
+            console.log('User signed out and data cleared');
             router.replace('/(auth)/Login');
           } catch (error) {
             console.error('Sign out error:', error);
