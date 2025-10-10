@@ -53,10 +53,6 @@ export default function Login() {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      // optional: const credential = GoogleAuthProvider.credentialFromResult(result);
-      // optional: const token = credential?.accessToken;
-
-      // 👇 ensure minimal fields for chat
       await ensureMinimalUserFields(user.uid, {
         displayName: user.displayName || undefined,
         avatarUrl: user.photoURL || undefined,
