@@ -162,8 +162,8 @@ const handlePhoneChange = (text) => {
             </TouchableOpacity>
           </View>
           <View className="items-center">
-            <Text className="text-white text-3xl font-bold">Join Maaru.LK</Text>
-            <Text className="text-white text-opacity-80 text-base mb-2">Create your account today</Text>
+            <Text className="text-white text-3xl font-bold mb-5">Join Maaru.LK</Text>
+
           </View>
         </View>
 

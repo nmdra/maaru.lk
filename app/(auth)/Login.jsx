@@ -73,8 +73,8 @@ export default function Login() {
       <ScrollView className="flex-1">
         
         {/* Header Section */}
-        <View className="bg-blue-600 px-6 pt-8 pb-20">
-          <View className="flex-row items-center mb-4">
+        <View className="bg-blue-600 px-6 pt-6 pb-10">
+          <View className="flex-row items-center mb-3">
             <TouchableOpacity 
               onPress={() => router.push('/(tabs)/Home')} 
               className="p-2 -ml-2"
@@ -83,25 +83,24 @@ export default function Login() {
             </TouchableOpacity>
           </View>
           <View className="items-center">
-            <Text className="text-white text-3xl font-bold">Welcome Back</Text>
-            <Text className="text-white text-opacity-80 text-base mb-2">Sign in to continue to Maaru.LK</Text>
+            <Text className="text-white text-2xl font-bold mb-3">Welcome Back</Text>
           </View>
         </View>
 
         {/* Login Card */}
-        <View className="mx-6 -mt-12 bg-white rounded-2xl shadow-lg p-6">
+        <View className="mx-6 -mt-8 bg-white rounded-2xl shadow-lg p-6">
           
           {/* Logo/Icon Section */}
-          <View className="items-center -mt-16 mb-8">
-            <View className="w-32 h-32 rounded-full bg-white p-1 shadow-lg">
+          <View className="items-center -mt-10 mb-5">
+            <View className="w-22 h-22 rounded-full bg-white p-1 shadow-lg">
               <View className="w-full h-full rounded-full bg-blue-500 items-center justify-center">
-                <Text className="text-white text-4xl font-bold">M</Text>
+                <Text className="text-white text-2xl font-bold">M</Text>
               </View>
             </View>
           </View>
 
           {/* Form Section */}
-          <View className="space-y-5">
+          <View className="space-y-4">
             <View>
               <Text className="text-gray-700 font-medium mb-2">Email Address</Text>
               <TextInput
@@ -110,7 +109,7 @@ export default function Login() {
                 placeholder="you@example.com"
                 keyboardType="email-address"
                 autoCapitalize="none"
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-4 text-base"
+                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base"
               />
             </View>
 
@@ -121,14 +120,14 @@ export default function Login() {
                 onChangeText={setPassword}
                 placeholder="Enter your password"
                 secureTextEntry
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-4 text-base"
+                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base"
               />
             </View>
 
             {/* Login Button */}
             <Pressable
               onPress={handleLogin}
-              className="bg-blue-600 py-4 rounded-xl mt-6"
+              className="bg-blue-600 py-3 rounded-xl mt-5"
               disabled={isSubmitting}
             >
               {isSubmitting ? (
@@ -139,7 +138,7 @@ export default function Login() {
             </Pressable>
 
             {/* devide */}
-            <View className="flex-row items-center my-6">
+            <View className="flex-row items-center my-4">
               <View className="flex-1 h-px bg-gray-200" />
               <Text className="mx-4 text-gray-500 text-sm">or</Text>
               <View className="flex-1 h-px bg-gray-200" />
@@ -148,7 +147,7 @@ export default function Login() {
             {/* Google Login Button */}
             <Pressable
               onPress={handleGoogleLogin}
-              className="bg-white border border-gray-300 py-4 rounded-xl flex-row items-center justify-center"
+              className="bg-white border border-gray-300 py-3 rounded-xl flex-row items-center justify-center"
               disabled={isGoogleSubmitting}
             >
               {isGoogleSubmitting ? (
@@ -172,14 +171,14 @@ export default function Login() {
             {/* Create account*/}
             <View className="items-center mt-3">
               <Text className="text-sm text-gray-500">Don't have an account?</Text>
-              <Pressable onPress={() => router.push('/signUp')} className="mt-2">
+              <Pressable onPress={() => router.push('/SignUp')} className="mt-2">
                 <Text className="text-blue-600 font-semibold">Create Account</Text>
               </Pressable>
             </View>
           </View>
         </View>
        {/* Continue as Guest (small link) */}
-       <View className="mx-6 mt-6 mb-8 items-center">
+       <View className="mx-6 mt-4 mb-6 items-center">
          <Pressable onPress={() => router.push('/Home')} >
            <Text className="text-gray-500">Continue as Guest</Text>
          </Pressable>
