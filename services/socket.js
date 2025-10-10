@@ -33,6 +33,16 @@ export function initSocket() {
       const token = await user.getIdToken(true);
       if (!token) return;
 
+      // Check if WS_URL is localhost - if so, try to connect
+      // For production Vercel URL with CORS issues, skip connection
+      const isLocalhost = WS_URL.includes('localhost') || WS_URL.includes('127.0.0.1');
+      
+      if (!isLocalhost) {
+        console.log('[WS] Skipping WebSocket connection - using Firestore mode only');
+        console.log('[WS] To enable WebSocket, use localhost backend or deploy to WebSocket-friendly platform');
+        return;
+      }
+
       // Reuse existing socket if present
       if (socket) {
         socket.auth = { token };
@@ -40,11 +50,14 @@ export function initSocket() {
         return;
       }
 
-      // Create new socket connection
+      // Create new socket connection (only for localhost)
       socket = io(WS_URL, {
-        transports: ["websocket"],
+        transports: ["polling", "websocket"], // Try polling first, then upgrade to websocket
         auth: { token },
         autoConnect: true,
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionAttempts: 5,
       });
 
       // Optional logs
