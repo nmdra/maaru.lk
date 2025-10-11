@@ -7,7 +7,7 @@
  * Run: node scripts/migrateKeywords.js
  */
 
-import { collection, deleteField, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig.js';
 import { generateSearchKeywords, saveKeywordsToCollection } from '../services/searchKeywordService.js';
 

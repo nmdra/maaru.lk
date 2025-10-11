@@ -5,6 +5,7 @@ const STORAGE_KEYS = {
   USER_ID: '@maaru_user_id',
   USER_EMAIL: '@maaru_user_email',
   USER_NAME: '@maaru_user_name',
+  SWAP_DRAFT: '@maaru_swap_draft',
 };
 
 /**
@@ -170,6 +171,54 @@ export const isUserLoggedIn = async () => {
   }
 };
 
+/**
+ * Save swap draft data to AsyncStorage
+ * @param {Object} swapData - Swap draft data containing roomId, message, products, etc.
+ */
+export const saveSwapDraft = async (swapData) => {
+  try {
+    await AsyncStorage.setItem(STORAGE_KEYS.SWAP_DRAFT, JSON.stringify(swapData));
+    console.log('✅ Swap draft saved to AsyncStorage');
+    return true;
+  } catch (error) {
+    console.error('❌ Error saving swap draft:', error);
+    return false;
+  }
+};
+
+/**
+ * Get swap draft data from AsyncStorage
+ * @returns {Object|null} Swap draft data or null
+ */
+export const getSwapDraft = async () => {
+  try {
+    const draft = await AsyncStorage.getItem(STORAGE_KEYS.SWAP_DRAFT);
+    if (draft) {
+      const parsedDraft = JSON.parse(draft);
+      console.log('✅ Swap draft retrieved from AsyncStorage');
+      return parsedDraft;
+    }
+    return null;
+  } catch (error) {
+    console.error('❌ Error getting swap draft:', error);
+    return null;
+  }
+};
+
+/**
+ * Clear swap draft from AsyncStorage
+ */
+export const clearSwapDraft = async () => {
+  try {
+    await AsyncStorage.removeItem(STORAGE_KEYS.SWAP_DRAFT);
+    console.log('✅ Swap draft cleared from AsyncStorage');
+    return true;
+  } catch (error) {
+    console.error('❌ Error clearing swap draft:', error);
+    return false;
+  }
+};
+
 export default {
   saveUserData,
   getUserData,
@@ -179,4 +228,7 @@ export default {
   updateUserData,
   clearUserData,
   isUserLoggedIn,
+  saveSwapDraft,
+  getSwapDraft,
+  clearSwapDraft,
 };

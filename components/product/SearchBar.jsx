@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import debounce from 'lodash.debounce';
 import { useCallback, useEffect, useState } from 'react';
-import { FlatList, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { getPopularTags, getSearchSuggestions } from '../../services/searchKeywordService';
 
 export default function SearchBar({ value, onChangeText, onClear, onToggleFilters }) {

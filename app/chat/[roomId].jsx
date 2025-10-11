@@ -2,7 +2,7 @@
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Text, TouchableOpacity, View } from 'react-native';
 import { Actions, GiftedChat, InputToolbar } from 'react-native-gifted-chat';
 import { useAuth } from '../../context/AuthContext';
 import { listenMessages, markThreadRead, sendMessage } from '../../services/chatService';
@@ -13,6 +13,8 @@ import {
     wsTypingStart,
     wsTypingStop,
 } from '../../services/socket';
+import { clearSwapDraft, getSwapDraft } from '../../utils/storage';
+import formatPrice from '../../utils/formatPrice';
 
 /* ---------- helpers ---------- */
 function tsToMillis(ts) {
@@ -40,6 +42,8 @@ export default function ChatRoom() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [wsConnected, setWsConnected] = useState(false);
+  const [swapDraft, setSwapDraft] = useState(null);
+  const [sendingSwap, setSendingSwap] = useState(false);
 
   const typingTimer = useRef(null);
   
@@ -47,6 +51,24 @@ export default function ChatRoom() {
   const conversationId = useMemo(() => (roomId ? String(roomId) : null), [roomId]);
   // Ensure uid is a string for comparison with message senderIds
   const giftedChatUser = useMemo(() => ({ _id: String(uid || 'anonymous') }), [uid]);
+
+  /* ---------- Check for swap draft ---------- */
+  useEffect(() => {
+    const checkSwapDraft = async () => {
+      try {
+        const draft = await getSwapDraft();
+        if (draft && draft.roomId === conversationId) {
+          setSwapDraft(draft);
+        }
+      } catch (error) {
+        console.error('Error checking swap draft:', error);
+      }
+    };
+
+    if (conversationId) {
+      checkSwapDraft();
+    }
+  }, [conversationId]);
 
   /* ---------- Firestore listener ---------- */
   useEffect(() => {
@@ -250,6 +272,76 @@ export default function ChatRoom() {
     }
   }, [conversationId, uid]);
 
+  /* ---------- Send Swap Draft ---------- */
+  const handleSendSwapDraft = useCallback(async () => {
+    if (!swapDraft || !conversationId || !uid) return;
+
+    setSendingSwap(true);
+    try {
+      const socket = getSocket();
+      
+      // Try WebSocket first
+      if (socket && socket.connected) {
+        wsSendMessage(
+          { conversationId, type: 'text', text: swapDraft.message },
+          (res) => {
+            if (!res?.ok) {
+              console.log('WebSocket send error:', res?.error);
+              // Fallback to Firestore
+              sendMessage({ 
+                conversationId, 
+                senderId: uid, 
+                kind: 'text', 
+                text: swapDraft.message 
+              }).catch((err) => {
+                console.error('Firestore fallback error:', err);
+                Alert.alert('Error', 'Failed to send swap request. Please try again.');
+              });
+            }
+          }
+        );
+      } else {
+        // No WebSocket connection - use Firestore directly
+        await sendMessage({ 
+          conversationId, 
+          senderId: uid, 
+          kind: 'text', 
+          text: swapDraft.message 
+        });
+      }
+
+      // Clear the draft
+      await clearSwapDraft();
+      setSwapDraft(null);
+      
+      Alert.alert('Success', 'Swap request sent successfully!');
+    } catch (error) {
+      console.error('Error sending swap draft:', error);
+      Alert.alert('Error', 'Failed to send swap request. Please try again.');
+    } finally {
+      setSendingSwap(false);
+    }
+  }, [swapDraft, conversationId, uid]);
+
+  /* ---------- Cancel Swap Draft ---------- */
+  const handleCancelSwapDraft = useCallback(async () => {
+    Alert.alert(
+      'Cancel Swap Request',
+      'Are you sure you want to cancel this swap request?',
+      [
+        { text: 'No', style: 'cancel' },
+        {
+          text: 'Yes',
+          style: 'destructive',
+          onPress: async () => {
+            await clearSwapDraft();
+            setSwapDraft(null);
+          }
+        }
+      ]
+    );
+  }, []);
+
   /* ---------- Socket listeners ---------- */
   useEffect(() => {
     const socket = getSocket();
@@ -403,6 +495,79 @@ export default function ChatRoom() {
           <Text style={{ fontSize: 12, color: '#92400E' }}>
             ⚠️ WebSocket disconnected - using Firestore mode
           </Text>
+        </View>
+      )}
+      
+      {/* Swap Draft Banner */}
+      {swapDraft && (
+        <View style={{ 
+          backgroundColor: '#EFF6FF', 
+          padding: 12,
+          borderBottomWidth: 1,
+          borderBottomColor: '#BFDBFE'
+        }}>
+          <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+            <Text style={{ fontSize: 20, marginRight: 8 }}>🔄</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 14, fontWeight: '600', color: '#1E3A8A', marginBottom: 4 }}>
+                Swap Request Ready
+              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6 }}>
+                {swapDraft.selectedProduct?.imageUrl && (
+                  <Image 
+                    source={{ uri: swapDraft.selectedProduct.imageUrl }}
+                    style={{ width: 40, height: 40, borderRadius: 6, marginRight: 8 }}
+                  />
+                )}
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 12, color: '#374151' }} numberOfLines={1}>
+                    Your: {swapDraft.selectedProduct?.name}
+                  </Text>
+                  <Text style={{ fontSize: 12, color: '#374151' }} numberOfLines={1}>
+                    For: {swapDraft.targetProduct?.name}
+                  </Text>
+                </View>
+              </View>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <TouchableOpacity
+                  onPress={handleSendSwapDraft}
+                  disabled={sendingSwap}
+                  style={{
+                    flex: 1,
+                    backgroundColor: sendingSwap ? '#9CA3AF' : '#10B981',
+                    paddingVertical: 10,
+                    paddingHorizontal: 16,
+                    borderRadius: 8,
+                    alignItems: 'center'
+                  }}
+                >
+                  {sendingSwap ? (
+                    <ActivityIndicator size="small" color="white" />
+                  ) : (
+                    <Text style={{ color: 'white', fontWeight: '600', fontSize: 14 }}>
+                      Send Request
+                    </Text>
+                  )}
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleCancelSwapDraft}
+                  disabled={sendingSwap}
+                  style={{
+                    flex: 1,
+                    backgroundColor: '#EF4444',
+                    paddingVertical: 10,
+                    paddingHorizontal: 16,
+                    borderRadius: 8,
+                    alignItems: 'center'
+                  }}
+                >
+                  <Text style={{ color: 'white', fontWeight: '600', fontSize: 14 }}>
+                    Cancel
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
         </View>
       )}
       
