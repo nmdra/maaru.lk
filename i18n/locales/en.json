@@ -23,7 +23,8 @@
     "close": "Close",
     "open": "Open",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "or": "OR"
   },
   "navigation": {
     "home": "Home",
@@ -47,7 +48,26 @@
     "createAccount": "Create Account",
     "continueAsGuest": "Continue as Guest",
     "enterYourPassword": "Enter your password",
-    "emailPlaceholder": "you@example.com"
+    "emailPlaceholder": "you@example.com",
+    "joinMaaruLK": "Join Maaru.LK",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "phoneNumber": "Phone",
+    "age": "Age",
+    "address": "Address",
+    "enterFirstName": "Enter your first name",
+    "enterLastName": "Last name",
+    "enterPhone": "Phone number",
+    "enterAge": "Age",
+    "enterAddress": "Your address",
+    "choosePassword": "Choose a password",
+    "required": "*",
+    "phoneDigits": "0-15 digits",
+    "ageRange": "Enter your age (10-120)",
+    "passwordMinLength": "At least 6 characters",
+    "alreadyHaveAccount": "Already have an account? Sign In",
+    "selectLanguage": "Select Language",
+    "currentLanguage": "Current Language"
   },
   "language": {
     "settings": "Language Settings",
@@ -67,7 +87,20 @@
     "inStock": "In Stock",
     "category": "Category",
     "brand": "Brand",
-    "description": "Description"
+    "description": "Description",
+    "searchItems": "Search items...",
+    "addNewItem": "Add New Item",
+    "allCategories": "All",
+    "categories": {
+      "all": "All",
+      "shoes": "Shoes",
+      "clothes": "Clothes",
+      "accessories": "Accessories",
+      "electronics": "Electronics",
+      "books": "Books",
+      "furniture": "Furniture",
+      "others": "Others"
+    }
   },
   "reviews": {
     "title": "Reviews",
@@ -77,7 +110,32 @@
     "comment": "Comment",
     "submitReview": "Submit Review",
     "create": "Create Review",
-    "underDevelopment": "This page is under development"
+    "underDevelopment": "This page is under development",
+    "sellerReviews": "Seller Reviews",
+    "addReview": "Add Review",
+    "noReviewsYet": "No reviews yet.",
+    "editReview": "Edit Review",
+    "ratingLabel": "Rating (1-5):",
+    "commentLabel": "Comment:",
+    "commentPlaceholder": "Write your review...",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "update": "Update",
+    "saving": "Saving...",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteConfirm": "Delete Review",
+    "deleteMessage": "Are you sure?",
+    "anonymous": "Anonymous",
+    "validation": {
+      "enterComment": "Please enter a comment.",
+      "ratingRange": "Rating must be a number between 1 and 5."
+    },
+    "alerts": {
+      "updated": "Review updated.",
+      "added": "Review added.",
+      "error": "Error"
+    }
   },
   "profile": {
     "title": "Profile",
@@ -87,7 +145,15 @@
     "about": "About",
     "support": "Support",
     "termsOfService": "Terms of Service",
-    "privacyPolicy": "Privacy Policy"
+    "privacyPolicy": "Privacy Policy",
+    "orders": "Orders",
+    "rating": "Rating",
+    "years": "Years",
+    "account": "Account",
+    "language": "Language",
+    "logout": "Logout",
+    "signOut": "Sign Out",
+    "signingOut": "Signing out..."
   },
   "errors": {
     "networkError": "Network error. Please check your connection.",
@@ -223,5 +289,132 @@
       "contactSupport": "Contact Support",
       "backToHome": "Back to Home"
     }
+  },
+  "productDetail": {
+    "loading": "Loading...",
+    "owner": "Owner",
+    "stock": "Stock",
+    "condition": "Condition",
+    "swapOnly": "Swap Only",
+    "chat": "Chat",
+    "swap": "Swap",
+    "buyNow": "Buy Now",
+    "swapGuidelines": "Swap Guidelines",
+    "guidelinesTitle": "Swap Exchange Guidelines",
+    "guidelinesContent": "When swapping items:\n\n1. Both parties should agree on the value exchange.\n2. Meet in a public place for safety.\n3. Inspect the item thoroughly before confirming the swap.\n4. Complete the transaction through our platform to maintain records.\n5. Report any issues immediately to our support team.",
+    "similarItems": "Similar Items",
+    "creatingChat": "Creating chat...",
+    "pleaseWait": "Please wait while we set up your conversation...",
+    "ownerDetails": "Owner Details",
+    "chatWithOwner": "Chat with Owner",
+    "relatedItems": "Related Items",
+    "translate": "Translate",
+    "translating": "Translating...",
+    "original": "Original",
+    "translatedTo": "Translated to",
+    "tapToSeeOriginal": "Tap button to see original",
+    "loadingOwnerInfo": "Loading owner info...",
+    "unknownUser": "Unknown User",
+    "noRatings": "No ratings yet",
+    "userRating": "User Rating"
+  },
+  "addProduct": {
+    "title": "Add New Item",
+    "itemName": "Item Name",
+    "itemNamePlaceholder": "e.g. iPhone 13 Pro",
+    "description": "Description",
+    "descriptionPlaceholder": "Describe your item...",
+    "category": "Category",
+    "price": "Price (LKR)",
+    "pricePlaceholder": "Enter price",
+    "swapOnly": "Swap Only (No Price)",
+    "condition": "Condition",
+    "conditionPlaceholder": "e.g. Brand New, Like New, Good, Fair",
+    "tags": "Tags",
+    "addCustomTag": "Add Custom Tag",
+    "customTagPlaceholder": "Enter tag name",
+    "stock": "Stock Quantity",
+    "stockPlaceholder": "Enter stock quantity",
+    "itemImage": "Item Image",
+    "camera": "Camera",
+    "gallery": "Gallery",
+    "generateWithAI": "Generate Description & Tags with AI",
+    "generating": "Generating...",
+    "postItem": "Post Item",
+    "posting": "Posting...",
+    "categories": {
+      "electronics": "Electronics",
+      "furniture": "Furniture",
+      "books": "Books",
+      "clothing": "Clothing",
+      "others": "Others"
+    },
+    "defaultTags": {
+      "emergency": "Emergency",
+      "goodCondition": "Good Condition",
+      "limitedTime": "Limited Time",
+      "newArrival": "New Arrival"
+    },
+    "alerts": {
+      "permissionRequired": "Permission Required",
+      "permissionMessage": "Permission required to select an image.",
+      "fillAllFields": "Please fill all required fields",
+      "enterValidPrice": "Please enter a valid price",
+      "enterValidStock": "Please enter valid stock quantity",
+      "addImage": "Please add an image",
+      "uploadingImage": "Uploading Image",
+      "uploadingImageMessage": "Please wait while we upload your image...",
+      "itemPosted": "Item Posted!",
+      "itemPostedMessage": "Your item has been successfully posted."
+    }
+  },
+  "swap": {
+    "title": "Swap Item",
+    "selectYourItem": "Select Your Item to Swap",
+    "confirmSwap": "Confirm Swap",
+    "swapRequest": "Swap Request",
+    "youWillReceive": "You will receive:",
+    "youWillGive": "You will give:",
+    "swapValue": "Swap Value",
+    "confirmMessage": "Are you sure you want to proceed with this swap?",
+    "cancel": "Cancel",
+    "confirm": "Confirm Swap",
+    "processing": "Processing...",
+    "success": "Swap request sent successfully!",
+    "error": "Error processing swap request",
+    "noItems": "You don't have any items to swap",
+    "loading": "Loading your items..."
+  },
+  "updateProfile": {
+    "title": "Update Profile",
+    "personalInformation": "Personal Information",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "phoneNumber": "Phone Number",
+    "age": "Age",
+    "address": "Address",
+    "profilePicture": "Profile Picture",
+    "changePhoto": "Change Photo",
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "success": "Profile updated successfully!",
+    "error": "Error updating profile",
+    "validation": {
+      "firstNameRequired": "First name is required",
+      "lastNameRequired": "Last name is required",
+      "phoneInvalid": "Phone number must be 10 digits",
+      "ageInvalid": "Age must be between 10 and 120"
+    }
+  },
+  "completeProfile": {
+    "title": "Complete Your Profile",
+    "subtitle": "Please provide additional information to complete your account setup",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "phoneNumber": "Phone Number",
+    "age": "Age",
+    "address": "Address",
+    "continue": "Continue",
+    "skip": "Skip for now"
   }
 }

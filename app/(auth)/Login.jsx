@@ -4,20 +4,21 @@ import { useRouter } from 'expo-router';
 import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Image, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Modal, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { auth, db } from '../../services/firebaseConfig';
 import { ensureMinimalUserFields } from '../../services/userService';
-import { useAppI18n } from '../../utils/i18n';
+import { LANGUAGE_OPTIONS, getLanguageName, useAppI18n } from '../../utils/i18n';
 import { saveUserData } from '../../utils/storage';
 
 export default function Login() {
   const router = useRouter();
-  const { t, auth: authT, common, error, message } = useAppI18n();
+  const { t, auth: authT, common, error, message, currentLanguage, changeLanguage } = useAppI18n();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
+  const [languageModalVisible, setLanguageModalVisible] = useState(false);
 
   // ✅ Email/Password login
   const handleLogin = async () => {
@@ -121,14 +122,26 @@ export default function Login() {
           colors={['#2563eb', '#1d4ed8']}
           className="px-6 pt-8 pb-16 rounded-b-3xl shadow-sm"
         >
-          <View className="flex-row items-center mb-6">
+          <View className="flex-row items-center justify-between mb-6">
             <TouchableOpacity onPress={() => router.push('/(tabs)/Home')} className="p-2 -ml-2">
               <Ionicons name="arrow-back" size={24} color="white" />
             </TouchableOpacity>
+            
+            {/* Language Selector Button */}
+            <TouchableOpacity 
+              onPress={() => setLanguageModalVisible(true)}
+              className="flex-row items-center bg-white/20 px-3 py-2 rounded-full"
+              activeOpacity={0.7}
+            >
+              <Ionicons name="language" size={18} color="white" />
+              <Text className="text-white text-sm font-medium ml-2">
+                {getLanguageName(currentLanguage, true)}
+              </Text>
+            </TouchableOpacity>
           </View>
           <View className="items-center">
-            <Text className="text-white text-3xl font-bold mb-2">Welcome Back 👋</Text>
-            <Text className="text-blue-100 text-base">Sign in to continue to Maaru.lk</Text>
+            <Text className="text-white text-3xl font-bold mb-2">{t('auth.welcomeBack')} 👋</Text>
+            <Text className="text-blue-100 text-base">{t('auth.signInToContinue')}</Text>
           </View>
         </LinearGradient>
 
@@ -238,10 +251,84 @@ export default function Login() {
         {/* Guest Option */}
         <View className="mx-6 mt-6 mb-10 items-center">
           <Pressable onPress={() => router.push('/Home')} className="active:opacity-70">
-            <Text className="text-gray-500 font-medium">Continue as Guest</Text>
+            <Text className="text-gray-500 font-medium">{t('auth.continueAsGuest')}</Text>
           </Pressable>
         </View>
       </ScrollView>
+
+      {/* Language Selection Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={languageModalVisible}
+        onRequestClose={() => setLanguageModalVisible(false)}
+      >
+        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <View style={{ backgroundColor: 'white', borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingTop: 20 }}>
+            {/* Header */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 20 }}>
+              <Text style={{ fontSize: 18, fontWeight: 'bold', flex: 1 }}>
+                {t('auth.selectLanguage')}
+              </Text>
+              <TouchableOpacity onPress={() => setLanguageModalVisible(false)}>
+                <Ionicons name="close" size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Current Language */}
+            <View style={{ paddingHorizontal: 20, paddingBottom: 15 }}>
+              <Text style={{ fontSize: 14, color: '#666', marginBottom: 5 }}>
+                {t('auth.currentLanguage')}: {getLanguageName(currentLanguage, true)}
+              </Text>
+            </View>
+
+            {/* Language Options */}
+            <ScrollView style={{ maxHeight: 300 }}>
+              {LANGUAGE_OPTIONS.map((option) => (
+                <TouchableOpacity
+                  key={option.code}
+                  onPress={() => {
+                    changeLanguage(option.code);
+                    setLanguageModalVisible(false);
+                  }}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingHorizontal: 20,
+                    paddingVertical: 15,
+                    backgroundColor: currentLanguage === option.code ? '#f0f8ff' : 'white',
+                    borderLeftWidth: currentLanguage === option.code ? 4 : 0,
+                    borderLeftColor: '#2563eb',
+                  }}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ 
+                      fontSize: 16, 
+                      fontWeight: currentLanguage === option.code ? 'bold' : 'normal',
+                      color: currentLanguage === option.code ? '#2563eb' : '#333'
+                    }}>
+                      {option.nativeName}
+                    </Text>
+                    <Text style={{ 
+                      fontSize: 14, 
+                      color: '#666', 
+                      marginTop: 2 
+                    }}>
+                      {option.englishName}
+                    </Text>
+                  </View>
+                  {currentLanguage === option.code && (
+                    <Ionicons name="checkmark-circle" size={20} color="#2563eb" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            {/* Bottom spacing for safe area */}
+            <View style={{ height: 30 }} />
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

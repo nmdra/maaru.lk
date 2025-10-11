@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, FlatList, Modal, Pressable, Text, TextInput, View } from "react-native";
 import { auth } from "../../services/firebaseConfig";
 import { createReview, deleteReview, fetchReviews, updateReview } from "../../services/reviewService";
+import { useAppI18n } from "../../utils/i18n";
 
 // Replace with the sellerId you want to show reviews for (e.g., from props or navigation)
 const sellerId = "SELLER_USER_ID";
 
 export default function Reviews() {
+	const { t } = useAppI18n();
 	const [reviews, setReviews] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [modalVisible, setModalVisible] = useState(false);
@@ -26,7 +28,7 @@ export default function Reviews() {
 			const data = await fetchReviews(sellerId);
 			setReviews(data);
 		} catch (e) {
-			Alert.alert("Error", e.message);
+			Alert.alert(t('reviews.alerts.error'), e.message);
 		} finally {
 			setLoading(false);
 		}
@@ -48,19 +50,19 @@ export default function Reviews() {
 
 	async function handleSubmit() {
 		if (!comment.trim()) {
-			Alert.alert("Validation", "Please enter a comment.");
+			Alert.alert(t('common.error'), t('reviews.validation.enterComment'));
 			return;
 		}
 		const numRating = parseInt(rating, 10);
 		if (isNaN(numRating) || numRating < 1 || numRating > 5) {
-			Alert.alert("Validation", "Rating must be a number between 1 and 5.");
+			Alert.alert(t('common.error'), t('reviews.validation.ratingRange'));
 			return;
 		}
 		setSubmitting(true);
 		try {
 			if (editingReview) {
 				await updateReview(sellerId, editingReview.id, { rating, comment });
-				Alert.alert("Success", "Review updated.");
+				Alert.alert(t('common.success'), t('reviews.alerts.updated'));
 			} else {
 				await createReview({
 					sellerId,
@@ -69,26 +71,26 @@ export default function Reviews() {
 					comment,
 					reviewerInfo: { reviewerName: auth.currentUser.displayName || "", reviewerPhoto: auth.currentUser.photoURL || "" }
 				});
-				Alert.alert("Success", "Review added.");
+				Alert.alert(t('common.success'), t('reviews.alerts.added'));
 			}
 			setModalVisible(false);
 			loadReviews();
 		} catch (e) {
-			Alert.alert("Error", e.message);
+			Alert.alert(t('reviews.alerts.error'), e.message);
 		} finally {
 			setSubmitting(false);
 		}
 	}
 
 	async function handleDelete(review) {
-		Alert.alert("Delete Review", "Are you sure?", [
-			{ text: "Cancel", style: "cancel" },
-			{ text: "Delete", style: "destructive", onPress: async () => {
+		Alert.alert(t('reviews.deleteConfirm'), t('reviews.deleteMessage'), [
+			{ text: t('reviews.cancel'), style: "cancel" },
+			{ text: t('reviews.delete'), style: "destructive", onPress: async () => {
 				try {
 					await deleteReview(sellerId, review.id);
 					loadReviews();
 				} catch (e) {
-					Alert.alert("Error", e.message);
+					Alert.alert(t('reviews.alerts.error'), e.message);
 				}
 			}}
 		]);
@@ -99,17 +101,17 @@ export default function Reviews() {
 		const isMine = item.reviewerId === auth.currentUser?.uid;
 		return (
 			<View className="bg-white rounded-lg shadow p-4 mb-3">
-				<Text className="font-bold text-lg mb-1">{item.reviewerName || "Anonymous"}</Text>
-				<Text className="text-yellow-500 mb-1">Rating: {item.rating}</Text>
+				<Text className="font-bold text-lg mb-1">{item.reviewerName || t('reviews.anonymous')}</Text>
+				<Text className="text-yellow-500 mb-1">{t('reviews.rating')}: {item.rating}</Text>
 				<Text className="mb-2">{item.comment}</Text>
 				<Text className="text-xs text-gray-400 mb-1">{item.timestamp?.toDate?.().toLocaleString?.() || ""}</Text>
 				{isMine && (
 					<View className="flex-row space-x-2 mt-2">
 						<Pressable onPress={() => openEditModal(item)} className="bg-blue-500 px-3 py-1 rounded">
-							<Text className="text-white">Edit</Text>
+							<Text className="text-white">{t('reviews.edit')}</Text>
 						</Pressable>
 						<Pressable onPress={() => handleDelete(item)} className="bg-red-500 px-3 py-1 rounded">
-							<Text className="text-white">Delete</Text>
+							<Text className="text-white">{t('reviews.delete')}</Text>
 						</Pressable>
 					</View>
 				)}
@@ -119,9 +121,9 @@ export default function Reviews() {
 
 	return (
 		<View className="flex-1 bg-gray-100 p-4">
-			<Text className="text-2xl font-bold mb-4">Seller Reviews</Text>
+			<Text className="text-2xl font-bold mb-4">{t('reviews.sellerReviews')}</Text>
 			<Pressable onPress={openCreateModal} className="bg-blue-600 py-3 rounded mb-4">
-				<Text className="text-white text-center font-semibold">Add Review</Text>
+				<Text className="text-white text-center font-semibold">{t('reviews.addReview')}</Text>
 			</Pressable>
 			{loading ? (
 				<ActivityIndicator size="large" color="#1a73e8" />
@@ -130,7 +132,7 @@ export default function Reviews() {
 					data={reviews}
 					keyExtractor={item => item.id}
 					renderItem={renderReview}
-					ListEmptyComponent={<Text className="text-center text-gray-400 mt-10">No reviews yet.</Text>}
+					ListEmptyComponent={<Text className="text-center text-gray-400 mt-10">{t('reviews.noReviewsYet')}</Text>}
 				/>
 			)}
 
@@ -138,8 +140,8 @@ export default function Reviews() {
 			<Modal visible={modalVisible} animationType="slide" transparent>
 				<View className="flex-1 justify-center items-center bg-black bg-opacity-40">
 					<View className="bg-white w-11/12 rounded-xl p-6">
-						<Text className="text-xl font-bold mb-4">{editingReview ? "Edit Review" : "Add Review"}</Text>
-						<Text className="mb-2">Rating (1-5):</Text>
+						<Text className="text-xl font-bold mb-4">{editingReview ? t('reviews.editReview') : t('reviews.addReview')}</Text>
+						<Text className="mb-2">{t('reviews.ratingLabel')}</Text>
 						<TextInput
 							value={String(rating)}
 							onChangeText={t => {
@@ -149,20 +151,20 @@ export default function Reviews() {
 							keyboardType="numeric"
 							className="border border-gray-300 rounded px-3 py-2 mb-3"
 						/>
-						<Text className="mb-2">Comment:</Text>
+						<Text className="mb-2">{t('reviews.commentLabel')}</Text>
 						<TextInput
 							value={comment}
 							onChangeText={setComment}
-							placeholder="Write your review..."
+							placeholder={t('reviews.commentPlaceholder')}
 							multiline
 							className="border border-gray-300 rounded px-3 py-2 mb-3 min-h-[60px]"
 						/>
 						<View className="flex-row justify-end space-x-2">
 							<Pressable onPress={() => setModalVisible(false)} className="px-4 py-2 bg-gray-300 rounded">
-								<Text>Cancel</Text>
+								<Text>{t('reviews.cancel')}</Text>
 							</Pressable>
 							<Pressable onPress={handleSubmit} className="px-4 py-2 bg-blue-600 rounded" disabled={submitting}>
-								<Text className="text-white">{submitting ? "Saving..." : editingReview ? "Update" : "Submit"}</Text>
+								<Text className="text-white">{submitting ? t('reviews.saving') : editingReview ? t('reviews.update') : t('reviews.submit')}</Text>
 							</Pressable>
 						</View>
 					</View>
