@@ -18,8 +18,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ChatBubble from '../../components/chat/ChatBubble';
 import { auth, db } from '../../services/firebaseConfig';
-import { clearUserData } from '../../utils/storage';
 import { LANGUAGE_OPTIONS, getLanguageName, useAppI18n } from '../../utils/i18n';
+import { clearUserData } from '../../utils/storage';
 
 export default function Profile() {
   const router = useRouter();

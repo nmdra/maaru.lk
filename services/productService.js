@@ -1,10 +1,12 @@
-import { collection, getDocs, limit, orderBy, query, startAfter, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, limit, orderBy, query, startAfter, where } from 'firebase/firestore';
 import { db } from './firebaseConfig';
+import { searchProductsByKeywords } from './searchKeywordService';
 
 const PRODUCTS_COLLECTION = 'products';
 
 /**
  * Fetch products with search, category, price range, and pagination.
+ * Only returns available products (availability === true)
  */
 export async function fetchProducts({
   search = '',
@@ -18,11 +20,28 @@ export async function fetchProducts({
     let q = collection(db, PRODUCTS_COLLECTION);
     const conditions = [];
 
-    // Search by name
-    const searchTerm = search.trim();
+    // Always filter for available products
+    conditions.push(where('availability', '==', true));
+
+    // If search term is provided, first get matching product IDs from keywords collection
+    let productIdsFromSearch = null;
+    const searchTerm = search.trim().toLowerCase();
     if (searchTerm) {
-      conditions.push(where('name', '>=', searchTerm));
-      conditions.push(where('name', '<=', searchTerm + '\uf8ff'));
+      productIdsFromSearch = await searchProductsByKeywords(searchTerm);
+      
+      // If no products found with keywords, return empty result
+      if (productIdsFromSearch.length === 0) {
+        return { items: [], cursor: null };
+      }
+      
+      // Firestore 'in' query supports max 30 items at a time
+      // For more results, we'll need to batch queries
+      if (productIdsFromSearch.length > 30) {
+        productIdsFromSearch = productIdsFromSearch.slice(0, 30);
+      }
+      
+      // Filter by product IDs from keyword search
+      conditions.push(where('__name__', 'in', productIdsFromSearch));
     }
 
     // Category filter
