@@ -7,6 +7,7 @@ import { Alert, Image, ScrollView, Switch, Text, TextInput, TouchableOpacity, Vi
 import { generateProductDetails } from '../services/aiService';
 import { uploadImageToCloudinary } from '../services/cloudinaryService'; // <-- Import Cloudinary upload function
 import { addItemToFirestore } from '../services/itemService';
+import { generateSearchKeywords, saveKeywordsToCollection } from '../services/searchKeywordService';
 import { getUserId } from '../utils/storage';
 
 const CATEGORIES = ['Electronics', 'Furniture', 'Books', 'Clothing', 'Others'];
@@ -28,6 +29,12 @@ export default function AddItemScreen() {
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [userId, setUserId] = useState(null);
+  
+  // New fields
+  const [swapStatus, setSwapStatus] = useState(true); // Allow swap by default
+  const [payStatus, setPayStatus] = useState(true); // Allow payment by default
+  const [availability, setAvailability] = useState(true); // Available by default
+  const [otherImages, setOtherImages] = useState([]); // Array of additional image URIs
 
   useEffect(() => {
     const loadUserId = async () => {
@@ -60,6 +67,36 @@ export default function AddItemScreen() {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  // Handle picking multiple additional images
+  const handlePickOtherImages = async () => {
+    try {
+      const permissionStatus = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (permissionStatus.status !== 'granted') {
+        Alert.alert('Permission Required', 'Permission required to select images.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        allowsMultipleSelection: true,
+        quality: 0.7,
+        aspect: [4, 3],
+      });
+
+      if (!result.canceled) {
+        const newImages = result.assets.map(asset => asset.uri);
+        setOtherImages([...otherImages, ...newImages]);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Remove an image from other images array
+  const handleRemoveOtherImage = (index) => {
+    setOtherImages(otherImages.filter((_, i) => i !== index));
   };
 
   const toggleTag = (tag) => {
@@ -141,7 +178,18 @@ export default function AddItemScreen() {
       let uploadedImageUrl = 'https://placehold.co/600x400'; // default placeholder
 
       if (imageUri) {
+        Alert.alert('Uploading Image', 'Please wait while we upload your image...');
         uploadedImageUrl = await uploadImageToCloudinary(imageUri, 'products');
+      }
+
+      // Upload other images
+      const uploadedOtherImages = [];
+      if (otherImages.length > 0) {
+        Alert.alert('Uploading Images', `Uploading ${otherImages.length} additional images...`);
+        for (const uri of otherImages) {
+          const uploadedUrl = await uploadImageToCloudinary(uri, 'products');
+          uploadedOtherImages.push(uploadedUrl);
+        }
       }
 
       const newItem = {
@@ -156,9 +204,19 @@ export default function AddItemScreen() {
         stock: Number(stock) || 1,
         ownerId: userId,
         createdAt: serverTimestamp(),
+        // New fields
+        swapStatus,
+        payStatus,
+        availability,
+        otherImages: uploadedOtherImages,
       };
 
+      // Add product to Firestore first to get the productId
       const itemId = await addItemToFirestore(newItem);
+
+      // Generate and save search keywords to separate collection
+      const keywords = generateSearchKeywords(newItem);
+      await saveKeywordsToCollection(itemId, keywords, tags); // Pass tags array
 
       router.push({
         pathname: '/AddProductConfirmation',
@@ -265,6 +323,41 @@ export default function AddItemScreen() {
         />
       </View>
 
+      {/* New Status Fields */}
+      <View className="bg-gray-50 p-4 rounded-2xl mb-5 shadow-sm">
+        <Text className="text-gray-900 font-bold text-lg mb-3">Product Status</Text>
+        
+        <View className="flex-row justify-between items-center mb-3 px-2">
+          <Text className="text-gray-700 font-medium">Allow Swap</Text>
+          <Switch
+            value={swapStatus}
+            onValueChange={setSwapStatus}
+            trackColor={{ false: '#d1d5db', true: '#10b981' }}
+            thumbColor={swapStatus ? '#ffffff' : '#f3f4f6'}
+          />
+        </View>
+
+        <View className="flex-row justify-between items-center mb-3 px-2">
+          <Text className="text-gray-700 font-medium">Allow Payment</Text>
+          <Switch
+            value={payStatus}
+            onValueChange={setPayStatus}
+            trackColor={{ false: '#d1d5db', true: '#3b82f6' }}
+            thumbColor={payStatus ? '#ffffff' : '#f3f4f6'}
+          />
+        </View>
+
+        <View className="flex-row justify-between items-center px-2">
+          <Text className="text-gray-700 font-medium">Available for Sale</Text>
+          <Switch
+            value={availability}
+            onValueChange={setAvailability}
+            trackColor={{ false: '#d1d5db', true: '#f59e0b' }}
+            thumbColor={availability ? '#ffffff' : '#f3f4f6'}
+          />
+        </View>
+      </View>
+
       {!swapOnly && (
         <TextInput
           value={price}
@@ -319,6 +412,41 @@ export default function AddItemScreen() {
         >
           <Ionicons name="add-outline" size={22} color="white" />
         </TouchableOpacity>
+      </View>
+
+      {/* Other Images Section */}
+      <View className="mb-6">
+        <Text className="text-gray-900 font-bold text-lg mb-3">Additional Images (Optional)</Text>
+        
+        <TouchableOpacity
+          onPress={handlePickOtherImages}
+          className="bg-indigo-500 py-3 rounded-full flex-row items-center justify-center shadow-lg mb-3"
+        >
+          <Ionicons name="images" size={22} color="white" />
+          <Text className="text-white font-semibold text-base ml-2">
+            Add More Images ({otherImages.length})
+          </Text>
+        </TouchableOpacity>
+
+        {otherImages.length > 0 && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="space-x-3">
+            {otherImages.map((uri, index) => (
+              <View key={index} className="relative">
+                <Image
+                  source={{ uri }}
+                  className="w-24 h-24 rounded-xl"
+                  style={{ borderWidth: 1, borderColor: '#e5e7eb' }}
+                />
+                <TouchableOpacity
+                  onPress={() => handleRemoveOtherImage(index)}
+                  className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1"
+                >
+                  <Ionicons name="close" size={16} color="white" />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+        )}
       </View>
 
       <TouchableOpacity

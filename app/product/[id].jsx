@@ -20,8 +20,8 @@ import { useAppI18n } from '../../utils/i18n';
 
 // 🔗 chat helpers + auth
 import { useAuth } from '../../context/AuthContext';
-import { ensureConversation, roomIdFor } from '../../services/chatService';
 import { generateProductDetails } from '../../services/aiService';
+import { ensureConversation, roomIdFor } from '../../services/chatService';
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -199,6 +199,25 @@ export default function ProductDetailScreen() {
       <View className="flex-1 justify-center items-center">
         <ActivityIndicator size="large" color="#3B82F6" />
         <Text className="text-gray-500 mt-4">{t('productDetail.loading')}</Text>
+      </View>
+    );
+  }
+
+  // Check if product is available
+  if (product.availability === false) {
+    return (
+      <View className="flex-1 justify-center items-center bg-gray-50 p-6">
+        <Ionicons name="alert-circle-outline" size={80} color="#EF4444" />
+        <Text className="text-2xl font-bold text-gray-900 mt-4 text-center">Product Not Available</Text>
+        <Text className="text-gray-600 mt-2 text-center">
+          This product is no longer available for purchase or swap.
+        </Text>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className="mt-6 bg-blue-600 px-6 py-3 rounded-lg"
+        >
+          <Text className="text-white font-semibold">Go Back</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -428,15 +447,9 @@ export default function ProductDetailScreen() {
 
         {/* Action Buttons */}
         <View className="flex-row justify-between px-4 py-3 space-x-3 items-center">
-          {product.swapOnly ? (
-            <TouchableOpacity
-              onPress={handleSwap}
-              className="flex-1 bg-green-600 py-3 rounded-lg flex-row items-center justify-center"
-            >
-              <Ionicons name="swap-horizontal-outline" size={20} color="white" />
-              <Text className="text-white font-semibold ml-2">{t('productDetail.swap')}</Text>
-            </TouchableOpacity>
-          ) : (
+          {/* Show buttons based on product status */}
+          {product.swapStatus && product.payStatus ? (
+            // Both swap and pay enabled
             <>
               <TouchableOpacity
                 onPress={handleSwap}
@@ -454,6 +467,29 @@ export default function ProductDetailScreen() {
                 <Text className="text-white font-semibold ml-2">{t('productDetail.buyNow')}</Text>
               </TouchableOpacity>
             </>
+          ) : product.swapStatus && !product.payStatus ? (
+            // Only swap enabled
+            <TouchableOpacity
+              onPress={handleSwap}
+              className="flex-1 bg-green-600 py-3 rounded-lg flex-row items-center justify-center"
+            >
+              <Ionicons name="swap-horizontal-outline" size={20} color="white" />
+              <Text className="text-white font-semibold ml-2">{t('productDetail.swap')}</Text>
+            </TouchableOpacity>
+          ) : !product.swapStatus && product.payStatus ? (
+            // Only pay enabled
+            <TouchableOpacity
+              onPress={handlePay}
+              className="flex-1 bg-yellow-500 py-3 rounded-lg flex-row items-center justify-center"
+            >
+              <Ionicons name="card-outline" size={20} color="white" />
+              <Text className="text-white font-semibold ml-2">{t('productDetail.buyNow')}</Text>
+            </TouchableOpacity>
+          ) : (
+            // Neither enabled - show unavailable message
+            <View className="flex-1 bg-gray-300 py-3 rounded-lg items-center justify-center">
+              <Text className="text-gray-700 font-semibold">Product Not Available for Purchase</Text>
+            </View>
           )}
         </View>
 
