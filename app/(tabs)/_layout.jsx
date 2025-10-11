@@ -42,6 +42,15 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="swap"
+        options={{
+          title: 'Swap',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="swap-horizontal-outline" size={size ?? 24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="Reviews"
         options={{
           title: 'Reviews',
