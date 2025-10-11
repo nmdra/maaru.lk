@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
@@ -18,7 +19,7 @@ export default function Login() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
 
-  // Email/Password login
+  // ✅ Email/Password login
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please enter email and password.');
@@ -29,19 +30,15 @@ export default function Login() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // 👇 ensure minimal fields used by chat (safe merge, won't break your schema)
       await ensureMinimalUserFields(user.uid, {
         displayName: user.displayName || undefined,
-        avatarUrl: undefined, // Don't store profile photo
-        // role left default ('buyer') unless you want to pass one here
+        avatarUrl: undefined,
       });
 
-      // Get additional user data from Firestore
       const userDocRef = doc(db, 'users', user.uid);
       const userDoc = await getDoc(userDocRef);
       const userData = userDoc.exists() ? userDoc.data() : {};
 
-      // Save user data to AsyncStorage (without profile photo)
       await saveUserData({
         userId: user.uid,
         email: user.email,
@@ -54,7 +51,6 @@ export default function Login() {
         createdAt: userData.createdAt || new Date().toISOString(),
       });
 
-      console.log('User signed in:', user.uid);
       Alert.alert('Success', 'Logged in');
       router.replace('/Home');
     } catch (err) {
@@ -65,7 +61,7 @@ export default function Login() {
     }
   };
 
-  // Google login (note: signInWithPopup works on web; use Expo AuthSession for native)
+  // ✅ Google login
   const handleGoogleLogin = async () => {
     setIsGoogleSubmitting(true);
     try {
@@ -73,33 +69,28 @@ export default function Login() {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
 
-      // Check if user profile exists and is complete
       const userDocRef = doc(db, 'users', user.uid);
       const userDoc = await getDoc(userDocRef);
-      
+
       if (!userDoc.exists() || !userDoc.data().firstName || !userDoc.data().lastName || !userDoc.data().phone) {
-        // Profile incomplete - redirect to complete profile page
-        console.log('Profile incomplete, redirecting to complete profile');
         router.push({
           pathname: '/(auth)/CompleteProfile',
           params: {
             userId: user.uid,
             email: user.email,
             displayName: user.displayName || '',
-          }
+          },
         });
         return;
       }
 
-      // Profile exists and is complete
       const userData = userDoc.data();
 
       await ensureMinimalUserFields(user.uid, {
         displayName: userData.displayName || user.displayName || undefined,
-        avatarUrl: undefined, // Don't use profile photo from Google
+        avatarUrl: undefined,
       });
 
-      // Save user data to AsyncStorage (without profile photo)
       await saveUserData({
         userId: user.uid,
         email: user.email,
@@ -112,13 +103,11 @@ export default function Login() {
         createdAt: userData.createdAt || new Date().toISOString(),
       });
 
-      console.log('Google sign-in successful:', user.uid);
       Alert.alert('Success', 'Signed in with Google');
       router.replace('/Home');
     } catch (err) {
       console.error('Google sign-in error:', err);
-      const errorMessage = err?.message;
-      Alert.alert('Google Sign-In Failed', errorMessage || 'An error occurred during Google authentication');
+      Alert.alert('Google Sign-In Failed', err?.message || 'An error occurred during Google authentication');
     } finally {
       setIsGoogleSubmitting(false);
     }
@@ -126,83 +115,97 @@ export default function Login() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
-      <ScrollView className="flex-1">
-        {/* Header Section */}
-        <View className="bg-blue-600 px-6 pt-6 pb-10">
-          <View className="flex-row items-center mb-3">
-            <TouchableOpacity 
-              onPress={() => router.push('/(tabs)/Home')} 
-              className="p-2 -ml-2"
-            >
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        {/* 🌈 Header with Gradient */}
+        <LinearGradient
+          colors={['#2563eb', '#1d4ed8']}
+          className="px-6 pt-8 pb-16 rounded-b-3xl shadow-sm"
+        >
+          <View className="flex-row items-center mb-6">
+            <TouchableOpacity onPress={() => router.push('/(tabs)/Home')} className="p-2 -ml-2">
               <Ionicons name="arrow-back" size={24} color="white" />
             </TouchableOpacity>
           </View>
           <View className="items-center">
-            <Text className="text-white text-2xl font-bold mb-3">Welcome Back</Text>
+            <Text className="text-white text-3xl font-bold mb-2">Welcome Back 👋</Text>
+            <Text className="text-blue-100 text-base">Sign in to continue to Maaru.lk</Text>
           </View>
-        </View>
+        </LinearGradient>
 
-        {/* Login Card */}
-        <View className="mx-6 -mt-12 bg-white rounded-2xl shadow-lg p-6">
-          {/* Logo/Icon Section */}
-          <View className="items-center -mt-10 mb-5">
-            <View className="w-22 h-22 rounded-full bg-white p-1 shadow-lg">
-              <View className="w-full h-full rounded-full bg-blue-500 items-center justify-center">
-                <Text className="text-white text-2xl font-bold">M</Text>
+        {/* 💳 Login Card */}
+        <View className="mx-6 -mt-12 bg-white rounded-3xl shadow-lg p-6 border border-gray-100">
+          {/* Logo */}
+
+<View className="items-center -mt-12 mb-6">
+  <View className="w-24 h-24 rounded-full bg-white shadow-md items-center justify-center border border-gray-100 overflow-hidden">
+    <Image
+      source={require('../../assets/images/react-logo.png')} // 👈 replace with your actual logo path
+      className="w-full h-full"
+      resizeMode="contain"
+    />
+  </View>
+</View>
+
+          {/* Form Fields */}
+          <View className="space-y-4">
+            {/* Email Field */}
+            <View>
+              <Text className="text-gray-700 font-medium mb-2">Email</Text>
+              <View className="flex-row items-center border border-gray-200 rounded-xl bg-gray-50 px-3 py-2">
+                <Ionicons name="mail-outline" size={20} color="#6b7280" />
+                <TextInput
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="you@example.com"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  className="flex-1 ml-2 text-base text-gray-700"
+                  placeholderTextColor="#9ca3af"
+                />
               </View>
             </View>
-          </View>
 
-          {/* Form Section */}
-          <View className="space-y-4">
-            <View>
-              <Text className="text-gray-700 font-medium mb-2">Email Address</Text>
-              <TextInput
-                value={email}
-                onChangeText={setEmail}
-                placeholder="you@example.com"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base"
-              />
-            </View>
-
+            {/* Password Field */}
             <View>
               <Text className="text-gray-700 font-medium mb-2">Password</Text>
-              <TextInput
-                value={password}
-                onChangeText={setPassword}
-                placeholder="Enter your password"
-                secureTextEntry
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base"
-              />
+              <View className="flex-row items-center border border-gray-200 rounded-xl bg-gray-50 px-3 py-2">
+                <Ionicons name="lock-closed-outline" size={20} color="#6b7280" />
+                <TextInput
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="Enter your password"
+                  secureTextEntry
+                  className="flex-1 ml-2 text-base text-gray-700"
+                  placeholderTextColor="#9ca3af"
+                />
+              </View>
             </View>
 
-            {/* Login Button */}
+            {/* Sign In Button */}
             <Pressable
               onPress={handleLogin}
-              className="bg-blue-600 py-3 rounded-xl mt-5"
               disabled={isSubmitting}
+              className="bg-blue-600 py-3 rounded-2xl mt-5 shadow-sm active:opacity-80"
             >
               {isSubmitting ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text className="text-white font-semibold text-center text-base">Sign In</Text>
+                <Text className="text-white text-center font-semibold text-lg">Sign In</Text>
               )}
             </Pressable>
 
-            {/* divide */}
+            {/* Divider */}
             <View className="flex-row items-center my-6">
               <View className="flex-1 h-px bg-gray-200" />
-              <Text className="mx-4 text-gray-500 text-sm">or</Text>
+              <Text className="mx-4 text-gray-400 text-sm font-medium">OR</Text>
               <View className="flex-1 h-px bg-gray-200" />
             </View>
 
-            {/* Google Login Button */}
+            {/* Google Login */}
             <Pressable
               onPress={handleGoogleLogin}
-              className="bg-white border border-gray-300 py-3 rounded-xl flex-row items-center justify-center"
               disabled={isGoogleSubmitting}
+              className="bg-white border border-gray-300 py-3 rounded-2xl flex-row items-center justify-center shadow-sm active:opacity-80"
             >
               {isGoogleSubmitting ? (
                 <ActivityIndicator color="#4285F4" />
@@ -210,7 +213,7 @@ export default function Login() {
                 <>
                   <Image
                     source={require('../../assets/images/google.png')}
-                    style={{ width: 20, height: 20, marginRight: 12, resizeMode: 'contain' }}
+                    style={{ width: 22, height: 22, marginRight: 10 }}
                   />
                   <Text className="text-gray-700 font-semibold text-base">Continue with Google</Text>
                 </>
@@ -218,24 +221,24 @@ export default function Login() {
             </Pressable>
 
             {/* Forgot Password */}
-            <Pressable onPress={() => router.push('/forgotPassword')} className="py-2 items-center">
-              <Text className="text-gray-500">Forgot Password?</Text>
-            </Pressable>
+            <TouchableOpacity onPress={() => router.push('/forgotPassword')} className="mt-3 items-center">
+              <Text className="text-blue-600 font-medium">Forgot Password?</Text>
+            </TouchableOpacity>
 
-            {/* Create account */}
-            <View className="items-center mt-3">
-              <Text className="text-sm text-gray-500">Don't have an account?</Text>
-              <Pressable onPress={() => router.push('/(auth)/SignUp')} className="mt-2">
-                <Text className="text-blue-600 font-semibold">Create Account</Text>
-              </Pressable>
+            {/* Create Account */}
+            <View className="items-center mt-6">
+              <Text className="text-gray-500 text-sm">Don’t have an account?</Text>
+              <TouchableOpacity onPress={() => router.push('/(auth)/SignUp')} className="mt-2">
+                <Text className="text-blue-600 font-semibold text-base">Create Account</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
 
-        {/* Continue as Guest */}
-        <View className="mx-6 mt-6 mb-8 items-center">
-          <Pressable onPress={() => router.push('/Home')}>
-            <Text className="text-gray-500">Continue as Guest</Text>
+        {/* Guest Option */}
+        <View className="mx-6 mt-6 mb-10 items-center">
+          <Pressable onPress={() => router.push('/Home')} className="active:opacity-70">
+            <Text className="text-gray-500 font-medium">Continue as Guest</Text>
           </Pressable>
         </View>
       </ScrollView>
