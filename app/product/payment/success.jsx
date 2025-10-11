@@ -51,7 +51,7 @@ export default function PaymentSuccessScreen() {
           Alert.alert(
             'Authentication Error',
             'Please log in to complete your order.',
-            [{ text: 'OK', onPress: () => router.push('/(auth)/login') }]
+            [{ text: 'OK', onPress: () => router.push('/(auth)/Login') }]
           );
           return;
         }

@@ -12,7 +12,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import ChatBubble from '../../components/chat/ChatBubble';
 import { fetchProducts } from '../../services/productService';
 import formatPrice from '../../utils/formatPrice';
 
@@ -57,7 +56,11 @@ export default function HomeScreen() {
 
         {/* Add profile button  */}
         <Pressable
+<<<<<<< HEAD
+          onPress={() => router.push('/(auth)/Profile')}
+=======
           onPress={() => router.push('/Profile')}
+>>>>>>> master
           className="bg-blue-600 p-2 rounded-full"
           accessibilityLabel="Go to Profile"
         >

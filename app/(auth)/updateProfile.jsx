@@ -40,7 +40,11 @@ export default function UpdateProfile() {
         const user = auth.currentUser;
         if (!user) {
           Alert.alert("Error", "No user logged in.");
+<<<<<<< HEAD
+          router.replace("/(auth)/Login");
+=======
           router.replace("/Login");
+>>>>>>> master
           return;
         }
         const docRef = doc(db, "users", user.uid);
@@ -119,7 +123,11 @@ export default function UpdateProfile() {
       });
     
     Alert.alert("Success", "Profile updated!");
+<<<<<<< HEAD
+    router.push("/(auth)/Profile"); // Make sure this matches your route
+=======
     router.push("/Profile"); // Make sure this matches your route
+>>>>>>> master
 
   } catch (error) {
     Alert.alert("Error", error.message);
@@ -144,7 +152,11 @@ export default function UpdateProfile() {
         <View className="bg-blue-600 px-6 pt-6 pb-12">
           <View className="flex-row items-center mb-3">
             <TouchableOpacity 
+<<<<<<< HEAD
+              onPress={() => router.push('/(auth)/Profile')} 
+=======
               onPress={() => router.push('/Profile')} 
+>>>>>>> master
               className="p-2 -ml-2"
             >
               <Ionicons name="arrow-back" size={24} color="white" />

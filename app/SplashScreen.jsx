@@ -2,7 +2,7 @@ import { useRouter } from "expo-router";
 import { onAuthStateChanged } from "firebase/auth";
 import { useEffect, useRef } from "react";
 import { Animated, Image, StyleSheet, Text } from "react-native";
-import { auth } from "../services/firebaseConfig"; // adjust this path if your firebase config is elsewhere
+import { auth } from "../services/firebaseConfig";
 import { useAppI18n } from "../utils/i18n";
 
 export default function SplashScreen() {
@@ -16,11 +16,10 @@ export default function SplashScreen() {
       userToRoute = user ? "/Login" : "/Home";
     });
 
-    // Always show splash at least 1 second, then fade out
     const timer = setTimeout(() => {
       Animated.timing(fadeAnim, {
         toValue: 0,
-        duration: 600, // fade out duration (ms)
+        duration: 600,
         useNativeDriver: true,
       }).start(() => {
         router.replace(userToRoute || "/Login");

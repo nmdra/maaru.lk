@@ -1,7 +1,8 @@
+// app/product/[id].jsx
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { collection, doc, getDoc, getDocs, limit, query, where } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   Image,
@@ -17,6 +18,7 @@ import formatPrice from '../../utils/formatPrice';
 
 // 🔗 chat helpers + auth
 import { useAuth } from '../../context/AuthContext';
+import { ensureConversation, roomIdFor } from '../../services/chatService';
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -26,6 +28,8 @@ export default function ProductDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [relatedItems, setRelatedItems] = useState([]);
   const [swapGuidelinesVisible, setSwapGuidelinesVisible] = useState(false);
+  const [ownerData, setOwnerData] = useState(null);
+  const [loadingOwner, setLoadingOwner] = useState(false);
 
   const mockTags = product?.tags || [];
 
@@ -39,11 +43,42 @@ export default function ProductDetailScreen() {
           const data = { id: docSnap.id, ...docSnap.data() };
           setProduct(data);
           fetchRelatedItems(data.category, data.id);
+          
+          // Fetch owner data if ownerId exists
+          if (data.ownerId) {
+            fetchOwnerData(data.ownerId);
+          }
         }
       } catch (err) {
         console.error('Error fetching product:', err);
       } finally {
         setLoading(false);
+      }
+    };
+
+    const fetchOwnerData = async (ownerId) => {
+      setLoadingOwner(true);
+      try {
+        const ownerRef = doc(db, 'users', ownerId);
+        const ownerSnap = await getDoc(ownerRef);
+        if (ownerSnap.exists()) {
+          const ownerInfo = ownerSnap.data();
+          setOwnerData({
+            name: ownerInfo.displayName || `${ownerInfo.firstName || ''} ${ownerInfo.lastName || ''}`.trim() || 'Unknown User',
+            email: ownerInfo.email || '',
+            phone: ownerInfo.phone || '',
+            rating: ownerInfo.rating || 0,
+          });
+          console.log('Owner data fetched:', ownerInfo);
+        } else {
+          console.warn('Owner not found in database');
+          setOwnerData({ name: 'Unknown User', email: '', phone: '', rating: 0 });
+        }
+      } catch (err) {
+        console.error('Error fetching owner data:', err);
+        setOwnerData({ name: 'Unknown User', email: '', phone: '', rating: 0 });
+      } finally {
+        setLoadingOwner(false);
       }
     };
 
@@ -65,6 +100,15 @@ export default function ProductDetailScreen() {
     fetchProduct();
   }, [id]);
 
+  const productCard = useMemo(() => {
+    if (!product) return null;
+    return {
+      title: product.name || product.title || 'Item',
+      price: product.price ?? null,
+      thumbnailUrl: product.imageUrl || null,
+    };
+  }, [product]);
+
   if (loading || !product) {
     return (
       <View className="flex-1 justify-center items-center">
@@ -75,7 +119,41 @@ export default function ProductDetailScreen() {
 
   const handleSwap = () => product && router.push(`/swap/${product.id}`);
   const handlePay = () => product && router.push(`/product/payment/${product.id}`);
-  const handleChat = () => product && router.push(`/chat/${product.ownerId}`);
+
+  const handleChat = async () => {
+    if (!product) return;
+
+    if (!user?.uid) {
+      Alert.alert('Please sign in', 'You need to login to chat with the owner.');
+      router.push('/(auth)/Login');
+      return;
+    }
+    if (!product.ownerId) {
+      Alert.alert('Unavailable', 'Owner not found for this product.');
+      return;
+    }
+    if (product.ownerId === user.uid) {
+      Alert.alert('Heads up', 'You are the owner of this listing.');
+      return;
+    }
+
+    try {
+      const buyerUid = user.uid;
+      const sellerUid = product.ownerId;
+      const productId = product.id;
+
+      // Ensure the canonical conversation exists (buyer × seller × product)
+      await ensureConversation({ buyerUid, sellerUid, productId, productCard });
+
+      // Compute the stable room id and navigate
+      const roomId = roomIdFor(buyerUid, sellerUid, productId);
+      router.push({ pathname: '/chat/[roomId]', params: { roomId } });
+    } catch (e) {
+      console.error('Failed to open chat:', e);
+      Alert.alert('Could not open chat', e?.message || 'Unexpected error');
+    }
+  };
+
   const handleFavorite = () => Alert.alert('Favorite', `${product.name} added to favorites.`);
 
   return (
@@ -104,9 +182,7 @@ export default function ProductDetailScreen() {
         {/* Product Image */}
         <View className="relative">
           <Image
-            source={
-              product.imageUrl ? { uri: product.imageUrl } : { uri: 'https://placehold.co/400' }
-            }
+            source={product.imageUrl ? { uri: product.imageUrl } : { uri: 'https://placehold.co/400' }}
             className="w-full h-80 bg-gray-200"
             resizeMode="cover"
           />
@@ -184,15 +260,33 @@ export default function ProductDetailScreen() {
           <View className="bg-white p-4 rounded-xl shadow-md mt-4 border border-gray-200">
             <Text className="text-lg font-semibold mb-2">Owner Details</Text>
 
-            <View className="flex-row items-center mb-2">
-              <Ionicons name="person-circle-outline" size={40} color="#4B5563" />
-              <View className="ml-3">
-                <Text className="text-base font-medium text-gray-900">
-                  {product.ownerName || 'John Doe'}
-                </Text>
-                <Text className="text-sm text-gray-600">User Rating: ⭐⭐⭐⭐☆</Text>
+            {loadingOwner ? (
+              <View className="flex-row items-center mb-2">
+                <Ionicons name="person-circle-outline" size={40} color="#4B5563" />
+                <View className="ml-3">
+                  <Text className="text-sm text-gray-500">Loading owner info...</Text>
+                </View>
               </View>
-            </View>
+            ) : (
+              <View className="flex-row items-center mb-2">
+                <Ionicons name="person-circle-outline" size={40} color="#4B5563" />
+                <View className="ml-3">
+                  <Text className="text-base font-medium text-gray-900">
+                    {ownerData?.name || 'Unknown User'}
+                  </Text>
+                  <Text className="text-sm text-gray-600">
+                    {ownerData?.rating > 0 
+                      ? `User Rating: ${'⭐'.repeat(Math.round(ownerData.rating))}${'☆'.repeat(5 - Math.round(ownerData.rating))}`
+                      : 'No ratings yet'}
+                  </Text>
+                  {ownerData?.email && (
+                    <Text className="text-xs text-gray-500 mt-1">
+                      {ownerData.email}
+                    </Text>
+                  )}
+                </View>
+              </View>
+            )}
 
             <TouchableOpacity
               onPress={handleChat}
@@ -268,9 +362,9 @@ export default function ProductDetailScreen() {
           <View className="bg-white w-11/12 p-6 rounded-2xl">
             <Text className="text-lg font-bold mb-4">Swap Guidelines</Text>
             <Text className="text-gray-700 mb-6">
-              • Ensure your item matches the listed condition.{"\n"}
-              • Communicate clearly with the other user.{"\n"}
-              • Meet in safe, public places for swaps.{"\n"}
+              • Ensure your item matches the listed condition.{'\n'}
+              • Communicate clearly with the other user.{'\n'}
+              • Meet in safe, public places for swaps.{'\n'}
               • Report any suspicious activity.
             </Text>
             <TouchableOpacity

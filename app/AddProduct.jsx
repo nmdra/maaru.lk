@@ -2,10 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { serverTimestamp } from 'firebase/firestore';
-import { useState } from 'react';
-import { Image, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Alert, Image, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { generateProductDetails } from '../services/aiService';
 import { addItemToFirestore } from '../services/itemService';
+import { getUserId } from '../utils/storage';
 
 const CATEGORIES = ['Electronics', 'Furniture', 'Books', 'Clothing', 'Others'];
 const MOCK_TAGS = ['Emergency', 'Good Condition', 'Limited Time', 'New Arrival'];
@@ -25,6 +26,25 @@ export default function AddItemScreen() {
   const [stock, setStock] = useState(1);
   const [loading, setLoading] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
+  const [userId, setUserId] = useState(null);
+
+  // Get logged-in user ID from AsyncStorage
+  useEffect(() => {
+    const loadUserId = async () => {
+      try {
+        const id = await getUserId();
+        if (id) {
+          setUserId(id);
+          console.log('Loaded user ID:', id);
+        } else {
+          console.warn('No user ID found in storage');
+        }
+      } catch (error) {
+        console.error('Error loading user ID:', error);
+      }
+    };
+    loadUserId();
+  }, []);
 
   // Pick image
   const handlePickImage = async (fromCamera = true) => {
@@ -34,7 +54,7 @@ export default function AddItemScreen() {
         : await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (permissionStatus.status !== 'granted') {
-        alert('Permission required to select an image.');
+        Alert.alert('Permission Required', 'Permission required to select an image.');
         return;
       }
 
@@ -68,7 +88,7 @@ export default function AddItemScreen() {
 
   const handleAIAutofill = async () => {
     if (!imageUri) {
-      alert('Please select an image first to use AI autofill.');
+      Alert.alert('Image Required', 'Please select an image first to use AI autofill.');
       return;
     }
 
@@ -77,7 +97,7 @@ export default function AddItemScreen() {
       const result = await generateProductDetails(imageUri);
 
       if (!result) {
-        alert('AI returned no data.');
+        Alert.alert('Error', 'AI returned no data.');
         return;
       }
 
@@ -88,7 +108,7 @@ export default function AddItemScreen() {
           details = JSON.parse(result);
         } catch (err) {
           console.error('Failed to parse AI response as JSON:', err);
-          alert('Failed to parse AI response.');
+          Alert.alert('Error', 'Failed to parse AI response.');
           return;
         }
       } else {
@@ -109,7 +129,7 @@ export default function AddItemScreen() {
       setStock(details.stock != null ? String(details.stock) : '1');
     } catch (err) {
       console.error('Error generating AI details:', err);
-      alert('Error generating AI details.');
+      Alert.alert('Error', 'Error generating AI details.');
     } finally {
       setAiLoading(false);
     }
@@ -117,7 +137,20 @@ export default function AddItemScreen() {
 
   const handleAddItem = async () => {
     if (!name || !description) {
-      alert('Please fill all required fields.');
+      Alert.alert('Error', 'Please fill all required fields.');
+      return;
+    }
+
+    // Check if user is logged in
+    if (!userId) {
+      Alert.alert(
+        'Login Required',
+        'You must be logged in to add a product. Please login first.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Login', onPress: () => router.push('/(auth)/Login') }
+        ]
+      );
       return;
     }
 
@@ -133,7 +166,7 @@ export default function AddItemScreen() {
         imageUrl: imageUri || 'https://placehold.co/600x400',
         tags,
         stock: Number(stock) || 1,
-        ownerId: 'mockUserId2',
+        ownerId: userId, // Use logged-in user ID
         createdAt: serverTimestamp(),
       };
 
@@ -145,7 +178,7 @@ export default function AddItemScreen() {
       });
     } catch (err) {
       console.error(err);
-      alert('Failed to add item.');
+      Alert.alert('Error', 'Failed to add item.');
     } finally {
       setLoading(false);
     }

@@ -1,3 +1,4 @@
+// components/chat/ChatBubble.jsx
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -5,13 +6,18 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 export default function ChatBubble({ to = '/chat' }) {
   const router = useRouter();
+
+  const handlePress = () => {
+    router.push(to); // always open the inbox
+  };
+
   return (
     <View pointerEvents="box-none" style={styles.wrap}>
       <Pressable
-        onPress={() => router.push(to)}
+        onPress={handlePress}
         style={({ pressed }) => [styles.fab, pressed && styles.fabPressed]}
         accessibilityRole="button"
-        accessibilityLabel="Open chats"
+        accessibilityLabel="Open chat inbox"
       >
         <Ionicons name="chatbubble-ellipses-outline" size={28} color="#fff" />
       </Pressable>
@@ -22,24 +28,24 @@ export default function ChatBubble({ to = '/chat' }) {
 const styles = StyleSheet.create({
   wrap: {
     position: 'absolute',
-    right: 16,    // same as Add button
-    bottom: 26,   // aligns chat bubble right above Add button + 12px gap
+    right: 20,
+    bottom: 30,
   },
   fab: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#2563EB',
     shadowColor: '#000',
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.25,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 3 },
-    elevation: 6,
+    elevation: 5,
   },
   fabPressed: {
-    transform: [{ scale: 0.95 }],
+    transform: [{ scale: 0.96 }],
     opacity: 0.9,
   },
 });

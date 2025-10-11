@@ -15,6 +15,10 @@ export default function TabLayout() {
         <Stack.Screen name="SignUp" options={{ headerShown: false }} />
         <Stack.Screen name="Login" options={{ headerShown: false }} />
         <Stack.Screen name="Profile" options={{ headerShown: false }} />
+<<<<<<< HEAD
+        <Stack.Screen name="CompleteProfile" options={{ headerShown: false }} />
+=======
+>>>>>>> master
         <Stack.Screen name="updateProfile" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style="auto" />

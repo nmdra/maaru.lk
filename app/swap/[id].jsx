@@ -4,11 +4,14 @@ import { doc, getDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import ProductCard from '../../components/product/ProductCard';
+import { useAuth } from '../../context/AuthContext';
+import { ensureConversation } from '../../services/chatService';
 import { db } from '../../services/firebaseConfig';
 
 export default function SwapScreen() {
   const { id: targetProductId } = useLocalSearchParams();
   const router = useRouter();
+  const { user } = useAuth();
   const [targetProduct, setTargetProduct] = useState(null);
   const [userItems, setUserItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
@@ -91,9 +94,16 @@ export default function SwapScreen() {
     router.push('/AddProduct');
   };
 
-  const handleChatOwner = () => {
-    Alert.alert('Chat', `Start chat with ${targetProduct.ownerName || 'Owner'}`);
-    // router.push(`/chat/${targetProduct.ownerId}`);
+  const handleChatOwner = async () => {
+    if (!targetProduct?.ownerId || !user?.uid) return;
+    try {
+      const { id: roomId } = await ensureConversation(user.uid, targetProduct.ownerId, targetProduct.id);
+      // Navigate to room
+      router.push(`/chat/${roomId}`);
+    } catch (e) {
+      console.error('Failed to open chat with owner:', e);
+      Alert.alert('Chat', `Could not start chat with ${targetProduct.ownerName || 'Owner'}`);
+    }
   };
 
   if (loading || !targetProduct) {

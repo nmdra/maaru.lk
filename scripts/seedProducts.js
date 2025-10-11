@@ -12,7 +12,7 @@ const mockProducts = [
     condition: 'New',
     swapOnly: false,
     tags: ['Good Condition', 'New Arrival'],
-    ownerId: 'mockUserId1',
+    ownerId: 'NcxDP17pIDNS1Y7Gxkdwr2Arfbn1',
     createdAt: serverTimestamp(),
   },
   {
@@ -25,7 +25,7 @@ const mockProducts = [
     condition: 'New',
     swapOnly: false,
     tags: ['Limited Time'],
-    ownerId: 'mockUserId2',
+    ownerId: 'NcxDP17pIDNS1Y7Gxkdwr2Arfbn1',
     createdAt: serverTimestamp(),
   },
   {
@@ -38,7 +38,7 @@ const mockProducts = [
     condition: 'New',
     swapOnly: false,
     tags: ['Good Condition'],
-    ownerId: 'mockUserId3',
+    ownerId: 'NcxDP17pIDNS1Y7Gxkdwr2Arfbn1',
     createdAt: serverTimestamp(),
   },
   {
@@ -51,7 +51,7 @@ const mockProducts = [
     condition: 'Like New',
     swapOnly: false,
     tags: ['Good Condition'],
-    ownerId: 'mockUserId4',
+    ownerId: 'RrygpUGnigObERkAuhXA6yQVoeT2',
     createdAt: serverTimestamp(),
   },
   {
@@ -64,7 +64,7 @@ const mockProducts = [
     condition: 'New',
     swapOnly: false,
     tags: ['New Arrival'],
-    ownerId: 'mockUserId5',
+    ownerId: 'RrygpUGnigObERkAuhXA6yQVoeT2',
     createdAt: serverTimestamp(),
   },
   {
@@ -77,7 +77,7 @@ const mockProducts = [
     condition: 'New',
     swapOnly: false,
     tags: ['New Arrival', 'Limited Time'],
-    ownerId: 'mockUserId6',
+    ownerId: 'RrygpUGnigObERkAuhXA6yQVoeT2',
     createdAt: serverTimestamp(),
   },
   // New product example
@@ -91,7 +91,7 @@ const mockProducts = [
     condition: 'New',
     swapOnly: false,
     tags: ['Good Condition', 'Bestseller'],
-    ownerId: 'mockUserId7',
+    ownerId: 'RrygpUGnigObERkAuhXA6yQVoeT2',
     createdAt: serverTimestamp(),
   },
 ];

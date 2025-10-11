@@ -1,20 +1,18 @@
 // context/AuthContext.jsx
 import { getApps, initializeApp } from 'firebase/app';
 import {
-  createUserWithEmailAndPassword,
-  getAuth,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signOut,
+    createUserWithEmailAndPassword,
+    getAuth,
+    onAuthStateChanged,
+    signInWithEmailAndPassword,
+    signOut,
 } from 'firebase/auth';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { firebaseConfig } from '../services/firebaseConfig';
+import { cleanupSocket, initSocket } from '../services/socket';
+import { clearUserData } from '../utils/storage';
 
-// Initialize Firebase app (only once)
-if (!getApps().length) {
-  initializeApp(firebaseConfig);
-}
-
+if (!getApps().length) initializeApp(firebaseConfig);
 const auth = getAuth();
 
 const AuthContext = createContext();
@@ -23,7 +21,6 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Listen for auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -32,17 +29,20 @@ export function AuthProvider({ children }) {
     return () => unsubscribe();
   }, []);
 
-  const login = async (email, password) => {
-    return await signInWithEmailAndPassword(auth, email, password);
-  };
+  useEffect(() => {
+    initSocket();         // socket will connect after login via onIdTokenChanged
+    return () => cleanupSocket();
+  }, []);
 
-  const register = async (email, password) => {
-    return await createUserWithEmailAndPassword(auth, email, password);
-  };
-
+  const login = (email, password) => signInWithEmailAndPassword(auth, email, password);
+  const register = (email, password) => createUserWithEmailAndPassword(auth, email, password);
   const logout = async () => {
-    return await signOut(auth);
+    await clearUserData(); // Clear AsyncStorage on logout
+    return signOut(auth);
   };
+
+  // Optional: gate children until auth is ready
+  if (loading) return null;
 
   return (
     <AuthContext.Provider value={{ user, loading, login, register, logout }}>
@@ -51,7 +51,6 @@ export function AuthProvider({ children }) {
   );
 }
 
-// Custom hook to use auth context
 export function useAuth() {
   return useContext(AuthContext);
 }

@@ -1,24 +1,24 @@
+// app/SignUp.jsx
 // ...existing code...
 import { Ionicons } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
-import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth';
+import { createUserWithEmailAndPassword, getAuth, updateProfile } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import { useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Image,
-    Pressable,
-    ScrollView,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { db } from '../../services/firebaseConfig';
+import { ensureMinimalUserFields } from '../../services/userService';
+import { saveUserData } from '../../utils/storage';
 
 export default function SignUp() {
   const router = useRouter();
@@ -30,70 +30,81 @@ export default function SignUp() {
   const [age, setAge] = useState('');
   const [phone, setPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [photo, setPhoto] = useState(null);
-  const [photoURL, setPhotoURL] = useState('');
 
-  const validateEmail = (email) => {
-  // Simple email regex
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-};
-
-const validatePhone = (phone) => {
-  // Accepts 10-15 digits, can start with +, no spaces
-  return /^(\+?\d{10,15})$/.test(phone);
-};
-
-const validateAge = (age) => {
-  const n = Number(age);
-  return Number.isInteger(n) && n >= 10 && n <= 120;
-};
-
+  const validateEmail = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+  const validatePhone = (val) => /^(\+?\d{10,15})$/.test(val);
+  const validateAge = (val) => {
+    const n = Number(val);
+    return Number.isInteger(n) && n >= 10 && n <= 120;
+  };
 
   const handleRegister = async () => {
     if (!email || !password || !firstName || !lastName || !address || !age || !phone) {
       Alert.alert('Error', 'Please fill all fields.');
       return;
     }
-      if (!validateEmail(email)) {
-    Alert.alert('Invalid Email', 'Please enter a valid email address.');
-    return;
-  }
-  if (!validatePhone(phone)) {
-    Alert.alert('Invalid Phone', 'Please enter a valid phone number (10-15 digits, numbers only).');
-    return;
-  }
-  if (!validateAge(age)) {
-    Alert.alert('Invalid Age', 'Please enter a valid age (between 10 and 120).');
-    return;
-  }
-let uploadedPhotoURL = '';
-if (photo) {
-  const response = await fetch(photo.uri);
-  const blob = await response.blob();
-  const storage = getStorage();
-  const storageRef = ref(storage, `profilePictures/${user.uid}.jpg`);
-  await uploadBytes(storageRef, blob);
-  uploadedPhotoURL = await getDownloadURL(storageRef);
-}
+    if (!validateEmail(email)) {
+      Alert.alert('Invalid Email', 'Please enter a valid email address.');
+      return;
+    }
+    if (!validatePhone(phone)) {
+      Alert.alert('Invalid Phone', 'Please enter a valid phone number (10-15 digits, numbers only).');
+      return;
+    }
+    if (!validateAge(age)) {
+      Alert.alert('Invalid Age', 'Please enter a valid age (between 10 and 120).');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
+      // 1) Create auth user first (so we have user.uid)
       const auth = getAuth();
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      const { user } = await createUserWithEmailAndPassword(auth, email, password);
 
-      console.log('Sending to Firestore, db present?', !!db);
-      await setDoc(doc(db, 'users', user.uid), {
+      // optional: set display name in Auth profile
+      const displayName = `${firstName} ${lastName}`.trim();
+      await updateProfile(user, { displayName }).catch(() => {});
+
+      // 2) Save your extended profile schema (merge safe) - NO PHOTO UPLOAD
+      await setDoc(
+        doc(db, 'users', user.uid),
+        {
+          firstName,
+          lastName,
+          email,
+          address,
+          born: age,
+          phone,
+          uid: user.uid,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          displayName,
+          // No photoURL - not using Firebase Storage
+        },
+        { merge: true }
+      );
+
+      // 3) Ensure minimal fields for chat UI (name/avatar/role) — merge, won't conflict
+      await ensureMinimalUserFields(user.uid, {
+        displayName,
+        avatarUrl: undefined, // No profile photo
+        role: 'buyer', // change if this sign-up is for sellers
+      });
+
+      // 4) Save user data to AsyncStorage (without profile photo)
+      await saveUserData({
+        userId: user.uid,
+        email: email,
+        name: displayName,
+        role: 'buyer',
         firstName: firstName,
         lastName: lastName,
-        email,
-        address,
-        born: age,
-        phone,
-        uid: user.uid,
+        phone: phone,
+        address: address,
         createdAt: new Date().toISOString(),
-        photoURL: uploadedPhotoURL,
       });
-      console.log('Document written with ID: ', user.uid);
+
       Alert.alert('Success', `User registered (id: ${user.uid})`);
 
       // Clear form
@@ -104,8 +115,6 @@ if (photo) {
       setAddress('');
       setAge('');
       setPhone('');
-      setPhoto(null);
-      setPhotoURL('');
 
       router.replace('/Home');
     } catch (error) {
@@ -116,41 +125,15 @@ if (photo) {
     }
   };
 
-  const handlePickPhoto = async () => {
-  const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (!permissionResult.granted) {
-    Alert.alert("Permission required", "Camera roll permissions are required!");
-    return;
-  }
-  const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.Images,
-    allowsEditing: true,
-    aspect: [1, 1],
-    quality: 0.7,
-  });
-  if (!result.canceled && result.assets?.length > 0) {
-    setPhoto(result.assets[0]);
-  }
-};
+  // For Age: allow only digits
+  const handleAgeChange = (text) => setAge(text.replace(/[^0-9]/g, ''));
 
-// For Age: allow only digits
-const handleAgeChange = (text) => {
-  // Remove any non-digit characters
-  const filtered = text.replace(/[^0-9]/g, '');
-  setAge(filtered);
-};
-
-// For Phone: allow only digits and +
-const handlePhoneChange = (text) => {
-  // Remove any character that's not a digit or +
-  const filtered = text.replace(/[^0-9+]/g, '');
-  setPhone(filtered);
-};
+  // For Phone: allow only digits and +
+  const handlePhoneChange = (text) => setPhone(text.replace(/[^0-9+]/g, ''));
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <ScrollView className="flex-1">
-        
         {/* Header Section */}
         <View className="bg-blue-600 px-6 pt-8 pb-20">
           <View className="flex-row items-center mb-4">
@@ -169,27 +152,17 @@ const handlePhoneChange = (text) => {
 
         {/* Registration Card */}
         <View className="mx-6 -mt-12 bg-white rounded-2xl shadow-lg p-6">
-          
-<View className="items-center -mt-16 mb-8">
-  <Pressable onPress={handlePickPhoto}>
-    <View className="w-32 h-32 rounded-full bg-white p-1 shadow-lg">
-      {photo ? (
-        <Image source={{ uri: photo.uri }} className="w-full h-full rounded-full" />
-      ) : (
-        <View className="w-full h-full rounded-full bg-blue-500 items-center justify-center">
-          <Text className="text-white text-4xl font-bold">+</Text>
-        </View>
-      )}
-    </View>
-    <View className="items-center mt-2">
-      <Text className="text-blue-600">Add Photo</Text>
-    </View>
-  </Pressable>
-</View>
+          {/* Logo Section (No Photo Upload) */}
+          <View className="items-center -mt-16 mb-8">
+            <View className="w-32 h-32 rounded-full bg-white p-1 shadow-lg">
+              <View className="w-full h-full rounded-full bg-blue-500 items-center justify-center">
+                <Text className="text-white text-4xl font-bold">M</Text>
+              </View>
+            </View>
+          </View>
 
           {/* Form Section */}
           <View className="space-y-4">
-            
             {/* Name Fields */}
             <View className="flex-row space-x-3">
               <View className="flex-1">
@@ -306,7 +279,7 @@ const handlePhoneChange = (text) => {
 
             {/* moved bottom actions up into the card */}
             <View className="mt-4 space-y-3">
-              <Pressable onPress={() => router.replace('/login')} className="border border-gray-200 py-4 rounded-xl">
+              <Pressable onPress={() => router.replace('/(auth)/Login')} className="border border-gray-200 py-4 rounded-xl">
                 <Text className="text-gray-700 font-semibold text-center">Already have an account? Sign In</Text>
               </Pressable>
 
