@@ -8,6 +8,7 @@ import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Modal,
   Pressable,
   ScrollView,
   Text,
@@ -18,10 +19,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { db } from '../../services/firebaseConfig';
 import { ensureMinimalUserFields } from '../../services/userService';
+import { LANGUAGE_OPTIONS, getLanguageName, useAppI18n } from '../../utils/i18n';
 import { saveUserData } from '../../utils/storage';
 
 export default function SignUp() {
   const router = useRouter();
+  const { t, currentLanguage, changeLanguage, common } = useAppI18n();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -30,6 +33,7 @@ export default function SignUp() {
   const [age, setAge] = useState('');
   const [phone, setPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [languageModalVisible, setLanguageModalVisible] = useState(false);
 
   const validateEmail = (val) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
   const validatePhone = (val) => /^(\+?\d{10,15})$/.test(val);
@@ -136,16 +140,28 @@ export default function SignUp() {
       <ScrollView className="flex-1">
         {/* Header Section */}
         <View className="bg-blue-600 px-6 pt-8 pb-20">
-          <View className="flex-row items-center mb-4">
+          <View className="flex-row items-center justify-between mb-4">
             <TouchableOpacity 
               onPress={() => router.push('/(tabs)/Home')} 
               className="p-2 -ml-2"
             >
               <Ionicons name="arrow-back" size={24} color="white" />
             </TouchableOpacity>
+            
+            {/* Language Selector Button */}
+            <TouchableOpacity 
+              onPress={() => setLanguageModalVisible(true)}
+              className="flex-row items-center bg-white/20 px-3 py-2 rounded-full"
+              activeOpacity={0.7}
+            >
+              <Ionicons name="language" size={18} color="white" />
+              <Text className="text-white text-sm font-medium ml-2">
+                {getLanguageName(currentLanguage, true)}
+              </Text>
+            </TouchableOpacity>
           </View>
           <View className="items-center">
-            <Text className="text-white text-3xl font-bold mb-5">Join Maaru.LK</Text>
+            <Text className="text-white text-3xl font-bold mb-5">{t('auth.joinMaaruLK')}</Text>
 
           </View>
         </View>
@@ -167,24 +183,24 @@ export default function SignUp() {
             <View className="flex-row space-x-3">
               <View className="flex-1">
                 <Text className="text-gray-700 font-medium mb-2">
-                  First Name <Text className="text-red-500">*</Text>
+                  {t('auth.firstName')} <Text className="text-red-500">*</Text>
                 </Text>
                 <TextInput
                   value={firstName}
                   onChangeText={setFirstName}
-                  placeholder="First name"
+                  placeholder={t('auth.enterFirstName')}
                   autoCapitalize="words"
                   className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base"
                 />
-                <Text className="text-xs text-gray-400 mt-1">Enter your first name</Text>
+                <Text className="text-xs text-gray-400 mt-1">{t('auth.enterFirstName')}</Text>
               </View>
 
               <View className="flex-1">
-                <Text className="text-gray-700 font-medium mb-2">Last Name</Text>
+                <Text className="text-gray-700 font-medium mb-2">{t('auth.lastName')}</Text>
                 <TextInput
                   value={lastName}
                   onChangeText={setLastName}
-                  placeholder="Last name"
+                  placeholder={t('auth.enterLastName')}
                   autoCapitalize="words"
                   className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base"
                 />
@@ -194,57 +210,57 @@ export default function SignUp() {
             {/* Email */}
             <View>
               <Text className="text-gray-700 font-medium mb-2">
-                Email Address <Text className="text-red-500">*</Text>
+                {t('auth.emailAddress')} <Text className="text-red-500">*</Text>
               </Text>
               <TextInput
                 value={email}
                 onChangeText={setEmail}
-                placeholder="you@example.com"
+                placeholder={t('auth.emailPlaceholder')}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base"
               />
-              <Text className="text-xs text-gray-400 mt-1">Enter a valid email address</Text>
+              <Text className="text-xs text-gray-400 mt-1">{t('auth.emailAddress')}</Text>
             </View>
 
             {/* Phone and Age */}
             <View className="flex-row space-x-3">
               <View className="flex-1">
                 <Text className="text-gray-700 font-medium mb-2">
-                  Phone <Text className="text-red-500">*</Text>
+                  {t('auth.phoneNumber')} <Text className="text-red-500">*</Text>
                 </Text>
                 <TextInput
                   value={phone}
                   onChangeText={handlePhoneChange}
-                  placeholder="Phone number"
+                  placeholder={t('auth.enterPhone')}
                   keyboardType="phone-pad"
                   className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base"
                 />
-                <Text className="text-xs text-gray-400 mt-1">0-15 digits</Text>
+                <Text className="text-xs text-gray-400 mt-1">{t('auth.phoneDigits')}</Text>
               </View>
 
               <View className="flex-1">
                 <Text className="text-gray-700 font-medium mb-2">
-                  Age <Text className="text-red-500">*</Text>
+                  {t('auth.age')} <Text className="text-red-500">*</Text>
                 </Text>
                 <TextInput
                   value={age}
                   onChangeText={handleAgeChange}
-                  placeholder="Age"
+                  placeholder={t('auth.enterAge')}
                   keyboardType="numeric"
                   className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base"
                 />
-                <Text className="text-xs text-gray-400 mt-1">Enter your age (10-120)</Text>
+                <Text className="text-xs text-gray-400 mt-1">{t('auth.ageRange')}</Text>
               </View>
             </View>
 
             {/* Address */}
             <View>
-              <Text className="text-gray-700 font-medium mb-2">Address</Text>
+              <Text className="text-gray-700 font-medium mb-2">{t('auth.address')}</Text>
               <TextInput
                 value={address}
                 onChangeText={setAddress}
-                placeholder="Your address"
+                placeholder={t('auth.enterAddress')}
                 className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base"
               />
             </View>
@@ -252,16 +268,16 @@ export default function SignUp() {
             {/* Password */}
             <View>
               <Text className="text-gray-700 font-medium mb-2">
-                Password <Text className="text-red-500">*</Text>
+                {t('auth.password')} <Text className="text-red-500">*</Text>
               </Text>
               <TextInput
                 value={password}
                 onChangeText={setPassword}
-                placeholder="Choose a password"
+                placeholder={t('auth.choosePassword')}
                 secureTextEntry
                 className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base"
               />
-              <Text className="text-xs text-gray-400 mt-1">At least 6 characters</Text>
+              <Text className="text-xs text-gray-400 mt-1">{t('auth.passwordMinLength')}</Text>
             </View>
 
             {/* Register Button */}
@@ -273,18 +289,18 @@ export default function SignUp() {
               {isSubmitting ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text className="text-white font-semibold text-center text-base">Create Account</Text>
+                <Text className="text-white font-semibold text-center text-base">{t('auth.createAccount')}</Text>
               )}
             </Pressable>
 
             {/* moved bottom actions up into the card */}
             <View className="mt-4 space-y-3">
               <Pressable onPress={() => router.replace('/(auth)/Login')} className="border border-gray-200 py-4 rounded-xl">
-                <Text className="text-gray-700 font-semibold text-center">Already have an account? Sign In</Text>
+                <Text className="text-gray-700 font-semibold text-center">{t('auth.alreadyHaveAccount')}</Text>
               </Pressable>
 
               <Pressable onPress={() => router.push('/Home')} className="py-3 items-center">
-                <Text className="text-gray-500">Continue as Guest</Text>
+                <Text className="text-gray-500">{t('auth.continueAsGuest')}</Text>
               </Pressable>
             </View>
           </View>
@@ -292,6 +308,80 @@ export default function SignUp() {
 
         {/* removed bottom section */}
       </ScrollView>
+
+      {/* Language Selection Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={languageModalVisible}
+        onRequestClose={() => setLanguageModalVisible(false)}
+      >
+        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <View style={{ backgroundColor: 'white', borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingTop: 20 }}>
+            {/* Header */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 20 }}>
+              <Text style={{ fontSize: 18, fontWeight: 'bold', flex: 1 }}>
+                {t('auth.selectLanguage')}
+              </Text>
+              <TouchableOpacity onPress={() => setLanguageModalVisible(false)}>
+                <Ionicons name="close" size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Current Language */}
+            <View style={{ paddingHorizontal: 20, paddingBottom: 15 }}>
+              <Text style={{ fontSize: 14, color: '#666', marginBottom: 5 }}>
+                {t('auth.currentLanguage')}: {getLanguageName(currentLanguage, true)}
+              </Text>
+            </View>
+
+            {/* Language Options */}
+            <ScrollView style={{ maxHeight: 300 }}>
+              {LANGUAGE_OPTIONS.map((option) => (
+                <TouchableOpacity
+                  key={option.code}
+                  onPress={() => {
+                    changeLanguage(option.code);
+                    setLanguageModalVisible(false);
+                  }}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingHorizontal: 20,
+                    paddingVertical: 15,
+                    backgroundColor: currentLanguage === option.code ? '#f0f8ff' : 'white',
+                    borderLeftWidth: currentLanguage === option.code ? 4 : 0,
+                    borderLeftColor: '#2563eb',
+                  }}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ 
+                      fontSize: 16, 
+                      fontWeight: currentLanguage === option.code ? 'bold' : 'normal',
+                      color: currentLanguage === option.code ? '#2563eb' : '#333'
+                    }}>
+                      {option.nativeName}
+                    </Text>
+                    <Text style={{ 
+                      fontSize: 14, 
+                      color: '#666', 
+                      marginTop: 2 
+                    }}>
+                      {option.englishName}
+                    </Text>
+                  </View>
+                  {currentLanguage === option.code && (
+                    <Ionicons name="checkmark-circle" size={20} color="#2563eb" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            {/* Bottom spacing for safe area */}
+            <View style={{ height: 30 }} />
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }

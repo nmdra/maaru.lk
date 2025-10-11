@@ -1,0 +1,190 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ============================================
+    // Products Collection
+    // ============================================
+    match /products/{productId} {
+      // Anyone can read products
+      allow read: if true;
+      
+      // Only authenticated users can create products
+      allow create: if request.auth != null
+        && request.resource.data.ownerId == request.auth.uid;
+      
+      // Only product owner can update their products
+      allow update: if request.auth != null
+        && resource.data.ownerId == request.auth.uid;
+      
+      // Only product owner can delete their products
+      allow delete: if request.auth != null
+        && resource.data.ownerId == request.auth.uid;
+    }
+    
+    // ============================================
+    // Search Keywords Collection (NEW)
+    // ============================================
+    match /searchKeywords/{keywordId} {
+      // Anyone can read keywords (for search functionality)
+      allow read: if true;
+      
+      // Only authenticated users can create keywords
+      // This is called automatically when a product is created
+      allow create: if request.auth != null;
+      
+      // Only product owner can update keywords
+      // Get the product's ownerId and compare with current user
+      allow update: if request.auth != null
+        && get(/databases/$(database)/documents/products/$(resource.data.productId)).data.ownerId == request.auth.uid;
+      
+      // Only product owner can delete keywords
+      allow delete: if request.auth != null
+        && get(/databases/$(database)/documents/products/$(resource.data.productId)).data.ownerId == request.auth.uid;
+    }
+    
+    // ============================================
+    // Users Collection
+    // ============================================
+    match /users/{userId} {
+      // Users can read their own data
+      allow read: if request.auth != null 
+        && request.auth.uid == userId;
+      
+      // Users can create their own profile
+      allow create: if request.auth != null 
+        && request.auth.uid == userId;
+      
+      // Users can update their own profile
+      allow update: if request.auth != null 
+        && request.auth.uid == userId;
+      
+      // Users can delete their own profile
+      allow delete: if request.auth != null 
+        && request.auth.uid == userId;
+    }
+    
+    // ============================================
+    // Orders Collection
+    // ============================================
+    match /orders/{orderId} {
+      // Only buyer and seller can read order
+      allow read: if request.auth != null
+        && (resource.data.buyerId == request.auth.uid 
+            || resource.data.productOwnerId == request.auth.uid);
+      
+      // Only buyer can create order
+      allow create: if request.auth != null
+        && request.resource.data.buyerId == request.auth.uid;
+      
+      // Only buyer or seller can update order status
+      allow update: if request.auth != null
+        && (resource.data.buyerId == request.auth.uid 
+            || resource.data.productOwnerId == request.auth.uid);
+    }
+    
+    // ============================================
+    // Transactions Collection
+    // ============================================
+    match /transactions/{transactionId} {
+      // Only buyer and seller can read transaction
+      allow read: if request.auth != null
+        && (resource.data.buyerId == request.auth.uid 
+            || resource.data.sellerId == request.auth.uid);
+      
+      // Only buyer can create transaction
+      allow create: if request.auth != null
+        && request.resource.data.buyerId == request.auth.uid;
+      
+      // No updates or deletes allowed (immutable)
+      allow update, delete: if false;
+    }
+    
+    // ============================================
+    // Reviews Collection
+    // ============================================
+    match /reviews/{reviewId} {
+      // Anyone can read reviews
+      allow read: if true;
+      
+      // Only authenticated users can create reviews
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+      
+      // Only review author can update their review
+      allow update: if request.auth != null
+        && resource.data.userId == request.auth.uid;
+      
+      // Only review author can delete their review
+      allow delete: if request.auth != null
+        && resource.data.userId == request.auth.uid;
+    }
+    
+    // ============================================
+    // Chat Rooms Collection
+    // ============================================
+    match /chatRooms/{roomId} {
+      // Only participants can read chat room
+      allow read: if request.auth != null
+        && request.auth.uid in resource.data.participants;
+      
+      // Only authenticated users can create chat rooms
+      allow create: if request.auth != null
+        && request.auth.uid in request.resource.data.participants;
+      
+      // Only participants can update chat room
+      allow update: if request.auth != null
+        && request.auth.uid in resource.data.participants;
+      
+      // No deletes allowed
+      allow delete: if false;
+      
+      // ============================================
+      // Messages Subcollection
+      // ============================================
+      match /messages/{messageId} {
+        // Only chat room participants can read messages
+        allow read: if request.auth != null
+          && request.auth.uid in get(/databases/$(database)/documents/chatRooms/$(roomId)).data.participants;
+        
+        // Only chat room participants can send messages
+        allow create: if request.auth != null
+          && request.auth.uid in get(/databases/$(database)/documents/chatRooms/$(roomId)).data.participants
+          && request.resource.data.senderId == request.auth.uid;
+        
+        // No updates or deletes allowed (immutable)
+        allow update, delete: if false;
+      }
+    }
+    
+    // ============================================
+    // Swap Requests Collection
+    // ============================================
+    match /swapRequests/{swapId} {
+      // Only requester and product owner can read
+      allow read: if request.auth != null
+        && (resource.data.requesterId == request.auth.uid 
+            || resource.data.productOwnerId == request.auth.uid);
+      
+      // Only authenticated users can create swap requests
+      allow create: if request.auth != null
+        && request.resource.data.requesterId == request.auth.uid;
+      
+      // Only participants can update swap request
+      allow update: if request.auth != null
+        && (resource.data.requesterId == request.auth.uid 
+            || resource.data.productOwnerId == request.auth.uid);
+      
+      // Only requester can delete swap request
+      allow delete: if request.auth != null
+        && resource.data.requesterId == request.auth.uid;
+    }
+    
+    // ============================================
+    // Default: Deny all other access
+    // ============================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

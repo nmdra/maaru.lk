@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Image,
   Pressable,
@@ -12,13 +13,17 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useAuth } from '../../context/AuthContext';
 import { fetchProducts } from '../../services/productService';
 import formatPrice from '../../utils/formatPrice';
+import { useAppI18n } from '../../utils/i18n';
 
 const CATEGORIES = ['All', 'Shoes', 'Clothes', 'Accessories', 'Electronics', 'Books', 'Others'];
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { t } = useAppI18n();
+  const { user } = useAuth();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -39,6 +44,25 @@ export default function HomeScreen() {
 
   const filteredItems =
     selectedCategory === 'All' ? items : items.filter((item) => item.category === selectedCategory);
+
+  // Handler for Add Product button - check authentication
+  const handleAddProduct = () => {
+    if (!user) {
+      Alert.alert(
+        t('common.loginRequired', 'Login Required'),
+        t('common.loginToAddProduct', 'Please login to add products'),
+        [
+          { text: t('common.cancel', 'Cancel'), style: 'cancel' },
+          { 
+            text: t('common.login', 'Login'), 
+            onPress: () => router.push('/(auth)/Login')
+          }
+        ]
+      );
+      return;
+    }
+    router.push('/AddProduct');
+  };
 
   if (loading)
     return (
@@ -68,7 +92,7 @@ export default function HomeScreen() {
         className="flex-row items-center bg-gray-100 rounded-lg p-3 mb-3"
       >
         <Ionicons name="search" size={20} color="#666" />
-        <Text className="ml-2 text-gray-500">Search items...</Text>
+        <Text className="ml-2 text-gray-500">{t('products.searchItems')}</Text>
       </TouchableOpacity>
 
       {/* Category Chips */}
@@ -78,23 +102,30 @@ export default function HomeScreen() {
         className="py-2"
         contentContainerStyle={{ paddingRight: 16 }}
       >
-        {CATEGORIES.map((category) => (
-          <TouchableOpacity
-            key={category}
-            onPress={() => setSelectedCategory(category)}
-            className={`mr-3 px-4 h-10 min-w-[70px] flex-row items-center justify-center rounded-full border ${
-              selectedCategory === category ? 'bg-black border-black' : 'bg-white border-gray-300'
-            }`}
-          >
-            <Text
-              className={`text-center font-medium ${
-                selectedCategory === category ? 'text-white' : 'text-gray-800'
+        {CATEGORIES.map((category) => {
+          const categoryKey = category.toLowerCase().replace(' ', '');
+          const translatedCategory = category === 'All' 
+            ? t('products.allCategories') 
+            : t(`products.categories.${categoryKey}`, category);
+          
+          return (
+            <TouchableOpacity
+              key={category}
+              onPress={() => setSelectedCategory(category)}
+              className={`mr-3 px-4 h-10 min-w-[70px] flex-row items-center justify-center rounded-full border ${
+                selectedCategory === category ? 'bg-black border-black' : 'bg-white border-gray-300'
               }`}
             >
-              {category}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Text
+                className={`text-center font-medium ${
+                  selectedCategory === category ? 'text-white' : 'text-gray-800'
+                }`}
+              >
+                {translatedCategory}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </ScrollView>
     </View>
   );
@@ -128,7 +159,7 @@ export default function HomeScreen() {
 
         {/* Floating Add New Item Button (shifted left so it doesn't overlap the chat bubble) */}
         <TouchableOpacity
-          onPress={() => router.push('/AddProduct')}
+          onPress={handleAddProduct}
           className="absolute bottom-6 right-6 bg-blue-600 w-16 h-16 rounded-full items-center justify-center shadow-lg"
         >
           <Ionicons name="add" size={32} color="#fff" />

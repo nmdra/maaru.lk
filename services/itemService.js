@@ -35,6 +35,13 @@ export const updateProductAvailability = async (productId, availability = false)
       availability: availability,
       updatedAt: Timestamp.now(),
     });
+    
+    // If product becomes unavailable, optionally delete keywords to save space
+    // (Keywords won't be searched anyway since availability filter excludes them)
+    if (availability === false) {
+      console.log(`Product ${productId} marked unavailable. Keeping keywords for potential re-listing.`);
+      // await deleteKeywordsForProduct(productId); // Uncomment to delete keywords
+    }
   } catch (error) {
     console.error('Error updating product availability:', error);
     throw error;

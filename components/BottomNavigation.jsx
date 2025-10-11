@@ -29,12 +29,12 @@ const BottomNavigation = ({ currentRoute }) => {
       icon: 'star-outline',
       activeIcon: 'star',
     },
-    {
-      name: 'Language',
-      route: '/(tabs)/language',
-      icon: 'language-outline',
-      activeIcon: 'language',
-    },
+    // {
+    //   name: 'Language',
+    //   route: '/(tabs)/language',
+    //   icon: 'language-outline',
+    //   activeIcon: 'language',
+    // },
   ];
 
   const isActive = (route) => {
@@ -116,7 +116,7 @@ const BottomNavigation = ({ currentRoute }) => {
               </TouchableOpacity>
             </View>
 
-            {/* Current Language */}
+            Current Language
             <View style={{ paddingHorizontal: 20, paddingBottom: 15 }}>
               <Text style={{ fontSize: 14, color: '#666', marginBottom: 5 }}>
                 {t('language.currentLanguage')}: {getLanguageName(currentLanguage, true)}
