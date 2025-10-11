@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
 import debounce from 'lodash.debounce';
@@ -62,6 +63,22 @@ export default function ProductsScreen() {
 
       {loading && items.length === 0 ? (
         <Loader />
+      ) : items.length === 0 ? (
+        <View className="flex-1 items-center justify-center p-8">
+          <Ionicons name="search-outline" size={64} color="#ccc" />
+          <Text className="text-lg text-gray-600 font-semibold mt-4">
+            No products found
+          </Text>
+          {search ? (
+            <Text className="text-gray-400 text-center mt-2">
+              Try different keywords or adjust filters
+            </Text>
+          ) : (
+            <Text className="text-gray-400 text-center mt-2">
+              Start searching to find products
+            </Text>
+          )}
+        </View>
       ) : (
         <FlashList
           data={items}

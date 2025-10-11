@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, FlatList, Modal, Pressable, Text, TextInput, View } from "react-native";
-import { auth } from "../../services/firebaseConfig";
+import { useAuth } from "../../context/AuthContext";
+import { useRouter } from "expo-router";
 import { createReview, deleteReview, fetchReviews, updateReview } from "../../services/reviewService";
 import { useAppI18n } from "../../utils/i18n";
 
@@ -9,6 +10,8 @@ const sellerId = "SELLER_USER_ID";
 
 export default function Reviews() {
 	const { t } = useAppI18n();
+	const { user } = useAuth();
+	const router = useRouter();
 	const [reviews, setReviews] = useState([]);
 	const [loading, setLoading] = useState(true);
 	const [modalVisible, setModalVisible] = useState(false);
@@ -35,6 +38,20 @@ export default function Reviews() {
 	}
 
 	function openCreateModal() {
+		if (!user) {
+			Alert.alert(
+				t('common.loginRequired', 'Login Required'),
+				t('common.loginToReview', 'Please login to write reviews'),
+				[
+					{ text: t('common.cancel', 'Cancel'), style: 'cancel' },
+					{ 
+						text: t('common.login', 'Login'), 
+						onPress: () => router.push('/(auth)/Login')
+					}
+				]
+			);
+			return;
+		}
 		setEditingReview(null);
 		setRating(5);
 		setComment("");
@@ -42,6 +59,20 @@ export default function Reviews() {
 	}
 
 	function openEditModal(review) {
+		if (!user) {
+			Alert.alert(
+				t('common.loginRequired', 'Login Required'),
+				t('common.loginToReview', 'Please login to edit reviews'),
+				[
+					{ text: t('common.cancel', 'Cancel'), style: 'cancel' },
+					{ 
+						text: t('common.login', 'Login'), 
+						onPress: () => router.push('/(auth)/Login')
+					}
+				]
+			);
+			return;
+		}
 		setEditingReview(review);
 		setRating(review.rating);
 		setComment(review.comment);
@@ -66,10 +97,10 @@ export default function Reviews() {
 			} else {
 				await createReview({
 					sellerId,
-					reviewerId: auth.currentUser.uid,
+					reviewerId: user.uid,
 					rating,
 					comment,
-					reviewerInfo: { reviewerName: auth.currentUser.displayName || "", reviewerPhoto: auth.currentUser.photoURL || "" }
+					reviewerInfo: { reviewerName: user.displayName || "", reviewerPhoto: user.photoURL || "" }
 				});
 				Alert.alert(t('common.success'), t('reviews.alerts.added'));
 			}
@@ -98,7 +129,7 @@ export default function Reviews() {
 
 	// UI for each review
 	function renderReview({ item }) {
-		const isMine = item.reviewerId === auth.currentUser?.uid;
+		const isMine = item.reviewerId === user?.uid;
 		return (
 			<View className="bg-white rounded-lg shadow p-4 mb-3">
 				<Text className="font-bold text-lg mb-1">{item.reviewerName || t('reviews.anonymous')}</Text>
