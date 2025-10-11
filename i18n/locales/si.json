@@ -23,7 +23,8 @@
     "close": "වසන්න",
     "open": "විවෘත කරන්න",
     "yes": "ඔව්",
-    "no": "නැත"
+    "no": "නැත",
+    "or": "හෝ"
   },
   "navigation": {
     "home": "මුල් පිටුව",
@@ -47,7 +48,26 @@
     "createAccount": "ගිණුමක් සාදන්න",
     "continueAsGuest": "අමුත්තෙකු ලෙස ඉදිරියට",
     "enterYourPassword": "ඔබේ මුරපදය ඇතුලත් කරන්න",
-    "emailPlaceholder": "ඔබේ@උදාහරණය.com"
+    "emailPlaceholder": "ඔබේ@උදාහරණය.com",
+    "joinMaaruLK": "Maaru.LK හා එක්වන්න",
+    "firstName": "මුල් නම",
+    "lastName": "අවසාන නම",
+    "phoneNumber": "දුරකථනය",
+    "age": "වයස",
+    "address": "ලිපිනය",
+    "enterFirstName": "ඔබේ මුල් නම ඇතුලත් කරන්න",
+    "enterLastName": "අවසාන නම",
+    "enterPhone": "දුරකථන අංකය",
+    "enterAge": "වයස",
+    "enterAddress": "ඔබේ ලිපිනය",
+    "choosePassword": "මුරපදයක් තෝරන්න",
+    "required": "*",
+    "phoneDigits": "ඉලක්කම් 0-15",
+    "ageRange": "ඔබේ වයස ඇතුලත් කරන්න (10-120)",
+    "passwordMinLength": "අවම වශයෙන් අක්ෂර 6ක්",
+    "alreadyHaveAccount": "දැනටමත් ගිණුමක් තිබේද? පුරන්න",
+    "selectLanguage": "භාෂාව තෝරන්න",
+    "currentLanguage": "වර්තමාන භාෂාව"
   },
   "language": {
     "settings": "භාෂා සැකසුම්",
@@ -67,7 +87,20 @@
     "inStock": "තොගයේ ඇත",
     "category": "වර්ගය",
     "brand": "වෙළඳ නාමය",
-    "description": "විස්තරය"
+    "description": "විස්තරය",
+    "searchItems": "භාණ්ඩ සොයන්න...",
+    "addNewItem": "නව භාණ්ඩයක් එකතු කරන්න",
+    "allCategories": "සියල්ල",
+    "categories": {
+      "all": "සියල්ල",
+      "shoes": "සපත්තු",
+      "clothes": "ඇඳුම්",
+      "accessories": "උපාංග",
+      "electronics": "ඉලෙක්ට්‍රොනික",
+      "books": "පොත්",
+      "furniture": "ගෘහ භාණ්ඩ",
+      "others": "වෙනත්"
+    }
   },
   "reviews": {
     "title": "සමාලෝචන",
@@ -77,7 +110,32 @@
     "comment": "අදහස",
     "submitReview": "සමාලෝචනය ගොනු කරන්න",
     "create": "සමාලෝචනය සාදන්න",
-    "underDevelopment": "මෙම පිටුව සංවර්ධනය වෙමින් පවතී"
+    "underDevelopment": "මෙම පිටුව සංවර්ධනය වෙමින් පවතී",
+    "sellerReviews": "විකුණුම්කරු සමාලෝචන",
+    "addReview": "සමාලෝචනය එකතු කරන්න",
+    "noReviewsYet": "තවම සමාලෝචන නැත.",
+    "editReview": "සමාලෝචනය සංස්කරණය කරන්න",
+    "ratingLabel": "ශ්‍රේණිගත කිරීම (1-5):",
+    "commentLabel": "අදහස:",
+    "commentPlaceholder": "ඔබේ සමාලෝචනය ලියන්න...",
+    "cancel": "අවලංගු කරන්න",
+    "submit": "ගොනු කරන්න",
+    "update": "යාවත්කාලීන කරන්න",
+    "saving": "සුරකිමින්...",
+    "edit": "සංස්කරණය",
+    "delete": "මකන්න",
+    "deleteConfirm": "සමාලෝචනය මකන්න",
+    "deleteMessage": "ඔබට විශ්වාසද?",
+    "anonymous": "නිර්නාමික",
+    "validation": {
+      "enterComment": "කරුණාකර අදහසක් ඇතුලත් කරන්න.",
+      "ratingRange": "ශ්‍රේණිගත කිරීම 1 සහ 5 අතර අංකයක් විය යුතුය."
+    },
+    "alerts": {
+      "updated": "සමාලෝචනය යාවත්කාලීන කරන ලදී.",
+      "added": "සමාලෝචනය එකතු කරන ලදී.",
+      "error": "දෝෂයක්"
+    }
   },
   "profile": {
     "title": "පැතිකඩ",
@@ -87,7 +145,15 @@
     "about": "ගැන",
     "support": "සහාය",
     "termsOfService": "සේවා කොන්දේසි",
-    "privacyPolicy": "පෞද්ගලිකත්ව ප්‍රතිපත්තිය"
+    "privacyPolicy": "පෞද්ගලිකත්ව ප්‍රතිපත්තිය",
+    "orders": "ඇණවුම්",
+    "rating": "ශ්‍රේණිගත කිරීම",
+    "years": "වසර",
+    "account": "ගිණුම",
+    "language": "භාෂාව",
+    "logout": "ඉවත් වන්න",
+    "signOut": "ඉවත් වන්න",
+    "signingOut": "ඉවත් වෙමින්..."
   },
   "errors": {
     "networkError": "ජාල දෝෂයක්. ඔබේ සම්බන්ධතාව පරීක්ෂා කරන්න.",
@@ -223,5 +289,132 @@
       "contactSupport": "සහාය අමතන්න",
       "backToHome": "මුල් පිටුවට ආපසු"
     }
+  },
+  "productDetail": {
+    "loading": "පූරණය වෙමින්...",
+    "owner": "හිමිකරු",
+    "stock": "තොගය",
+    "condition": "තත්ත්වය",
+    "swapOnly": "හුවමාරුව පමණක්",
+    "chat": "චැට්",
+    "swap": "හුවමාරුව",
+    "buyNow": "දැන් මිලදී ගන්න",
+    "swapGuidelines": "හුවමාරු මාර්ගෝපදේශ",
+    "guidelinesTitle": "හුවමාරු මාර්ගෝපදේශ",
+    "guidelinesContent": "භාණ්ඩ හුවමාරු කිරීමේදී:\n\n1. දෙපාර්ශ්වයම වටිනාකම් හුවමාරුව පිළිබඳව එකඟ විය යුතුය.\n2. ආරක්ෂාව සඳහා පොදු ස්ථානයක රැස්වන්න.\n3. හුවමාරුව තහවුරු කිරීමට පෙර භාණ්ඩය හොඳින් පරීක්ෂා කරන්න.\n4. වාර්තා පවත්වා ගැනීම සඳහා අපගේ වේදිකාව හරහා ගනුදෙනුව සම්පූර්ණ කරන්න.\n5. කිසියම් ගැටලුවක් වහාම අපගේ සහාය කණ්ඩායමට වාර්තා කරන්න.",
+    "similarItems": "සමාන භාණ්ඩ",
+    "creatingChat": "චැට් එක සාදමින්...",
+    "pleaseWait": "කරුණාකර ඔබේ සංවාදය සකස් කරන තෙක් රැඳී සිටින්න...",
+    "ownerDetails": "හිමිකරුගේ විස්තර",
+    "chatWithOwner": "හිමිකරු සමඟ චැට් කරන්න",
+    "relatedItems": "සමාන භාණ්ඩ",
+    "translate": "පරිවර්තනය",
+    "translating": "පරිවර්තනය කරමින්...",
+    "original": "මුල්",
+    "translatedTo": "පරිවර්තනය කළේ",
+    "tapToSeeOriginal": "මුල් බැලීමට බොත්තම ටැප් කරන්න",
+    "loadingOwnerInfo": "හිමිකරු තොරතුරු පූරණය වෙමින්...",
+    "unknownUser": "නොදන්නා පරිශීලකයා",
+    "noRatings": "තවම ශ්‍රේණිගත කිරීම් නැත",
+    "userRating": "පරිශීලක ශ්‍රේණිගත කිරීම"
+  },
+  "addProduct": {
+    "title": "නව භාණ්ඩයක් එකතු කරන්න",
+    "itemName": "භාණ්ඩ නම",
+    "itemNamePlaceholder": "උදා: iPhone 13 Pro",
+    "description": "විස්තරය",
+    "descriptionPlaceholder": "ඔබේ භාණ්ඩය විස්තර කරන්න...",
+    "category": "වර්ගය",
+    "price": "මිල (LKR)",
+    "pricePlaceholder": "මිල ඇතුලත් කරන්න",
+    "swapOnly": "හුවමාරුව පමණක් (මිලක් නැත)",
+    "condition": "තත්ත්වය",
+    "conditionPlaceholder": "උදා: අලුත්, පාහේ අලුත්, හොඳ, සාධාරණ",
+    "tags": "ටැග්",
+    "addCustomTag": "අභිරුචි ටැග් එකතු කරන්න",
+    "customTagPlaceholder": "ටැග් නම ඇතුලත් කරන්න",
+    "stock": "තොග ප්‍රමාණය",
+    "stockPlaceholder": "තොග ප්‍රමාණය ඇතුලත් කරන්න",
+    "itemImage": "භාණ්ඩ රූපය",
+    "camera": "කැමරාව",
+    "gallery": "ගැලරිය",
+    "generateWithAI": "AI සමඟ විස්තර සහ ටැග් උත්පාදනය කරන්න",
+    "generating": "උත්පාදනය කරමින්...",
+    "postItem": "භාණ්ඩය පළ කරන්න",
+    "posting": "පළ කරමින්...",
+    "categories": {
+      "electronics": "ඉලෙක්ට්‍රොනික",
+      "furniture": "ගෘහ භාණ්ඩ",
+      "books": "පොත්",
+      "clothing": "ඇඳුම්",
+      "others": "වෙනත්"
+    },
+    "defaultTags": {
+      "emergency": "හදිසි",
+      "goodCondition": "හොඳ තත්ත්වයේ",
+      "limitedTime": "සීමිත කාලයකට",
+      "newArrival": "නව පැමිණීම"
+    },
+    "alerts": {
+      "permissionRequired": "අවසරය අවශ්‍යයි",
+      "permissionMessage": "රූපයක් තෝරා ගැනීමට අවසරය අවශ්‍යයි.",
+      "fillAllFields": "කරුණාකර සියලුම අවශ්‍ය ක්ෂේත්‍ර පුරවන්න",
+      "enterValidPrice": "කරුණාකර වලංගු මිලක් ඇතුලත් කරන්න",
+      "enterValidStock": "කරුණාකර වලංගු තොග ප්‍රමාණයක් ඇතුලත් කරන්න",
+      "addImage": "කරුණාකර රූපයක් එකතු කරන්න",
+      "uploadingImage": "රූපය උඩුගත කරමින්",
+      "uploadingImageMessage": "කරුණාකර අපි ඔබගේ රූපය උඩුගත කරන තෙක් රැඳී සිටින්න...",
+      "itemPosted": "භාණ්ඩය පළ කරන ලදී!",
+      "itemPostedMessage": "ඔබගේ භාණ්ඩය සාර්ථකව පළ කරන ලදී."
+    }
+  },
+  "swap": {
+    "title": "භාණ්ඩය හුවමාරු කරන්න",
+    "selectYourItem": "හුවමාරුව සඳහා ඔබේ භාණ්ඩය තෝරන්න",
+    "confirmSwap": "හුවමාරුව තහවුරු කරන්න",
+    "swapRequest": "හුවමාරු ඉල්ලීම",
+    "youWillReceive": "ඔබට ලැබෙනු ඇත:",
+    "youWillGive": "ඔබ දෙනු ඇත:",
+    "swapValue": "හුවමාරු වටිනාකම",
+    "confirmMessage": "ඔබට මෙම හුවමාරුව ඉදිරියට කරගෙන යාමට අවශ්‍යද?",
+    "cancel": "අවලංගු කරන්න",
+    "confirm": "හුවමාරුව තහවුරු කරන්න",
+    "processing": "සකසමින්...",
+    "success": "හුවමාරු ඉල්ලීම සාර්ථකව යවන ලදී!",
+    "error": "හුවමාරු ඉල්ලීම සැකසීමේ දෝෂයක්",
+    "noItems": "හුවමාරු කිරීමට ඔබට කිසිදු භාණ්ඩයක් නැත",
+    "loading": "ඔබේ භාණ්ඩ පූරණය වෙමින්..."
+  },
+  "updateProfile": {
+    "title": "පැතිකඩ යාවත්කාලීන කරන්න",
+    "personalInformation": "පුද්ගලික තොරතුරු",
+    "firstName": "මුල් නම",
+    "lastName": "අවසාන නම",
+    "phoneNumber": "දුරකථන අංකය",
+    "age": "වයස",
+    "address": "ලිපිනය",
+    "profilePicture": "පැතිකඩ පින්තූරය",
+    "changePhoto": "ඡායාරූපය වෙනස් කරන්න",
+    "saveChanges": "වෙනස්කම් සුරකින්න",
+    "saving": "සුරකිමින්...",
+    "success": "පැතිකඩ සාර්ථකව යාවත්කාලීන කරන ලදී!",
+    "error": "පැතිකඩ යාවත්කාලීන කිරීමේ දෝෂයක්",
+    "validation": {
+      "firstNameRequired": "මුල් නම අවශ්‍යයි",
+      "lastNameRequired": "අවසාන නම අවශ්‍යයි",
+      "phoneInvalid": "දුරකථන අංකය ඉලක්කම් 10ක් විය යුතුය",
+      "ageInvalid": "වයස 10 සහ 120 අතර විය යුතුය"
+    }
+  },
+  "completeProfile": {
+    "title": "ඔබේ පැතිකඩ සම්පූර්ණ කරන්න",
+    "subtitle": "ඔබගේ ගිණුම් සැකසීම සම්පූර්ණ කිරීමට කරුණාකර අතිරේක තොරතුරු ලබා දෙන්න",
+    "firstName": "මුල් නම",
+    "lastName": "අවසාන නම",
+    "phoneNumber": "දුරකථන අංකය",
+    "age": "වයස",
+    "address": "ලිපිනය",
+    "continue": "ඉදිරියට",
+    "skip": "දැන් මඟ හරින්න"
   }
 }

@@ -14,11 +14,13 @@ import {
 } from 'react-native';
 import { fetchProducts } from '../../services/productService';
 import formatPrice from '../../utils/formatPrice';
+import { useAppI18n } from '../../utils/i18n';
 
 const CATEGORIES = ['All', 'Shoes', 'Clothes', 'Accessories', 'Electronics', 'Books', 'Others'];
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { t } = useAppI18n();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -68,7 +70,7 @@ export default function HomeScreen() {
         className="flex-row items-center bg-gray-100 rounded-lg p-3 mb-3"
       >
         <Ionicons name="search" size={20} color="#666" />
-        <Text className="ml-2 text-gray-500">Search items...</Text>
+        <Text className="ml-2 text-gray-500">{t('products.searchItems')}</Text>
       </TouchableOpacity>
 
       {/* Category Chips */}
@@ -78,23 +80,30 @@ export default function HomeScreen() {
         className="py-2"
         contentContainerStyle={{ paddingRight: 16 }}
       >
-        {CATEGORIES.map((category) => (
-          <TouchableOpacity
-            key={category}
-            onPress={() => setSelectedCategory(category)}
-            className={`mr-3 px-4 h-10 min-w-[70px] flex-row items-center justify-center rounded-full border ${
-              selectedCategory === category ? 'bg-black border-black' : 'bg-white border-gray-300'
-            }`}
-          >
-            <Text
-              className={`text-center font-medium ${
-                selectedCategory === category ? 'text-white' : 'text-gray-800'
+        {CATEGORIES.map((category) => {
+          const categoryKey = category.toLowerCase().replace(' ', '');
+          const translatedCategory = category === 'All' 
+            ? t('products.allCategories') 
+            : t(`products.categories.${categoryKey}`, category);
+          
+          return (
+            <TouchableOpacity
+              key={category}
+              onPress={() => setSelectedCategory(category)}
+              className={`mr-3 px-4 h-10 min-w-[70px] flex-row items-center justify-center rounded-full border ${
+                selectedCategory === category ? 'bg-black border-black' : 'bg-white border-gray-300'
               }`}
             >
-              {category}
-            </Text>
-          </TouchableOpacity>
-        ))}
+              <Text
+                className={`text-center font-medium ${
+                  selectedCategory === category ? 'text-white' : 'text-gray-800'
+                }`}
+              >
+                {translatedCategory}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
       </ScrollView>
     </View>
   );

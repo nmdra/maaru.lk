@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { collection, doc, getDoc, getDocs, limit, query, where } from 'firebase/firestore';
 import { useEffect, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Image,
   Modal,
@@ -15,21 +16,29 @@ import {
 import ProductCard from '../../components/product/ProductCard';
 import { db } from '../../services/firebaseConfig';
 import formatPrice from '../../utils/formatPrice';
+import { useAppI18n } from '../../utils/i18n';
 
 // 🔗 chat helpers + auth
 import { useAuth } from '../../context/AuthContext';
 import { ensureConversation, roomIdFor } from '../../services/chatService';
+import { generateProductDetails } from '../../services/aiService';
 
 export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const { user } = useAuth(); // expects user?.uid
+  const { t, currentLanguage } = useAppI18n();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [relatedItems, setRelatedItems] = useState([]);
   const [swapGuidelinesVisible, setSwapGuidelinesVisible] = useState(false);
   const [ownerData, setOwnerData] = useState(null);
   const [loadingOwner, setLoadingOwner] = useState(false);
+  
+  // Translation states
+  const [translating, setTranslating] = useState(false);
+  const [translatedData, setTranslatedData] = useState(null);
+  const [originalData, setOriginalData] = useState(null);
 
   const mockTags = product?.tags || [];
 
@@ -42,6 +51,7 @@ export default function ProductDetailScreen() {
         if (docSnap.exists()) {
           const data = { id: docSnap.id, ...docSnap.data() };
           setProduct(data);
+          setOriginalData(data); // Store original data for translation toggle
           fetchRelatedItems(data.category, data.id);
           
           // Fetch owner data if ownerId exists
@@ -100,6 +110,81 @@ export default function ProductDetailScreen() {
     fetchProduct();
   }, [id]);
 
+  // AI Translation Function
+  const handleTranslateProduct = async () => {
+    if (!product || !originalData) return;
+
+    // If already translated, toggle back to original
+    if (translatedData) {
+      setProduct(originalData);
+      setTranslatedData(null);
+      return;
+    }
+
+    setTranslating(true);
+    try {
+      const languageNames = {
+        en: 'English',
+        si: 'Sinhala',
+        ta: 'Tamil'
+      };
+      
+      const targetLanguage = languageNames[currentLanguage] || 'English';
+      
+      // Create a translation prompt for the AI
+      const translationPrompt = JSON.stringify({
+        task: 'translate',
+        targetLanguage: targetLanguage,
+        content: {
+          name: originalData.name,
+          description: originalData.description,
+          condition: originalData.condition || '',
+          tags: originalData.tags || []
+        }
+      });
+
+      // Use the AI service to translate
+      // We'll pass the translation prompt as if it's generating product details
+      const result = await generateProductDetails(null, translationPrompt);
+
+      if (!result) {
+        Alert.alert(t('common.error'), 'AI translation returned no data.');
+        return;
+      }
+
+      let translatedContent;
+      if (typeof result === 'string') {
+        try {
+          translatedContent = JSON.parse(result);
+        } catch (err) {
+          console.error('Failed to parse AI translation:', err);
+          Alert.alert(t('common.error'), 'Failed to parse translation.');
+          return;
+        }
+      } else {
+        translatedContent = result;
+      }
+
+      // Create translated product data
+      const translated = {
+        ...originalData,
+        name: translatedContent.name || originalData.name,
+        description: translatedContent.description || originalData.description,
+        condition: translatedContent.condition || originalData.condition,
+        tags: translatedContent.tags || originalData.tags
+      };
+
+      setTranslatedData(translated);
+      setProduct(translated);
+      
+    } catch (err) {
+      console.error('Error translating product:', err);
+      Alert.alert(t('common.error'), 'Failed to translate product details.');
+    } finally {
+      setTranslating(false);
+    }
+  };
+
   const productCard = useMemo(() => {
     if (!product) return null;
     return {
@@ -112,7 +197,8 @@ export default function ProductDetailScreen() {
   if (loading || !product) {
     return (
       <View className="flex-1 justify-center items-center">
-        <Text className="text-gray-500">Loading...</Text>
+        <ActivityIndicator size="large" color="#3B82F6" />
+        <Text className="text-gray-500 mt-4">{t('productDetail.loading')}</Text>
       </View>
     );
   }
@@ -214,7 +300,49 @@ export default function ProductDetailScreen() {
 
         {/* Product Info */}
         <View className="p-4 space-y-4">
-          <Text className="text-2xl font-bold text-gray-900">{product.name}</Text>
+          {/* Product Title with Translation Button */}
+          <View className="flex-row items-start justify-between">
+            <Text className="text-2xl font-bold text-gray-900 flex-1 pr-2">{product.name}</Text>
+            
+            {/* AI Translation Button */}
+            <TouchableOpacity
+              onPress={handleTranslateProduct}
+              disabled={translating}
+              className={`flex-row items-center px-3 py-2 rounded-full shadow-md ${
+                translating 
+                  ? 'bg-gray-300' 
+                  : translatedData 
+                  ? 'bg-green-500' 
+                  : 'bg-purple-500'
+              }`}
+              style={{ minWidth: 70 }}
+            >
+              {translating ? (
+                <ActivityIndicator size="small" color="white" />
+              ) : (
+                <>
+                  <Ionicons 
+                    name={translatedData ? "language" : "language-outline"} 
+                    size={18} 
+                    color="white" 
+                  />
+                  <Text className="text-white text-xs font-semibold ml-1">
+                    {translatedData ? 'Original' : 'Translate'}
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+          
+          {/* Translation indicator */}
+          {translatedData && (
+            <View className="flex-row items-center bg-green-50 px-3 py-2 rounded-lg">
+              <Ionicons name="checkmark-circle" size={16} color="#10b981" />
+              <Text className="text-green-700 text-xs ml-2">
+                {t('productDetail.translatedTo')} {currentLanguage === 'si' ? 'සිංහල' : currentLanguage === 'ta' ? 'தமிழ்' : 'English'} • {t('productDetail.tapToSeeOriginal')}
+              </Text>
+            </View>
+          )}
 
           {/* Info Chips */}
           <View className="flex-row flex-wrap gap-2 mt-2">
@@ -226,7 +354,7 @@ export default function ProductDetailScreen() {
             <View className="flex-row items-center bg-gray-100 px-3 py-1 rounded-full shadow-sm">
               <Ionicons name="cube-outline" size={16} color="#4B5563" />
               <Text className="ml-1 text-xs font-medium text-gray-700">
-                Stock: {product.stock}
+                {t('productDetail.stock')}: {product.stock}
               </Text>
             </View>
 
@@ -239,7 +367,7 @@ export default function ProductDetailScreen() {
 
             {product.swapOnly && (
               <View className="bg-red-500 px-3 py-1 rounded-full">
-                <Text className="text-xs font-bold text-white">SWAP ONLY</Text>
+                <Text className="text-xs font-bold text-white">{t('productDetail.swapOnly').toUpperCase()}</Text>
               </View>
             )}
           </View>
@@ -258,13 +386,13 @@ export default function ProductDetailScreen() {
 
           {/* Owner Details Card */}
           <View className="bg-white p-4 rounded-xl shadow-md mt-4 border border-gray-200">
-            <Text className="text-lg font-semibold mb-2">Owner Details</Text>
+            <Text className="text-lg font-semibold mb-2">{t('productDetail.ownerDetails')}</Text>
 
             {loadingOwner ? (
               <View className="flex-row items-center mb-2">
                 <Ionicons name="person-circle-outline" size={40} color="#4B5563" />
                 <View className="ml-3">
-                  <Text className="text-sm text-gray-500">Loading owner info...</Text>
+                  <Text className="text-sm text-gray-500">{t('productDetail.loadingOwnerInfo')}</Text>
                 </View>
               </View>
             ) : (
@@ -272,12 +400,12 @@ export default function ProductDetailScreen() {
                 <Ionicons name="person-circle-outline" size={40} color="#4B5563" />
                 <View className="ml-3">
                   <Text className="text-base font-medium text-gray-900">
-                    {ownerData?.name || 'Unknown User'}
+                    {ownerData?.name || t('productDetail.unknownUser')}
                   </Text>
                   <Text className="text-sm text-gray-600">
                     {ownerData?.rating > 0 
-                      ? `User Rating: ${'⭐'.repeat(Math.round(ownerData.rating))}${'☆'.repeat(5 - Math.round(ownerData.rating))}`
-                      : 'No ratings yet'}
+                      ? `${t('productDetail.userRating')}: ${'⭐'.repeat(Math.round(ownerData.rating))}${'☆'.repeat(5 - Math.round(ownerData.rating))}`
+                      : t('productDetail.noRatings')}
                   </Text>
                   {ownerData?.email && (
                     <Text className="text-xs text-gray-500 mt-1">
@@ -293,7 +421,7 @@ export default function ProductDetailScreen() {
               className="mt-2 bg-blue-600 py-2 rounded-lg flex-row items-center justify-center"
             >
               <Ionicons name="chatbubble-outline" size={18} color="white" />
-              <Text className="text-white font-semibold ml-2">Chat with Owner</Text>
+              <Text className="text-white font-semibold ml-2">{t('productDetail.chatWithOwner')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -306,7 +434,7 @@ export default function ProductDetailScreen() {
               className="flex-1 bg-green-600 py-3 rounded-lg flex-row items-center justify-center"
             >
               <Ionicons name="swap-horizontal-outline" size={20} color="white" />
-              <Text className="text-white font-semibold ml-2">Swap</Text>
+              <Text className="text-white font-semibold ml-2">{t('productDetail.swap')}</Text>
             </TouchableOpacity>
           ) : (
             <>
@@ -315,7 +443,7 @@ export default function ProductDetailScreen() {
                 className="flex-1 bg-green-600 py-3 rounded-lg flex-row items-center justify-center"
               >
                 <Ionicons name="swap-horizontal-outline" size={20} color="white" />
-                <Text className="text-white font-semibold ml-2">Swap</Text>
+                <Text className="text-white font-semibold ml-2">{t('productDetail.swap')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -323,7 +451,7 @@ export default function ProductDetailScreen() {
                 className="flex-1 bg-yellow-500 py-3 rounded-lg flex-row items-center justify-center"
               >
                 <Ionicons name="card-outline" size={20} color="white" />
-                <Text className="text-white font-semibold ml-2">Pay</Text>
+                <Text className="text-white font-semibold ml-2">{t('productDetail.buyNow')}</Text>
               </TouchableOpacity>
             </>
           )}
@@ -332,7 +460,7 @@ export default function ProductDetailScreen() {
         {/* Related Items */}
         {relatedItems.length > 0 && (
           <View className="px-4 py-3 border-t border-gray-200">
-            <Text className="font-semibold text-gray-900 mb-2">Related Items</Text>
+            <Text className="font-semibold text-gray-900 mb-2">{t('productDetail.relatedItems')}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               {relatedItems.map((item) => (
                 <ProductCard
@@ -360,18 +488,15 @@ export default function ProductDetailScreen() {
       >
         <View className="flex-1 bg-black/50 justify-center items-center">
           <View className="bg-white w-11/12 p-6 rounded-2xl">
-            <Text className="text-lg font-bold mb-4">Swap Guidelines</Text>
+            <Text className="text-lg font-bold mb-4">{t('productDetail.swapGuidelines')}</Text>
             <Text className="text-gray-700 mb-6">
-              • Ensure your item matches the listed condition.{'\n'}
-              • Communicate clearly with the other user.{'\n'}
-              • Meet in safe, public places for swaps.{'\n'}
-              • Report any suspicious activity.
+              {t('productDetail.guidelinesContent')}
             </Text>
             <TouchableOpacity
               onPress={() => setSwapGuidelinesVisible(false)}
               className="bg-purple-600 py-3 rounded-xl"
             >
-              <Text className="text-white text-center font-semibold">Got it</Text>
+              <Text className="text-white text-center font-semibold">{t('common.close')}</Text>
             </TouchableOpacity>
           </View>
         </View>
