@@ -244,3 +244,54 @@ export function getChatImageMobileOptimized(cloudinaryUrl) {
     format: 'auto',
   });
 }
+
+/**
+ * Upload image to Cloudinary in a specific folder
+ * @param {string} uri - Local image URI
+ * @param {string} folder - Cloudinary folder name (e.g., 'products', 'user_uploads')
+ * @returns {Promise<string>} - Uploaded image URL
+ */
+export async function uploadImageToCloudinary(uri, folder = '') {
+  if (!uri) throw new Error('No URI provided for upload');
+
+  const formData = new FormData();
+
+  if (Platform.OS === 'web') {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    formData.append('file', blob, `image_${Date.now()}.jpg`);
+  } else {
+    const filename = uri.split('/').pop();
+    const match = /\.(\w+)$/.exec(filename);
+    const type = match ? `image/${match[1]}` : 'image/jpeg';
+
+    formData.append('file', {
+      uri,
+      type,
+      name: filename || `image_${Date.now()}.jpg`,
+    });
+  }
+
+  formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+  // Add folder if specified
+  if (folder) {
+    formData.append('folder', folder);
+  }
+
+  const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
+
+  const response = await fetch(cloudinaryUrl, {
+    method: 'POST',
+    body: formData,
+    headers: { Accept: 'application/json' },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Cloudinary upload failed: ${response.status} - ${errorText}`);
+  }
+
+  const data = await response.json();
+  return data.secure_url;
+}
