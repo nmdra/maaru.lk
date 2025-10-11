@@ -5,6 +5,7 @@ import { serverTimestamp } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { Alert, Image, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { generateProductDetails } from '../services/aiService';
+import { uploadImageToCloudinary } from '../services/cloudinaryService'; // <-- Import Cloudinary upload function
 import { addItemToFirestore } from '../services/itemService';
 import { getUserId } from '../utils/storage';
 
@@ -28,17 +29,11 @@ export default function AddItemScreen() {
   const [aiLoading, setAiLoading] = useState(false);
   const [userId, setUserId] = useState(null);
 
-  // Get logged-in user ID from AsyncStorage
   useEffect(() => {
     const loadUserId = async () => {
       try {
         const id = await getUserId();
-        if (id) {
-          setUserId(id);
-          console.log('Loaded user ID:', id);
-        } else {
-          console.warn('No user ID found in storage');
-        }
+        if (id) setUserId(id);
       } catch (error) {
         console.error('Error loading user ID:', error);
       }
@@ -46,7 +41,6 @@ export default function AddItemScreen() {
     loadUserId();
   }, []);
 
-  // Pick image
   const handlePickImage = async (fromCamera = true) => {
     try {
       const permissionStatus = fromCamera
@@ -60,21 +54,14 @@ export default function AddItemScreen() {
 
       const result = fromCamera
         ? await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.7, aspect: [4, 4] })
-        : await ImagePicker.launchImageLibraryAsync({
-            allowsEditing: true,
-            quality: 0.7,
-            aspect: [4, 4],
-          });
+        : await ImagePicker.launchImageLibraryAsync({ allowsEditing: true, quality: 0.7, aspect: [4, 4] });
 
-      if (!result.canceled) {
-        setImageUri(result.assets[0].uri);
-      }
+      if (!result.canceled) setImageUri(result.assets[0].uri);
     } catch (err) {
       console.error(err);
     }
   };
 
-  // Toggle tag selection
   const toggleTag = (tag) => {
     setTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
   };
@@ -115,17 +102,13 @@ export default function AddItemScreen() {
         details = result;
       }
 
-      console.log('Parsed AI Details:', details);
-
       setName(details.name || '');
       setDescription(details.description || '');
       setCategory(CATEGORIES.includes(details.category) ? details.category : CATEGORIES[0]);
       setPrice(details.price != null ? String(details.price) : '');
       setCondition(details.condition || '');
       setSwapOnly(details.swapOnly || false);
-      setTags(
-        Array.isArray(details.tags) ? details.tags.filter((tag) => typeof tag === 'string') : [],
-      );
+      setTags(Array.isArray(details.tags) ? details.tags.filter((t) => typeof t === 'string') : []);
       setStock(details.stock != null ? String(details.stock) : '1');
     } catch (err) {
       console.error('Error generating AI details:', err);
@@ -141,7 +124,6 @@ export default function AddItemScreen() {
       return;
     }
 
-    // Check if user is logged in
     if (!userId) {
       Alert.alert(
         'Login Required',
@@ -156,6 +138,12 @@ export default function AddItemScreen() {
 
     setLoading(true);
     try {
+      let uploadedImageUrl = 'https://placehold.co/600x400'; // default placeholder
+
+      if (imageUri) {
+        uploadedImageUrl = await uploadImageToCloudinary(imageUri, 'products');
+      }
+
       const newItem = {
         name,
         description,
@@ -163,10 +151,10 @@ export default function AddItemScreen() {
         price: Number(price) || 0,
         swapOnly,
         condition,
-        imageUrl: imageUri || 'https://placehold.co/600x400',
+        imageUrl: uploadedImageUrl,
         tags,
         stock: Number(stock) || 1,
-        ownerId: userId, // Use logged-in user ID
+        ownerId: userId,
         createdAt: serverTimestamp(),
       };
 
@@ -187,18 +175,13 @@ export default function AddItemScreen() {
   return (
     <ScrollView className="flex-1 bg-gradient-to-b from-white to-gray-100 p-5">
       
-      {/* Header with back button */}
       <View className="flex-row items-center mb-6">
-        <TouchableOpacity 
-          onPress={() => router.push('/(tabs)/Home')} 
-          className="mr-3 p-2"
-        >
+        <TouchableOpacity onPress={() => router.push('/(tabs)/Home')} className="mr-3 p-2">
           <Ionicons name="arrow-back" size={24} color="#333" />
         </TouchableOpacity>
         <Text className="text-3xl font-extrabold text-gray-900 flex-1">Add New Item</Text>
       </View>
 
-      {/* Image Picker */}
       <View className="mb-6 items-center">
         <Image
           source={imageUri ? { uri: imageUri } : { uri: 'https://placehold.co/200x200' }}
@@ -222,7 +205,6 @@ export default function AddItemScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* AI Autofill */}
         <TouchableOpacity
           onPress={handleAIAutofill}
           disabled={aiLoading}
@@ -242,7 +224,6 @@ export default function AddItemScreen() {
         </Text>
       )}
 
-      {/* Name */}
       <TextInput
         value={name}
         onChangeText={setName}
@@ -250,7 +231,6 @@ export default function AddItemScreen() {
         className="bg-white border border-gray-200 rounded-2xl px-5 py-4 mb-5 shadow-sm text-gray-900 placeholder-gray-400"
       />
 
-      {/* Description */}
       <TextInput
         value={description}
         onChangeText={setDescription}
@@ -259,7 +239,6 @@ export default function AddItemScreen() {
         className="bg-white border border-gray-200 rounded-2xl px-5 py-4 mb-5 shadow-sm text-gray-900 placeholder-gray-400 h-28"
       />
 
-      {/* Category */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-5 space-x-3">
         {CATEGORIES.map((cat) => (
           <TouchableOpacity
@@ -276,7 +255,6 @@ export default function AddItemScreen() {
         ))}
       </ScrollView>
 
-      {/* Swap Only */}
       <View className="flex-row justify-between items-center mb-5 px-2">
         <Text className="text-gray-800 font-semibold text-lg">Swap Only</Text>
         <Switch
@@ -287,7 +265,6 @@ export default function AddItemScreen() {
         />
       </View>
 
-      {/* Price */}
       {!swapOnly && (
         <TextInput
           value={price}
@@ -298,7 +275,6 @@ export default function AddItemScreen() {
         />
       )}
 
-      {/* Condition */}
       <TextInput
         value={condition}
         onChangeText={setCondition}
@@ -306,7 +282,6 @@ export default function AddItemScreen() {
         className="bg-white border border-gray-200 rounded-2xl px-5 py-4 mb-5 shadow-sm text-gray-900 placeholder-gray-400"
       />
 
-      {/* Stock */}
       <TextInput
         value={String(stock)}
         onChangeText={(val) => setStock(Number(val))}
@@ -315,7 +290,6 @@ export default function AddItemScreen() {
         className="bg-white border border-gray-200 rounded-2xl px-5 py-4 mb-5 shadow-sm text-gray-900 placeholder-gray-400"
       />
 
-      {/* Tags */}
       <View className="flex-row flex-wrap mb-5 space-x-2">
         {[...MOCK_TAGS, ...tags.filter((tag) => !MOCK_TAGS.includes(tag))].map((tag) => (
           <TouchableOpacity
@@ -332,7 +306,6 @@ export default function AddItemScreen() {
         ))}
       </View>
 
-      {/* Custom Tag */}
       <View className="flex-row mb-6">
         <TextInput
           value={customTag}
@@ -348,7 +321,6 @@ export default function AddItemScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Submit */}
       <TouchableOpacity
         onPress={handleAddItem}
         disabled={loading}

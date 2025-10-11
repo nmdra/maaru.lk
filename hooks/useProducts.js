@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { collection, getDocs, limit, query, startAfter, where } from 'firebase/firestore';
 import { useState } from 'react';
 import { db } from '../services/firebaseConfig';
@@ -5,10 +6,31 @@ import { db } from '../services/firebaseConfig';
 export default function useProducts(filters) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [lastDoc, setLastDoc] = useState(null);
   const [search, setSearch] = useState('');
+
+  const cacheKey = (searchText = '') =>
+    `products_${JSON.stringify(filters)}_${searchText}`;
+
+  // --- AsyncStorage helpers ---
+  const saveToCache = async (key, data) => {
+    try {
+      await AsyncStorage.setItem(key, JSON.stringify(data));
+    } catch (e) {
+      console.error('Failed to save cache', e);
+    }
+  };
+
+  const loadFromCache = async (key) => {
+    try {
+      const json = await AsyncStorage.getItem(key);
+      return json ? JSON.parse(json) : null;
+    } catch (e) {
+      console.error('Failed to load cache', e);
+      return null;
+    }
+  };
 
   const buildQuery = (startAfterDoc = null) => {
     let q = collection(db, 'products');
@@ -40,9 +62,17 @@ export default function useProducts(filters) {
     return q;
   };
 
+  // --- Fetch first page with cache ---
   const fetchFirstPage = async (searchText = '') => {
     setLoading(true);
     setSearch(searchText);
+
+    const key = cacheKey(searchText);
+
+    // Load cached data first
+    const cached = await loadFromCache(key);
+    if (cached) setItems(cached);
+
     try {
       const q = buildQuery();
       const snapshot = await getDocs(q);
@@ -50,6 +80,9 @@ export default function useProducts(filters) {
       setItems(fetchedItems);
       setLastDoc(snapshot.docs[snapshot.docs.length - 1] || null);
       setHasMore(fetchedItems.length > 0);
+
+      // Save fresh data to cache
+      await saveToCache(key, fetchedItems);
     } catch (err) {
       console.error(err);
     } finally {
@@ -57,6 +90,7 @@ export default function useProducts(filters) {
     }
   };
 
+  // --- Fetch next page ---
   const fetchNextPage = async () => {
     if (!lastDoc || !hasMore) return;
     setLoading(true);
@@ -67,6 +101,10 @@ export default function useProducts(filters) {
       setItems((prev) => [...prev, ...fetchedItems]);
       setLastDoc(snapshot.docs[snapshot.docs.length - 1] || null);
       setHasMore(fetchedItems.length > 0);
+
+      // Update cache with merged data
+      const key = cacheKey(search);
+      await saveToCache(key, [...items, ...fetchedItems]);
     } catch (err) {
       console.error(err);
     } finally {
@@ -80,7 +118,6 @@ export default function useProducts(filters) {
     items,
     loading,
     hasMore,
-    refreshing,
     fetchFirstPage,
     fetchNextPage,
     refresh,

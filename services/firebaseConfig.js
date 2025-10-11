@@ -1,7 +1,7 @@
 import { getAI, GoogleAIBackend } from 'firebase/ai';
 import { getApps, initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
-import { CACHE_SIZE_UNLIMITED, getFirestore, initializeFirestore } from 'firebase/firestore';
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 // Firebase config
@@ -16,20 +16,21 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase app
-let app;
-if (!getApps().length) {
-  app = initializeApp(firebaseConfig);
-  // Firestore with unlimited cache (recommended for React Native)
-  initializeFirestore(app, { cacheSizeBytes: CACHE_SIZE_UNLIMITED });
-} else {
-  app = getApps()[0];
-}
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
 
-// Initialize Firebase services
-export const db = getFirestore(app);
-export const storage = getStorage(app);
+// Initialize Firestore with offline persistence
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager(),
+  }),
+});
+
+// Initialize other Firebase services
 export const auth = getAuth(app);
 export const googleAuthProvider = new GoogleAuthProvider();
+export const storage = getStorage(app);
+
+// Initialize AI service if needed
 export const ai = getAI(app, { backend: new GoogleAIBackend() });
 
 export default app;
