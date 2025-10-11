@@ -143,12 +143,7 @@ export default function Login() {
         </View>
 
         {/* Login Card */}
-<<<<<<< HEAD
         <View className="mx-6 -mt-12 bg-white rounded-2xl shadow-lg p-6">
-=======
-        <View className="mx-6 -mt-8 bg-white rounded-2xl shadow-lg p-6">
-          
->>>>>>> master
           {/* Logo/Icon Section */}
           <View className="items-center -mt-10 mb-5">
             <View className="w-22 h-22 rounded-full bg-white p-1 shadow-lg">
@@ -196,13 +191,8 @@ export default function Login() {
               )}
             </Pressable>
 
-<<<<<<< HEAD
             {/* divide */}
             <View className="flex-row items-center my-6">
-=======
-            {/* devide */}
-            <View className="flex-row items-center my-4">
->>>>>>> master
               <View className="flex-1 h-px bg-gray-200" />
               <Text className="mx-4 text-gray-500 text-sm">or</Text>
               <View className="flex-1 h-px bg-gray-200" />
@@ -235,17 +225,12 @@ export default function Login() {
             {/* Create account */}
             <View className="items-center mt-3">
               <Text className="text-sm text-gray-500">Don't have an account?</Text>
-<<<<<<< HEAD
               <Pressable onPress={() => router.push('/(auth)/SignUp')} className="mt-2">
-=======
-              <Pressable onPress={() => router.push('/SignUp')} className="mt-2">
->>>>>>> master
                 <Text className="text-blue-600 font-semibold">Create Account</Text>
               </Pressable>
             </View>
           </View>
         </View>
-<<<<<<< HEAD
 
         {/* Continue as Guest */}
         <View className="mx-6 mt-6 mb-8 items-center">
@@ -253,14 +238,6 @@ export default function Login() {
             <Text className="text-gray-500">Continue as Guest</Text>
           </Pressable>
         </View>
-=======
-       {/* Continue as Guest (small link) */}
-       <View className="mx-6 mt-4 mb-6 items-center">
-         <Pressable onPress={() => router.push('/Home')} >
-           <Text className="text-gray-500">Continue as Guest</Text>
-         </Pressable>
-       </View>
->>>>>>> master
       </ScrollView>
     </SafeAreaView>
   );
