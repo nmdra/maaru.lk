@@ -31,7 +31,11 @@ export default function Profile() {
       if (!user) {
         setProfile(null);
         setLoading(false);
+<<<<<<< HEAD
         router.push('/(auth)/Login');
+=======
+        router.push('/Login');
+>>>>>>> master
         return;
       }
 
@@ -80,9 +84,14 @@ const handleSignOut = async () => {
           try {
             setSigningOut(true);
             await signOut(auth);
+<<<<<<< HEAD
             await clearUserData(); // Clear AsyncStorage
             console.log('User signed out and data cleared');
             router.replace('/(auth)/Login');
+=======
+            console.log('User signed out');
+            router.replace('/Login');
+>>>>>>> master
           } catch (error) {
             console.error('Sign out error:', error);
             Alert.alert("Error", "Failed to sign out. Please try again.");
@@ -113,7 +122,11 @@ const handleSignOut = async () => {
           <Text className="text-red-600 text-lg font-semibold mb-2">Error loading profile</Text>
           <Text className="text-gray-600 text-center mb-6">Could not load profile information</Text>
           <Pressable 
+<<<<<<< HEAD
             onPress={() => router.replace('/(auth)/Login')}
+=======
+            onPress={() => router.replace('/Login')}
+>>>>>>> master
             className="bg-blue-600 px-8 py-3 rounded-lg"
           >
             <Text className="text-white font-semibold">Back to Login</Text>
@@ -140,7 +153,6 @@ const handleSignOut = async () => {
               >
                 <Ionicons name="arrow-back" size={24} color="white" />
               </TouchableOpacity>
-              <Text className="text-white text-2xl font-bold">Profile</Text>
             </View>
 <TouchableOpacity 
     onPress={() => {

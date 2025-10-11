@@ -40,7 +40,11 @@ export default function UpdateProfile() {
         const user = auth.currentUser;
         if (!user) {
           Alert.alert("Error", "No user logged in.");
+<<<<<<< HEAD
           router.replace("/(auth)/Login");
+=======
+          router.replace("/Login");
+>>>>>>> master
           return;
         }
         const docRef = doc(db, "users", user.uid);
@@ -66,19 +70,26 @@ export default function UpdateProfile() {
     fetchProfile();
   }, []);
 
-    const handlePickPhoto = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissionResult.granted) {
-      Alert.alert("Permission required", "Camera roll permissions are required!");
-      return;
+  // Pick photo from camera or gallery
+  const handlePickPhoto = async (fromCamera = false) => {
+    let permissionResult;
+    if (fromCamera) {
+      permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+      if (permissionResult.status !== 'granted') {
+        Alert.alert('Permission required', 'Camera permissions are required!');
+        return;
+      }
+    } else {
+      permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        Alert.alert('Permission required', 'Camera roll permissions are required!');
+        return;
+      }
     }
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.7,
-    });
-    if (!result.cancelled && result.assets?.length > 0) {
+    const result = fromCamera
+      ? await ImagePicker.launchCameraAsync({ allowsEditing: true, aspect: [1, 1], quality: 0.7 })
+      : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images'], allowsEditing: true, aspect: [1, 1], quality: 0.7 });
+    if (!result.canceled && result.assets?.length > 0) {
       setPhoto(result.assets[0]);
     }
   };
@@ -112,7 +123,11 @@ export default function UpdateProfile() {
       });
     
     Alert.alert("Success", "Profile updated!");
+<<<<<<< HEAD
     router.push("/(auth)/Profile"); // Make sure this matches your route
+=======
+    router.push("/Profile"); // Make sure this matches your route
+>>>>>>> master
 
   } catch (error) {
     Alert.alert("Error", error.message);
@@ -134,40 +149,51 @@ export default function UpdateProfile() {
     <SafeAreaView className="flex-1 bg-gray-50">
       <ScrollView className="flex-1">
         {/* Header Section */}
-        <View className="bg-blue-600 px-6 pt-8 pb-20">
-          <View className="flex-row items-center mb-4">
+        <View className="bg-blue-600 px-6 pt-6 pb-12">
+          <View className="flex-row items-center mb-3">
             <TouchableOpacity 
+<<<<<<< HEAD
               onPress={() => router.push('/(auth)/Profile')} 
+=======
+              onPress={() => router.push('/Profile')} 
+>>>>>>> master
               className="p-2 -ml-2"
             >
               <Ionicons name="arrow-back" size={24} color="white" />
             </TouchableOpacity>
           </View>
           <View className="items-center">
-            <Text className="text-white text-3xl font-bold mb-6">Update your details</Text>
+            <Text className="text-white text-2xl font-bold mb-3">Update your profile</Text>
           </View>
         </View>
 
         {/* Profile Card */}
-        <View className="mx-6 -mt-12 bg-white rounded-2xl shadow-lg p-6">
+        <View className="mx-6 -mt-8 bg-white rounded-2xl shadow-lg p-6">
           {/* Icon Section */}
-          <View className="items-center -mt-16 mb-8">
-            <Pressable onPress={handlePickPhoto}>
-              <View className="w-32 h-32 rounded-full bg-white p-1 shadow-lg">
+          <View className="items-center -mt-10 mb-6">
+            <Pressable onPress={() => handlePickPhoto(false)}>
+              <View className="w-24 h-24 rounded-full bg-white p-1 shadow-lg">
                 {photo ? (
                   <Image source={{ uri: photo.uri }} className="w-full h-full rounded-full" />
                 ) : photoURL ? (
                   <Image source={{ uri: photoURL }} className="w-full h-full rounded-full" />
                 ) : (
                   <View className="w-full h-full rounded-full bg-blue-500 items-center justify-center">
-                    <Text className="text-white text-4xl font-bold">✎</Text>
+                    <Text className="text-white text-2xl font-bold">✎</Text>
                   </View>
                 )}
               </View>
-              <View className="items-center mt-2">
-                <Text className="text-blue-600">Change Photo</Text>
-              </View>
             </Pressable>
+            <View className="flex-row justify-center mt-2 space-x-3">
+              <TouchableOpacity onPress={() => handlePickPhoto(false)} className="flex-row items-center px-3 py-1 bg-gray-100 rounded-full">
+                <Ionicons name="image-outline" size={16} color="#1a73e8" />
+                <Text className="ml-1 text-blue-600 text-sm">Gallery</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => handlePickPhoto(true)} className="flex-row items-center px-3 py-1 bg-gray-100 rounded-full">
+                <Ionicons name="camera-outline" size={16} color="#1a73e8" />
+                <Text className="ml-1 text-blue-600 text-sm">Camera</Text>
+              </TouchableOpacity>
+            </View>
           </View>
 
 
@@ -245,7 +271,7 @@ export default function UpdateProfile() {
             {/* Update Button */}
             <Pressable
               onPress={handleUpdate}
-              className="bg-blue-600 py-4 rounded-xl mt-6"
+              className="bg-blue-600 py-4 rounded-xl mt-5"
               disabled={isSubmitting}
             >
               {isSubmitting ? (
