@@ -1,14 +1,15 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { collection, getDocs, limit, query, startAfter, where } from 'firebase/firestore';
 import { useState } from 'react';
-import { db } from '../services/firebaseConfig';
+import { fetchProducts } from '../services/productService';
 
 export default function useProducts(filters) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [lastDoc, setLastDoc] = useState(null);
+  const [cursor, setCursor] = useState(null);
   const [search, setSearch] = useState('');
+  const [error, setError] = useState(null);
 
   const cacheKey = (searchText = '') =>
     `products_${JSON.stringify(filters)}_${searchText}`;
@@ -32,59 +33,43 @@ export default function useProducts(filters) {
     }
   };
 
-  const buildQuery = (startAfterDoc = null) => {
-    let q = collection(db, 'products');
-
-    // Category filter
-    if (filters.category && filters.category !== 'All') {
-      if (filters.category === 'Swap Only') {
-        q = query(q, where('swapOnly', '==', true));
-      } else {
-        q = query(q, where('category', '==', filters.category));
-      }
-    }
-
-    // Price filters
-    if (filters.minPrice != null) q = query(q, where('price', '>=', filters.minPrice));
-    if (filters.maxPrice != null) q = query(q, where('price', '<=', filters.maxPrice));
-
-    // Search filter
-    if (search) {
-      q = query(q, where('name', '>=', search), where('name', '<=', search + '\uf8ff'));
-    }
-
-    // Pagination
-    if (startAfterDoc) q = query(q, startAfter(startAfterDoc));
-
-    // Limit
-    q = query(q, limit(20));
-
-    return q;
-  };
-
   // --- Fetch first page with cache ---
   const fetchFirstPage = async (searchText = '') => {
     setLoading(true);
+    setError(null);
     setSearch(searchText);
+    setCursor(null); // Reset cursor
 
     const key = cacheKey(searchText);
 
-    // Load cached data first
+    // Load cached data first for instant display
     const cached = await loadFromCache(key);
-    if (cached) setItems(cached);
+    if (cached) {
+      setItems(cached);
+    }
 
     try {
-      const q = buildQuery();
-      const snapshot = await getDocs(q);
-      const fetchedItems = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setItems(fetchedItems);
-      setLastDoc(snapshot.docs[snapshot.docs.length - 1] || null);
-      setHasMore(fetchedItems.length > 0);
+      const result = await fetchProducts({
+        search: searchText,
+        category: filters.category,
+        minPrice: filters.minPrice,
+        maxPrice: filters.maxPrice,
+        cursor: null, // First page
+        limit: 20,
+      });
+
+      setItems(result.items);
+      setCursor(result.cursor);
+      setHasMore(result.cursor !== null);
 
       // Save fresh data to cache
-      await saveToCache(key, fetchedItems);
+      await saveToCache(key, result.items);
+      
+      console.log(`✅ Fetched ${result.items.length} products (first page)`);
     } catch (err) {
-      console.error(err);
+      console.error('Error fetching first page:', err);
+      setError(err.message || 'Failed to load products');
+      setHasMore(false);
     } finally {
       setLoading(false);
     }
@@ -92,32 +77,53 @@ export default function useProducts(filters) {
 
   // --- Fetch next page ---
   const fetchNextPage = async () => {
-    if (!lastDoc || !hasMore) return;
+    if (!cursor || !hasMore || loading) return;
+    
     setLoading(true);
+    setError(null);
+
     try {
-      const q = buildQuery(lastDoc);
-      const snapshot = await getDocs(q);
-      const fetchedItems = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setItems((prev) => [...prev, ...fetchedItems]);
-      setLastDoc(snapshot.docs[snapshot.docs.length - 1] || null);
-      setHasMore(fetchedItems.length > 0);
+      const result = await fetchProducts({
+        search: search,
+        category: filters.category,
+        minPrice: filters.minPrice,
+        maxPrice: filters.maxPrice,
+        cursor: cursor, // Continue from last cursor
+        limit: 20,
+      });
+
+      const newItems = [...items, ...result.items];
+      setItems(newItems);
+      setCursor(result.cursor);
+      setHasMore(result.cursor !== null);
 
       // Update cache with merged data
       const key = cacheKey(search);
-      await saveToCache(key, [...items, ...fetchedItems]);
+      await saveToCache(key, newItems);
+      
+      console.log(`✅ Fetched ${result.items.length} more products (page)`);
     } catch (err) {
-      console.error(err);
+      console.error('Error fetching next page:', err);
+      setError(err.message || 'Failed to load more products');
+      setHasMore(false);
     } finally {
       setLoading(false);
     }
   };
 
-  const refresh = () => fetchFirstPage(search);
+  // --- Refresh (pull to refresh) ---
+  const refresh = async () => {
+    setRefreshing(true);
+    await fetchFirstPage(search);
+    setRefreshing(false);
+  };
 
   return {
     items,
     loading,
+    refreshing,
     hasMore,
+    error,
     fetchFirstPage,
     fetchNextPage,
     refresh,

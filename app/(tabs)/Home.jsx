@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
   Image,
   Pressable,
@@ -12,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { useAuth } from '../../context/AuthContext';
 import { fetchProducts } from '../../services/productService';
 import formatPrice from '../../utils/formatPrice';
 import { useAppI18n } from '../../utils/i18n';
@@ -21,6 +23,7 @@ const CATEGORIES = ['All', 'Shoes', 'Clothes', 'Accessories', 'Electronics', 'Bo
 export default function HomeScreen() {
   const router = useRouter();
   const { t } = useAppI18n();
+  const { user } = useAuth();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -41,6 +44,25 @@ export default function HomeScreen() {
 
   const filteredItems =
     selectedCategory === 'All' ? items : items.filter((item) => item.category === selectedCategory);
+
+  // Handler for Add Product button - check authentication
+  const handleAddProduct = () => {
+    if (!user) {
+      Alert.alert(
+        t('common.loginRequired', 'Login Required'),
+        t('common.loginToAddProduct', 'Please login to add products'),
+        [
+          { text: t('common.cancel', 'Cancel'), style: 'cancel' },
+          { 
+            text: t('common.login', 'Login'), 
+            onPress: () => router.push('/(auth)/Login')
+          }
+        ]
+      );
+      return;
+    }
+    router.push('/AddProduct');
+  };
 
   if (loading)
     return (
@@ -137,7 +159,7 @@ export default function HomeScreen() {
 
         {/* Floating Add New Item Button (shifted left so it doesn't overlap the chat bubble) */}
         <TouchableOpacity
-          onPress={() => router.push('/AddProduct')}
+          onPress={handleAddProduct}
           className="absolute bottom-6 right-6 bg-blue-600 w-16 h-16 rounded-full items-center justify-center shadow-lg"
         >
           <Ionicons name="add" size={32} color="#fff" />

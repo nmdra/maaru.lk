@@ -24,7 +24,15 @@
     "open": "Open",
     "yes": "Yes",
     "no": "No",
-    "or": "OR"
+    "or": "OR",
+    "login": "Login",
+    "loginRequired": "Login Required",
+    "loginToAddProduct": "Please login to add products",
+    "loginToBuy": "Please login to buy items",
+    "loginToSwap": "Please login to swap items",
+    "loginToReview": "Please login to write reviews",
+    "guestMode": "Guest Mode",
+    "guestModeDesc": "You can browse and search products. Login to buy, swap, or add products."
   },
   "navigation": {
     "home": "Home",

@@ -222,8 +222,41 @@ export default function ProductDetailScreen() {
     );
   }
 
-  const handleSwap = () => product && router.push(`/swap/${product.id}`);
-  const handlePay = () => product && router.push(`/product/payment/${product.id}`);
+  const handleSwap = () => {
+    if (!user) {
+      Alert.alert(
+        t('common.loginRequired', 'Login Required'),
+        t('common.loginToSwap', 'Please login to swap items'),
+        [
+          { text: t('common.cancel', 'Cancel'), style: 'cancel' },
+          { 
+            text: t('common.login', 'Login'), 
+            onPress: () => router.push('/(auth)/Login')
+          }
+        ]
+      );
+      return;
+    }
+    if (product) router.push(`/swap/${product.id}`);
+  };
+  
+  const handlePay = () => {
+    if (!user) {
+      Alert.alert(
+        t('common.loginRequired', 'Login Required'),
+        t('common.loginToBuy', 'Please login to buy items'),
+        [
+          { text: t('common.cancel', 'Cancel'), style: 'cancel' },
+          { 
+            text: t('common.login', 'Login'), 
+            onPress: () => router.push('/(auth)/Login')
+          }
+        ]
+      );
+      return;
+    }
+    if (product) router.push(`/product/payment/${product.id}`);
+  };
 
   const handleChat = async () => {
     if (!product) return;
