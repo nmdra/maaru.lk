@@ -5,13 +5,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { Actions, GiftedChat, InputToolbar } from 'react-native-gifted-chat';
 import { useAuth } from '../../context/AuthContext';
-import { uploadChatImageToCloudinary } from '../../services/cloudinaryService';
 import { listenMessages, markThreadRead, sendMessage } from '../../services/chatService';
+import { uploadChatImageToCloudinary } from '../../services/cloudinaryService';
 import {
-  getSocket,
-  wsSendMessage,
-  wsTypingStart,
-  wsTypingStop,
+    getSocket,
+    wsSendMessage,
+    wsTypingStart,
+    wsTypingStop,
 } from '../../services/socket';
 
 /* ---------- helpers ---------- */

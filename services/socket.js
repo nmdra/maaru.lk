@@ -1,5 +1,5 @@
-import { io } from "socket.io-client";
 import { getAuth, onIdTokenChanged } from "firebase/auth";
+import { io } from "socket.io-client";
 
 let socket = null;
 let unsubscribeAuth = null;

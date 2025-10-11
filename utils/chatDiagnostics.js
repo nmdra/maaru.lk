@@ -5,7 +5,7 @@
  */
 
 import { getAuth } from 'firebase/auth';
-import { collection, getDocs, query, limit } from 'firebase/firestore';
+import { collection, getDocs, limit, query } from 'firebase/firestore';
 import { db } from '../services/firebaseConfig';
 import { getSocket } from '../services/socket';
 

@@ -57,8 +57,7 @@ export async function uploadChatImageToCloudinary({ uri, conversationId, uid }) 
 }
 
 // Export other helper functions from main service
-export { 
-  getOptimizedCloudinaryUrl,
-  getChatImageThumbnail,
-  getChatImageMobileOptimized 
+export {
+    getChatImageMobileOptimized, getChatImageThumbnail, getOptimizedCloudinaryUrl
 } from './cloudinaryService';
+
