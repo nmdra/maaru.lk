@@ -8,10 +8,10 @@ import { useAuth } from '../../context/AuthContext';
 import { listenMessages, markThreadRead, sendMessage } from '../../services/chatService';
 import { uploadChatImageToCloudinary } from '../../services/cloudinaryService';
 import {
-    getSocket,
-    wsSendMessage,
-    wsTypingStart,
-    wsTypingStop,
+  getSocket,
+  wsSendMessage,
+  wsTypingStart,
+  wsTypingStop,
 } from '../../services/socket';
 
 /* ---------- helpers ---------- */
