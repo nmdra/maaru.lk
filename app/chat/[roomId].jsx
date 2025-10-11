@@ -422,6 +422,9 @@ export default function ChatRoom() {
         listViewProps={{
           contentContainerStyle: { paddingTop: 10 },
         }}
+        keyboardShouldPersistTaps="handled"
+        bottomOffset={0}
+        minInputToolbarHeight={44}
       />
     </View>
   );
