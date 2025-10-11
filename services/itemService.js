@@ -1,7 +1,6 @@
 import { addDoc, collection, doc, Timestamp, updateDoc } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { db, storage } from './firebaseConfig';
-import { deleteKeywordsForProduct } from './searchKeywordService';
 
 // Upload image and get its download URL
 export const uploadImage = async (uri, fileName) => {
