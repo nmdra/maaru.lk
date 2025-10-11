@@ -1,6 +1,6 @@
-import { collection, getDocs, limit, orderBy, query, startAfter, where } from 'firebase/firestore';
+import { collection, getDocs, limit, orderBy, query, startAfter, where, documentId } from 'firebase/firestore';
 import { db } from './firebaseConfig';
-import { searchProductsByKeywords } from './searchKeywordService';
+import { searchProductsByKeywords, getAllKeywordDocuments } from './searchKeywordService';
 
 const PRODUCTS_COLLECTION = 'products';
 
@@ -153,6 +153,112 @@ async function fetchProductsWithRankedSearch({
     };
   } catch (err) {
     console.error('fetchProductsWithRankedSearch error:', err);
+    throw err;
+  }
+}
+
+/**
+ * Fetch all available products with their keywords for AI analysis
+ * Returns products with essential info + keywords from searchKeywords collection
+ * 
+ * @returns {Promise<Array>} - Array of products with keywords
+ */
+export async function fetchAllProductsWithKeywords() {
+  try {
+    console.log('🔍 Fetching all products with keywords for AI analysis...');
+    
+    // Fetch all available products
+    const productsQuery = query(
+      collection(db, PRODUCTS_COLLECTION),
+      where('availability', '==', true),
+      orderBy('createdAt', 'desc')
+    );
+    
+    const productsSnapshot = await getDocs(productsQuery);
+    const products = productsSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    
+    console.log(`📦 Found ${products.length} available products`);
+    
+    // Fetch all keyword documents
+    const keywordDocs = await getAllKeywordDocuments();
+    console.log(`🔑 Found ${keywordDocs.length} keyword documents`);
+    
+    // Create a map for quick lookup
+    const keywordMap = new Map();
+    keywordDocs.forEach(doc => {
+      keywordMap.set(doc.productId, {
+        keywords: doc.keywords || [],
+        tags: doc.tags || [],
+      });
+    });
+    
+    // Merge products with their keywords
+    const productsWithKeywords = products.map(product => {
+      const keywordData = keywordMap.get(product.id) || { keywords: [], tags: [] };
+      return {
+        productId: product.id,
+        name: product.name,
+        description: product.description,
+        category: product.category,
+        price: product.price,
+        currency: product.currency,
+        condition: product.condition,
+        keywords: keywordData.keywords,
+        tags: keywordData.tags,
+        images: product.images || [],
+        userId: product.userId,
+      };
+    });
+    
+    console.log(`✅ Prepared ${productsWithKeywords.length} products with keywords for AI`);
+    return productsWithKeywords;
+  } catch (err) {
+    console.error('fetchAllProductsWithKeywords error:', err);
+    throw err;
+  }
+}
+
+/**
+ * Fetch products by IDs (for AI-selected products)
+ * 
+ * @param {Array<string>} productIds - Array of product IDs
+ * @returns {Promise<Array>} - Array of products
+ */
+export async function fetchProductsByIds(productIds) {
+  try {
+    if (!productIds || productIds.length === 0) {
+      return [];
+    }
+    
+    console.log(`🔍 Fetching ${productIds.length} products by IDs...`);
+    
+    // Firestore 'in' query limit is 30, so batch if needed
+    const allProducts = [];
+    for (let i = 0; i < productIds.length; i += 30) {
+      const batch = productIds.slice(i, i + 30);
+      
+      const q = query(
+        collection(db, PRODUCTS_COLLECTION),
+        where(documentId(), 'in', batch),
+        where('availability', '==', true)
+      );
+      
+      const snapshot = await getDocs(q);
+      const batchProducts = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      
+      allProducts.push(...batchProducts);
+    }
+    
+    console.log(`✅ Fetched ${allProducts.length} products`);
+    return allProducts;
+  } catch (err) {
+    console.error('fetchProductsByIds error:', err);
     throw err;
   }
 }
