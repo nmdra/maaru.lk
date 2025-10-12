@@ -1,15 +1,16 @@
 {
   "expo": {
-    "name": "maaru.lk",
+    "name": "Maaru.lk",
     "slug": "maaru",
-    "version": "1.0.1",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "maarulk",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.maarulk.maaru"
     },
     "android": {
       "adaptiveIcon": {
@@ -42,9 +43,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "3ccf3625-5b87-4bc5-b76f-cc9aafee0f16"
+        "projectId": "d4639917-c29d-4069-a09c-3a28653d1cc9"
       }
     },
-    "owner": "nimendradilshan"
+    "owner": "nmdra"
   }
 }
