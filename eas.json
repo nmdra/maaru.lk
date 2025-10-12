@@ -5,20 +5,41 @@
   },
   "build": {
     "development": {
-      "developmentClient": true,
-      "distribution": "internal"
+      "node": "20.19.4",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_NO_CACHE": "1"
+      }
     },
     "preview": {
-      "distribution": "internal"
+      "node": "20.19.4",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_NO_CACHE": "1"
+      }
     },
     "production": {
       "autoIncrement": true,
+      "distribution": "store",
+      "node": "20.19.4",
       "android": {
-        "buildType": "apk"
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_NO_CACHE": "1"
       }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "android": {
+        "serviceAccountKeyPath": "./credentials.json",
+        "track": "production"
+      }
+    }
   }
 }
