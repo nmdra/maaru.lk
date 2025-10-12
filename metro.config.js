@@ -4,7 +4,10 @@ const { withNativeWind } = require('nativewind/metro');
 
 const config = getDefaultConfig(__dirname);
 
-// Mock react-native-keyboard-controller for Expo Go compatibility
+// Enable Metro cache reset
+config.resetCache = true;
+
+// Mock react-native-keyboard-controller for Expo Go compatibility (optional)
 /* config.resolver.resolveRequest = (context, moduleName, platform) => {
   if (moduleName === 'react-native-keyboard-controller') {
     return {
@@ -13,6 +16,6 @@ const config = getDefaultConfig(__dirname);
     };
   }
   return context.resolveRequest(context, moduleName, platform);
-} */;
+}; */
 
 module.exports = withNativeWind(config, { input: './global.css' });
