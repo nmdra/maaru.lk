@@ -24,10 +24,9 @@
     },
     "production": {
       "autoIncrement": true,
-      "distribution": "store",
       "node": "20.19.4",
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "apk"
       },
       "env": {
         "EXPO_NO_CACHE": "1"
