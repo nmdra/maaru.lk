@@ -33,13 +33,5 @@
         "EXPO_NO_CACHE": "1"
       }
     }
-  },
-  "submit": {
-    "production": {
-      "android": {
-        "serviceAccountKeyPath": "./credentials.json",
-        "track": "production"
-      }
-    }
   }
 }
