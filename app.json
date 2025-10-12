@@ -1,8 +1,8 @@
 {
   "expo": {
     "name": "Maaru.lk",
-    "slug": "app",
-    "version": "1.0.2",
+    "slug": "maaru",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "maarulk",
@@ -43,7 +43,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "717762ff-55db-4384-bc98-aaf8350be8c2"
+        "projectId": "d4639917-c29d-4069-a09c-3a28653d1cc9"
       }
     },
     "owner": "nmdra"
