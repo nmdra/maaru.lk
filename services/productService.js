@@ -104,22 +104,13 @@ async function fetchProductsWithRankedSearch({
     for (let i = 0; i < rankedProductIds.length; i += 30) {
       const batch = rankedProductIds.slice(i, i + 30);
       
-      let q = query(
+      // Only use document ID and availability in query
+      // Other filters will be applied in memory to avoid Firestore query limitations
+      const q = query(
         collection(db, PRODUCTS_COLLECTION),
-        where('__name__', 'in', batch),
+        where(documentId(), 'in', batch),
         where('availability', '==', true)
       );
-      
-      // Apply additional filters
-      if (category && category !== 'All') {
-        q = query(q, where('category', '==', category));
-      }
-      if (minPrice != null) {
-        q = query(q, where('price', '>=', minPrice));
-      }
-      if (maxPrice != null) {
-        q = query(q, where('price', '<=', maxPrice));
-      }
       
       const snapshot = await getDocs(q);
       const batchProducts = snapshot.docs.map(doc => ({
@@ -130,8 +121,23 @@ async function fetchProductsWithRankedSearch({
       allProducts.push(...batchProducts);
     }
     
-    // Sort products by original ranking (relevance order)
-    const sortedProducts = allProducts.sort((a, b) => {
+    // Apply additional filters in memory
+    let filteredProducts = allProducts;
+    
+    if (category && category !== 'All') {
+      filteredProducts = filteredProducts.filter(p => p.category === category);
+    }
+    
+    if (minPrice != null) {
+      filteredProducts = filteredProducts.filter(p => (p.price || 0) >= minPrice);
+    }
+    
+    if (maxPrice != null) {
+      filteredProducts = filteredProducts.filter(p => (p.price || 0) <= maxPrice);
+    }
+    
+    // Sort filtered products by original ranking (relevance order)
+    const sortedProducts = filteredProducts.sort((a, b) => {
       const indexA = rankedProductIds.indexOf(a.id);
       const indexB = rankedProductIds.indexOf(b.id);
       return indexA - indexB;
@@ -240,10 +246,10 @@ export async function fetchProductsByIds(productIds) {
     for (let i = 0; i < productIds.length; i += 30) {
       const batch = productIds.slice(i, i + 30);
       
+      // Use documentId() instead of '__name__' and only with availability filter
       const q = query(
         collection(db, PRODUCTS_COLLECTION),
-        where(documentId(), 'in', batch),
-        where('availability', '==', true)
+        where(documentId(), 'in', batch)
       );
       
       const snapshot = await getDocs(q);
@@ -255,8 +261,11 @@ export async function fetchProductsByIds(productIds) {
       allProducts.push(...batchProducts);
     }
     
-    console.log(`✅ Fetched ${allProducts.length} products`);
-    return allProducts;
+    // Filter for available products in memory
+    const availableProducts = allProducts.filter(p => p.availability === true);
+    
+    console.log(`✅ Fetched ${availableProducts.length} available products`);
+    return availableProducts;
   } catch (err) {
     console.error('fetchProductsByIds error:', err);
     throw err;
