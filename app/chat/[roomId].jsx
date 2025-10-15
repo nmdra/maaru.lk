@@ -2,8 +2,10 @@
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Image, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
 import { Actions, GiftedChat, InputToolbar } from 'react-native-gifted-chat';
+import BottomNavigation from '../../components/BottomNavigation';
+import Header from '../../components/Header';
 import { useAuth } from '../../context/AuthContext';
 import { listenMessages, markThreadRead, sendMessage } from '../../services/chatService';
 import { uploadChatImageToCloudinary } from '../../services/cloudinaryService';
@@ -15,6 +17,8 @@ import {
 } from '../../services/socket';
 import { clearSwapDraft, getSwapDraft } from '../../utils/storage';
 import formatPrice from '../../utils/formatPrice';
+import { generateProductDetails } from '../../services/aiService';
+import Colors from '../../constants/Colors';
 
 /* ---------- helpers ---------- */
 function tsToMillis(ts) {
@@ -44,8 +48,11 @@ export default function ChatRoom() {
   const [wsConnected, setWsConnected] = useState(false);
   const [swapDraft, setSwapDraft] = useState(null);
   const [sendingSwap, setSendingSwap] = useState(false);
+  const [generatingReply, setGeneratingReply] = useState(false);
+  const [aiSuggestedReply, setAiSuggestedReply] = useState(null);
 
   const typingTimer = useRef(null);
+  const inputRef = useRef(null);
   
   // Move all hooks before any conditional returns
   const conversationId = useMemo(() => (roomId ? String(roomId) : null), [roomId]);
@@ -342,6 +349,76 @@ export default function ChatRoom() {
     );
   }, []);
 
+  /* ---------- Generate AI Reply ---------- */
+  const handleGenerateAiReply = useCallback(async () => {
+    if (!conversationId || !uid || messages.length === 0) {
+      Alert.alert('Info', 'Need some conversation history to generate a reply');
+      return;
+    }
+
+    setGeneratingReply(true);
+    setAiSuggestedReply(null);
+
+    try {
+      // Prepare message history for AI
+      const messageHistory = messages
+        .slice(0, 10) // Get last 10 messages (already sorted newest first)
+        .map(msg => ({
+          senderId: msg.user._id,
+          text: msg.text || '',
+          hasImage: !!msg.image,
+          timestamp: msg.createdAt.toISOString(),
+        }));
+
+      const requestData = JSON.stringify({
+        task: 'generate_chat_reply',
+        currentUserId: String(uid),
+        messages: messageHistory,
+      });
+
+      console.log('🤖 Generating AI reply...');
+      const result = await generateProductDetails(null, requestData);
+
+      if (result) {
+        const parsed = JSON.parse(result);
+        console.log('✅ AI reply generated:', parsed);
+        setAiSuggestedReply(parsed.reply);
+        
+        // Show success feedback
+        Alert.alert(
+          '✨ AI Reply Ready',
+          'Review the suggested reply below. You can edit it before sending.',
+          [{ text: 'OK' }]
+        );
+      } else {
+        throw new Error('No reply generated');
+      }
+    } catch (error) {
+      console.error('❌ Error generating AI reply:', error);
+      Alert.alert(
+        'Generation Failed',
+        'Could not generate a reply. Please try again or type your own message.',
+        [{ text: 'OK' }]
+      );
+    } finally {
+      setGeneratingReply(false);
+    }
+  }, [conversationId, uid, messages]);
+
+  /* ---------- Use AI Suggested Reply ---------- */
+  const handleUseAiReply = useCallback(() => {
+    if (!aiSuggestedReply) return;
+    
+    // Send the AI reply
+    onSend([{ text: aiSuggestedReply, user: giftedChatUser }]);
+    setAiSuggestedReply(null);
+  }, [aiSuggestedReply, onSend, giftedChatUser]);
+
+  /* ---------- Dismiss AI Suggestion ---------- */
+  const handleDismissAiReply = useCallback(() => {
+    setAiSuggestedReply(null);
+  }, []);
+
   /* ---------- Socket listeners ---------- */
   useEffect(() => {
     const socket = getSocket();
@@ -413,17 +490,43 @@ export default function ChatRoom() {
   /* ---------- Render attachment button ---------- */
   function renderActions(props) {
     return (
-      <Actions
-        {...props}
-        containerStyle={{ marginLeft: 4, marginBottom: 4 }}
-        icon={() => (
-          <Text style={{ fontSize: 22, paddingHorizontal: 6 }}>
-            {sendingImage ? '⏳' : '📎'}
-          </Text>
-        )}
-        onPressActionButton={pickAndSendImage}
-        disabled={sendingImage}
-      />
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        {/* AI Reply Button */}
+        <TouchableOpacity
+          onPress={handleGenerateAiReply}
+          disabled={generatingReply || messages.length === 0}
+          style={{
+            marginLeft: 8,
+            marginBottom: 4,
+            width: 36,
+            height: 36,
+            borderRadius: 18,
+            backgroundColor: generatingReply ? Colors.gray[300] : Colors.accent,
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: messages.length === 0 ? 0.5 : 1,
+          }}
+        >
+          {generatingReply ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            <Text style={{ fontSize: 18 }}>✨</Text>
+          )}
+        </TouchableOpacity>
+        
+        {/* Attachment Button */}
+        <Actions
+          {...props}
+          containerStyle={{ marginLeft: 4, marginBottom: 4 }}
+          icon={() => (
+            <Text style={{ fontSize: 22, paddingHorizontal: 6 }}>
+              {sendingImage ? '⏳' : '📎'}
+            </Text>
+          )}
+          onPressActionButton={pickAndSendImage}
+          disabled={sendingImage}
+        />
+      </View>
     );
   }
 
@@ -473,15 +576,22 @@ export default function ChatRoom() {
   // No conversation ID
   if (!conversationId) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-        <Text>No conversation ID provided</Text>
-      </View>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+        <Header />
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text>No conversation ID provided</Text>
+        </View>
+        <BottomNavigation currentRoute={`/chat/${roomId}`} />
+      </SafeAreaView>
     );
   }
 
   // Main chat UI
   return (
-    <View style={{ flex: 1, backgroundColor: '#fff' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+      <Header />
+      
+      <View style={{ flex: 1, backgroundColor: '#fff' }}>
       {/* Connection Status Banner */}
       {!wsConnected && (
         <View style={{ 
@@ -492,9 +602,9 @@ export default function ChatRoom() {
           borderBottomWidth: 1,
           borderBottomColor: '#FDE68A'
         }}>
-          <Text style={{ fontSize: 12, color: '#92400E' }}>
+          {/* <Text style={{ fontSize: 12, color: '#92400E' }}>
             ⚠️ WebSocket disconnected - using Firestore mode
-          </Text>
+          </Text> */}
         </View>
       )}
       
@@ -571,6 +681,79 @@ export default function ChatRoom() {
         </View>
       )}
       
+      {/* AI Suggested Reply Banner */}
+      {aiSuggestedReply && (
+        <View style={{ 
+          backgroundColor: Colors.background.accent,
+          padding: 12,
+          borderBottomWidth: 1,
+          borderBottomColor: Colors.border.accent,
+        }}>
+          <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+            <Text style={{ fontSize: 20, marginRight: 8 }}>✨</Text>
+            <View style={{ flex: 1 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: Colors.text.accent }}>
+                  AI Suggested Reply
+                </Text>
+                <TouchableOpacity
+                  onPress={handleDismissAiReply}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                  style={{
+                    padding: 4,
+                  }}
+                >
+                  <Text style={{ fontSize: 18, color: Colors.text.secondary }}>✕</Text>
+                </TouchableOpacity>
+              </View>
+              <Text style={{ 
+                fontSize: 14, 
+                color: Colors.text.primary, 
+                marginBottom: 8,
+                fontStyle: 'italic',
+                backgroundColor: Colors.white,
+                padding: 8,
+                borderRadius: 6,
+              }}>
+                "{aiSuggestedReply}"
+              </Text>
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                <TouchableOpacity
+                  onPress={handleUseAiReply}
+                  style={{
+                    flex: 1,
+                    backgroundColor: Colors.accent,
+                    paddingVertical: 10,
+                    paddingHorizontal: 16,
+                    borderRadius: 8,
+                    alignItems: 'center'
+                  }}
+                >
+                  <Text style={{ color: 'white', fontWeight: '600', fontSize: 14 }}>
+                    Use This Reply
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={handleDismissAiReply}
+                  style={{
+                    flex: 1,
+                    backgroundColor: Colors.gray[400],
+                    paddingVertical: 10,
+                    paddingHorizontal: 16,
+                    borderRadius: 8,
+                    alignItems: 'center'
+                  }}
+                >
+                  <Text style={{ color: 'white', fontWeight: '600', fontSize: 14 }}>
+                    Dismiss
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </View>
+      )}
+      
       <GiftedChat
         messages={messages}
         onSend={onSend}
@@ -590,8 +773,12 @@ export default function ChatRoom() {
         keyboardShouldPersistTaps="handled"
         bottomOffset={0}
         minInputToolbarHeight={44}
+        text={aiSuggestedReply || undefined}
       />
-    </View>
+      </View>
+      
+      <BottomNavigation currentRoute={`/chat/${roomId}`} />
+    </SafeAreaView>
   );
 }
 

@@ -17,6 +17,8 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import BottomNavigation from "../../components/BottomNavigation";
+import Header from "../../components/Header";
 import { auth, db } from "../../services/firebaseConfig";
 
 export default function UpdateProfile() {
@@ -131,25 +133,23 @@ export default function UpdateProfile() {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#1a73e8" />
-      </View>
+      <SafeAreaView className="flex-1 bg-white">
+        <Header />
+        <View className="flex-1 justify-center items-center bg-white">
+          <ActivityIndicator size="large" color="#1a73e8" />
+        </View>
+        <BottomNavigation currentRoute="/updateProfile" />
+      </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
+      <Header />
+      
       <ScrollView className="flex-1">
-        {/* Header Section */}
+        {/* Header Section - Removed back button since Header already has navigation */}
         <View className="bg-blue-600 px-6 pt-6 pb-12">
-          <View className="flex-row items-center mb-3">
-            <TouchableOpacity 
-              onPress={() => router.push('/(auth)/Profile')} 
-              className="p-2 -ml-2"
-            >
-              <Ionicons name="arrow-back" size={24} color="white" />
-            </TouchableOpacity>
-          </View>
           <View className="items-center">
             <Text className="text-white text-2xl font-bold mb-3">Update your profile</Text>
           </View>
@@ -271,6 +271,8 @@ export default function UpdateProfile() {
           </View>
         </View>
       </ScrollView>
+      
+      <BottomNavigation currentRoute="/updateProfile" />
     </SafeAreaView>
   );
 }

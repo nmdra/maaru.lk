@@ -1,6 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
@@ -16,13 +15,17 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import BottomNavigation from '../../components/BottomNavigation';
 import ChatBubble from '../../components/chat/ChatBubble';
-import { auth, db } from '../../services/firebaseConfig';
+import Header from '../../components/Header';
+import Colors from '../../constants/Colors';
+import { useAuth } from '../../context/AuthContext';
+import { db } from '../../services/firebaseConfig';
 import { LANGUAGE_OPTIONS, getLanguageName, useAppI18n } from '../../utils/i18n';
-import { clearUserData } from '../../utils/storage';
 
 export default function Profile() {
   const router = useRouter();
+  const { user, logout } = useAuth();
   const { t, currentLanguage, changeLanguage } = useAppI18n();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -31,14 +34,14 @@ export default function Profile() {
   const [languageModalVisible, setLanguageModalVisible] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        setProfile(null);
-        setLoading(false);
-        router.push('/(auth)/Login');
-        return;
-      }
+    if (!user) {
+      setProfile(null);
+      setLoading(false);
+      router.replace('/(auth)/Login');
+      return;
+    }
 
+    const fetchProfile = async () => {
       setLoading(true);
       try {
         const userDocRef = doc(db, 'users', user.uid);
@@ -61,13 +64,13 @@ export default function Profile() {
       } finally {
         setLoading(false);
       }
-    });
+    };
 
-    return () => unsubscribe();
-  }, []);
+    fetchProfile();
+  }, [user]);
 
 const handleSignOut = async () => {
-    console.log('Sign out initiated');
+  console.log('Sign out initiated');
   Alert.alert(
     t('profile.signOut'),
     t('profile.signOut') + "?",
@@ -80,17 +83,15 @@ const handleSignOut = async () => {
         text: t('profile.signOut'),
         style: "destructive",
         onPress: async () => {
-            console.log('Sign out confirmed');
+          console.log('Sign out confirmed');
+          setSigningOut(true);
           try {
-            setSigningOut(true);
-            await signOut(auth);
-            await clearUserData(); // Clear AsyncStorage
+            await logout(); // Use logout from AuthContext - this handles both Firebase signOut and clearUserData
             console.log('User signed out and data cleared');
-            router.replace('/(auth)/Login');
+            // Navigation will be handled by the useEffect when user becomes null
           } catch (error) {
             console.error('Sign out error:', error);
             Alert.alert(t('common.error'), "Failed to sign out. Please try again.");
-          } finally {
             setSigningOut(false);
           }
         }
@@ -101,28 +102,33 @@ const handleSignOut = async () => {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-gray-50">
+      <SafeAreaView className="flex-1" style={{ backgroundColor: Colors.background.primary }}>
+        <Header />
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color="#3B82F6" />
-          <Text className="text-gray-600 mt-4 text-base">{t('common.loading')}</Text>
+          <ActivityIndicator size="large" color={Colors.accent} />
+          <Text className="mt-4 text-base" style={{ color: Colors.text.secondary }}>{t('common.loading')}</Text>
         </View>
+        <BottomNavigation currentRoute="/(auth)/Profile" />
       </SafeAreaView>
     );
   }
 
   if (error || !profile) {
     return (
-      <SafeAreaView className="flex-1 bg-gray-50">
+      <SafeAreaView className="flex-1" style={{ backgroundColor: Colors.background.primary }}>
+        <Header />
         <View className="flex-1 justify-center items-center px-6">
-          <Text className="text-red-600 text-lg font-semibold mb-2">Error loading profile</Text>
-          <Text className="text-gray-600 text-center mb-6">Could not load profile information</Text>
+          <Text className="text-lg font-semibold mb-2" style={{ color: Colors.error }}>Error loading profile</Text>
+          <Text className="text-center mb-6" style={{ color: Colors.text.secondary }}>Could not load profile information</Text>
           <Pressable 
             onPress={() => router.replace('/(auth)/Login')}
-            className="bg-blue-600 px-8 py-3 rounded-lg"
+            className="px-8 py-3 rounded-lg"
+            style={{ backgroundColor: Colors.button.primary }}
           >
             <Text className="text-white font-semibold">Back to Login</Text>
           </Pressable>
         </View>
+        <BottomNavigation currentRoute="/(auth)/Profile" />
       </SafeAreaView>
     );
   }
@@ -131,45 +137,39 @@ const handleSignOut = async () => {
   const avatarUri = profile.profilePic || profile.photoURL || null;
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: Colors.background.primary }}>
+      <Header />
+      
       <ScrollView className="flex-1">
         
-        {/* Header Section */}
-        <View className="bg-blue-600 px-6 pt-4 pb-20">
-          <View className="flex-row justify-between items-center">
-            <View className="flex-row items-center">
-              <TouchableOpacity 
-                onPress={() => router.push('/(tabs)/Home')} 
-                className="p-2 -ml-2 mr-2"
-              >
-                <Ionicons name="arrow-back" size={24} color="white" />
-              </TouchableOpacity>
-            </View>
-<TouchableOpacity 
-    onPress={() => {
-        console.log("Signout button pressed");
-        handleSignOut();
-    }}
-    className="p-2"
-    disabled={signingOut}
-    activeOpacity={0.7}
->
-    <Ionicons 
-        name="log-out-outline" 
-        size={24} 
-        color={signingOut ? "#94A3B8" : "white"} 
-    />
-</TouchableOpacity>
+        {/* Header Section - Removed back button since Header already has navigation */}
+        <View className="px-6 pt-4 pb-20" style={{ backgroundColor: Colors.accent }}>
+          <View className="flex-row justify-end items-center">
+            <TouchableOpacity 
+              onPress={() => {
+                console.log("Signout button pressed");
+                handleSignOut();
+              }}
+              className="p-2"
+              disabled={signingOut}
+              activeOpacity={0.7}
+            >
+              <Ionicons 
+                name="log-out-outline" 
+                size={24} 
+                color={signingOut ? "#94A3B8" : "white"} 
+              />
+            </TouchableOpacity>
           </View>
         </View>
 
         {/* Profile Card */}
-        <View className="mx-6 -mt-16 bg-white rounded-2xl shadow-lg p-6">
+        <View className="mx-6 -mt-16 rounded-2xl shadow-lg p-6" style={{ backgroundColor: Colors.card.background }}>
           
           {/* Avatar Section */}
           <View className="items-center -mt-16 mb-6">
             <View className="relative">
-              <View className="w-32 h-32 rounded-full bg-white p-1 shadow-lg">
+              <View className="w-32 h-32 rounded-full p-1 shadow-lg" style={{ backgroundColor: Colors.white }}>
                 {avatarUri ? (
                   <Image 
                     source={{ uri: avatarUri }} 
@@ -177,7 +177,7 @@ const handleSignOut = async () => {
                     resizeMode="cover"
                   />
                 ) : (
-                  <View className="w-full h-full rounded-full bg-blue-500 items-center justify-center">
+                  <View className="w-full h-full rounded-full items-center justify-center" style={{ backgroundColor: Colors.accent }}>
                     <Text className="text-white text-4xl font-bold">
                       {fullName.charAt(0).toUpperCase() || profile.email?.charAt(0).toUpperCase() || 'U'}
                     </Text>
@@ -185,7 +185,8 @@ const handleSignOut = async () => {
                 )}
               </View>
               <Pressable
-                className="absolute bottom-0 right-0 bg-blue-600 w-10 h-10 rounded-full items-center justify-center shadow-lg"
+                className="absolute bottom-0 right-0 w-10 h-10 rounded-full items-center justify-center shadow-lg"
+                style={{ backgroundColor: Colors.accent }}
                 onPress={() => router.push("/updateProfile")}
               >
                 <Ionicons name="pencil" size={16} color="white" />
@@ -193,42 +194,42 @@ const handleSignOut = async () => {
             </View>
             
             <View className="items-center mt-4">
-              <Text className="text-gray-900 text-xl font-bold">
+              <Text className="text-xl font-bold" style={{ color: Colors.text.primary }}>
                 {fullName || 'User Name'}
               </Text>
-              <Text className="text-gray-500 text-base">
+              <Text className="text-base" style={{ color: Colors.text.secondary }}>
                 {profile.email}
               </Text>
             </View>
           </View>
 
           {/* Stats Section */}
-          <View className="flex-row justify-around py-6 bg-gray-50 rounded-xl mb-6">
+          <View className="flex-row justify-around py-6 rounded-xl mb-6" style={{ backgroundColor: Colors.background.tertiary }}>
             <View className="items-center">
-              <Text className="text-2xl font-bold text-blue-600">15</Text>
-              <Text className="text-gray-600 text-sm">{t('profile.orders')}</Text>
+              <Text className="text-2xl font-bold" style={{ color: Colors.info }}>15</Text>
+              <Text className="text-sm" style={{ color: Colors.text.secondary }}>{t('profile.orders')}</Text>
             </View>
             <View className="items-center">
-              <Text className="text-2xl font-bold text-green-600">4.8</Text>
-              <Text className="text-gray-600 text-sm">{t('profile.rating')}</Text>
+              <Text className="text-2xl font-bold" style={{ color: Colors.success }}>4.8</Text>
+              <Text className="text-sm" style={{ color: Colors.text.secondary }}>{t('profile.rating')}</Text>
             </View>
             <View className="items-center">
-              <Text className="text-2xl font-bold text-purple-600">2</Text>
-              <Text className="text-gray-600 text-sm">{t('profile.years')}</Text>
+              <Text className="text-2xl font-bold" style={{ color: Colors.accent }}>2</Text>
+              <Text className="text-sm" style={{ color: Colors.text.secondary }}>{t('profile.years')}</Text>
             </View>
           </View>
 
           {/* Action Buttons */}
           <View className="space-y-3">
-            <Pressable className="border border-gray-200 py-4 rounded-xl">
-              <Text className="text-gray-700 font-semibold text-base text-center">{t('profile.settings')}</Text>
+            <Pressable className="border py-4 rounded-xl" style={{ borderColor: Colors.border.default }}>
+              <Text className="font-semibold text-base text-center" style={{ color: Colors.text.primary }}>{t('profile.settings')}</Text>
             </Pressable>
           </View>
         </View>
 
         {/* Personal Information */}
-        <View className="mx-6 mt-6 bg-white rounded-2xl shadow-lg p-6">
-          <Text className="text-xl font-bold text-gray-900 mb-6">{t('profile.personalInfo')}</Text>
+        <View className="mx-6 mt-6 rounded-2xl shadow-lg p-6" style={{ backgroundColor: Colors.card.background }}>
+          <Text className="text-xl font-bold mb-6" style={{ color: Colors.text.primary }}>{t('profile.personalInfo')}</Text>
           
           <View className="space-y-4">
             {[
@@ -239,9 +240,9 @@ const handleSignOut = async () => {
               { label: t('auth.address'), value: profile.address || 'Not provided' },
               { label: t('auth.age'), value: profile.born || profile.age || 'Not provided' },
             ].map((item, index) => (
-              <View key={index} className="flex-row justify-between items-center py-3 border-b border-gray-100">
-                <Text className="text-gray-600 font-medium">{item.label}</Text>
-                <Text className="text-gray-900 font-semibold flex-1 text-right" numberOfLines={1}>
+              <View key={index} className="flex-row justify-between items-center py-3 border-b" style={{ borderBottomColor: Colors.border.light }}>
+                <Text className="font-medium" style={{ color: Colors.text.secondary }}>{item.label}</Text>
+                <Text className="font-semibold flex-1 text-right" numberOfLines={1} style={{ color: Colors.text.primary }}>
                   {item.value}
                 </Text>
               </View>
@@ -250,8 +251,8 @@ const handleSignOut = async () => {
         </View>
 
         {/* Menu Options */}
-        <View className="mx-6 mt-6 bg-white rounded-2xl shadow-lg p-6 mb-8">
-          <Text className="text-xl font-bold text-gray-900 mb-6">{t('profile.account')}</Text>
+        <View className="mx-6 mt-6 rounded-2xl shadow-lg p-6 mb-8" style={{ backgroundColor: Colors.card.background }}>
+          <Text className="text-xl font-bold mb-6" style={{ color: Colors.text.primary }}>{t('profile.account')}</Text>
           
           <View className="space-y-1">
             {[
@@ -266,8 +267,8 @@ const handleSignOut = async () => {
                 className="flex-row items-center justify-between py-4 px-2 rounded-lg"
                 onPress={item.action}
               >
-                <Text className="text-gray-900 font-medium">{item.title}</Text>
-                <Text className="text-gray-400 text-xl">›</Text>
+                <Text className="font-medium" style={{ color: Colors.text.primary }}>{item.title}</Text>
+                <Text className="text-xl" style={{ color: Colors.text.tertiary }}>›</Text>
               </Pressable>
             ))}
             
@@ -277,22 +278,22 @@ const handleSignOut = async () => {
               onPress={() => setLanguageModalVisible(true)}
             >
               <View className="flex-row items-center flex-1">
-                <Ionicons name="language-outline" size={20} color="#4B5563" style={{ marginRight: 8 }} />
-                <Text className="text-gray-900 font-medium">{t('profile.language')}</Text>
+                <Ionicons name="language-outline" size={20} color={Colors.text.secondary} style={{ marginRight: 8 }} />
+                <Text className="font-medium" style={{ color: Colors.text.primary }}>{t('profile.language')}</Text>
               </View>
               <View className="flex-row items-center">
-                <Text className="text-gray-500 text-sm mr-2">
+                <Text className="text-sm mr-2" style={{ color: Colors.text.secondary }}>
                   {getLanguageName(currentLanguage, true)}
                 </Text>
-                <Text className="text-gray-400 text-xl">›</Text>
+                <Text className="text-xl" style={{ color: Colors.text.tertiary }}>›</Text>
               </View>
             </Pressable>
           </View>
         </View>
       </ScrollView>
 
-      {/* Floating Chat Bubble - Fixed position in bottom right */}
-      <View className="absolute bottom-6 right-6">
+      {/* Floating Chat Bubble - Fixed position in bottom right, above footer */}
+      <View className="absolute bottom-24 right-6">
         <ChatBubble to="/chat" />
       </View>
 
@@ -303,21 +304,21 @@ const handleSignOut = async () => {
         visible={languageModalVisible}
         onRequestClose={() => setLanguageModalVisible(false)}
       >
-        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <View style={{ backgroundColor: 'white', borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingTop: 20 }}>
+        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: Colors.background.overlay }}>
+          <View style={{ backgroundColor: Colors.white, borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingTop: 20 }}>
             {/* Header */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 20 }}>
-              <Text style={{ fontSize: 18, fontWeight: 'bold', flex: 1 }}>
+              <Text style={{ fontSize: 18, fontWeight: 'bold', flex: 1, color: Colors.text.primary }}>
                 {t('language.settings')}
               </Text>
               <TouchableOpacity onPress={() => setLanguageModalVisible(false)}>
-                <Ionicons name="close" size={24} color="#666" />
+                <Ionicons name="close" size={24} color={Colors.text.secondary} />
               </TouchableOpacity>
             </View>
 
             {/* Current Language */}
             <View style={{ paddingHorizontal: 20, paddingBottom: 15 }}>
-              <Text style={{ fontSize: 14, color: '#666', marginBottom: 5 }}>
+              <Text style={{ fontSize: 14, color: Colors.text.secondary, marginBottom: 5 }}>
                 {t('language.currentLanguage')}: {getLanguageName(currentLanguage, true)}
               </Text>
             </View>
@@ -336,29 +337,29 @@ const handleSignOut = async () => {
                     alignItems: 'center',
                     paddingHorizontal: 20,
                     paddingVertical: 15,
-                    backgroundColor: currentLanguage === option.code ? '#f0f8ff' : 'white',
+                    backgroundColor: currentLanguage === option.code ? Colors.background.accent : Colors.white,
                     borderLeftWidth: currentLanguage === option.code ? 4 : 0,
-                    borderLeftColor: '#2f6feb',
+                    borderLeftColor: Colors.accent,
                   }}
                 >
                   <View style={{ flex: 1 }}>
                     <Text style={{ 
                       fontSize: 16, 
                       fontWeight: currentLanguage === option.code ? 'bold' : 'normal',
-                      color: currentLanguage === option.code ? '#2f6feb' : '#333'
+                      color: currentLanguage === option.code ? Colors.text.accent : Colors.text.primary
                     }}>
                       {option.nativeName}
                     </Text>
                     <Text style={{ 
                       fontSize: 14, 
-                      color: '#666', 
+                      color: Colors.text.secondary, 
                       marginTop: 2 
                     }}>
                       {option.englishName}
                     </Text>
                   </View>
                   {currentLanguage === option.code && (
-                    <Ionicons name="checkmark-circle" size={20} color="#2f6feb" />
+                    <Ionicons name="checkmark-circle" size={20} color={Colors.accent} />
                   )}
                 </TouchableOpacity>
               ))}
@@ -369,6 +370,8 @@ const handleSignOut = async () => {
           </View>
         </View>
       </Modal>
+      
+      <BottomNavigation currentRoute="/(auth)/Profile" />
     </SafeAreaView>
   );
 }

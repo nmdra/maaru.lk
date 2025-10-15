@@ -16,7 +16,7 @@ export default function ConfirmationScreen() {
       <Text className="text-sm text-gray-400 mt-1">Item ID: {itemId}</Text>
 
       <TouchableOpacity
-        onPress={() => router.push('/')}
+        onPress={() => router.push('/Home')}
         className="bg-blue-600 mt-6 px-6 py-3 rounded-xl"
       >
         <Text className="text-white text-lg font-semibold">Go Home</Text>

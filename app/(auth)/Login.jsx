@@ -6,6 +6,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Image, Modal, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Colors from '../../constants/Colors';
 import { auth, db } from '../../services/firebaseConfig';
 import { ensureMinimalUserFields } from '../../services/userService';
 import { LANGUAGE_OPTIONS, getLanguageName, useAppI18n } from '../../utils/i18n';
@@ -115,22 +116,19 @@ export default function Login() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: Colors.background.primary }}>
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* 🌈 Header with Gradient */}
-        <LinearGradient
-          colors={['#2563eb', '#1d4ed8']}
+        {/* 🌈 Header with Brand Accent */}
+        <View 
           className="px-6 pt-8 pb-16 rounded-b-3xl shadow-sm"
+          style={{ backgroundColor: Colors.accent }}
         >
-          <View className="flex-row items-center justify-between mb-6">
-            <TouchableOpacity onPress={() => router.push('/(tabs)/Home')} className="p-2 -ml-2">
-              <Ionicons name="arrow-back" size={24} color="white" />
-            </TouchableOpacity>
-            
+          <View className="flex-row items-center justify-end mb-6">
             {/* Language Selector Button */}
             <TouchableOpacity 
               onPress={() => setLanguageModalVisible(true)}
-              className="flex-row items-center bg-white/20 px-3 py-2 rounded-full"
+              className="flex-row items-center px-3 py-2 rounded-full"
+              style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
               activeOpacity={0.7}
             >
               <Ionicons name="language" size={18} color="white" />
@@ -139,66 +137,70 @@ export default function Login() {
               </Text>
             </TouchableOpacity>
           </View>
-          <View className="items-center">
-            <Text className="text-white text-3xl font-bold mb-2">{t('auth.welcomeBack')} 👋</Text>
-            <Text className="text-blue-100 text-base">{t('auth.signInToContinue')}</Text>
+          <View className="items-center justify-center">
+            <Text className="text-white text-3xl font-bold mb-2 text-center">{t('auth.welcomeBack')} 👋</Text>
+            <Text className="text-sm text-center text-white opacity-90">
+              {t('auth.signInToContinue')}
+            </Text>
           </View>
-        </LinearGradient>
+        </View>
 
         {/* 💳 Login Card */}
-        <View className="mx-6 -mt-12 bg-white rounded-3xl shadow-lg p-6 border border-gray-100">
+        <View className="mx-6 -mt-8 rounded-3xl shadow-lg p-6 border" style={{ backgroundColor: Colors.card.background, borderColor: Colors.border.light }}>
           {/* Logo */}
-
-<View className="items-center -mt-12 mb-6">
-  <View className="w-24 h-24 rounded-full bg-white shadow-md items-center justify-center border border-gray-100 overflow-hidden">
-    <Image
-      source={require('../../assets/images/react-logo.png')} // 👈 replace with your actual logo path
-      className="w-full h-full"
-      resizeMode="contain"
-    />
-  </View>
-</View>
+          <View className="items-center -mt-12 mb-6">
+            <View className="w-24 h-24 rounded-full shadow-md items-center justify-center border overflow-hidden" style={{ backgroundColor: Colors.white, borderColor: Colors.border.default }}>
+              <Image
+                source={require('../../assets/images/logo_int.png')}
+                style={{ width: 70, height: 70 }}
+                resizeMode="contain"
+              />
+            </View>
+          </View>
 
           {/* Form Fields */}
           <View className="space-y-4">
             {/* Email Field */}
-            <View>
-              <Text className="text-gray-700 font-medium mb-2">Email</Text>
-              <View className="flex-row items-center border border-gray-200 rounded-xl bg-gray-50 px-3 py-2">
-                <Ionicons name="mail-outline" size={20} color="#6b7280" />
+            <View className="mb-4">
+              <Text className="font-medium mb-2 text-base" style={{ color: Colors.text.primary }}>Email</Text>
+              <View className="flex-row items-center border rounded-xl px-4 py-3" style={{ borderColor: Colors.input.border, backgroundColor: Colors.input.background }}>
+                <Ionicons name="mail-outline" size={20} color={Colors.gray[500]} />
                 <TextInput
                   value={email}
                   onChangeText={setEmail}
                   placeholder="you@example.com"
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  className="flex-1 ml-2 text-base text-gray-700"
-                  placeholderTextColor="#9ca3af"
+                  className="flex-1 ml-3 text-base"
+                  style={{ color: Colors.input.text }}
+                  placeholderTextColor={Colors.input.placeholder}
                 />
               </View>
             </View>
 
             {/* Password Field */}
-            <View>
-              <Text className="text-gray-700 font-medium mb-2">Password</Text>
-              <View className="flex-row items-center border border-gray-200 rounded-xl bg-gray-50 px-3 py-2">
-                <Ionicons name="lock-closed-outline" size={20} color="#6b7280" />
+            <View className="mb-6">
+              <Text className="font-medium mb-2 text-base" style={{ color: Colors.text.primary }}>Password</Text>
+              <View className="flex-row items-center border rounded-xl px-4 py-3" style={{ borderColor: Colors.input.border, backgroundColor: Colors.input.background }}>
+                <Ionicons name="lock-closed-outline" size={20} color={Colors.gray[500]} />
                 <TextInput
                   value={password}
                   onChangeText={setPassword}
                   placeholder="Enter your password"
                   secureTextEntry
-                  className="flex-1 ml-2 text-base text-gray-700"
-                  placeholderTextColor="#9ca3af"
+                  className="flex-1 ml-3 text-base"
+                  style={{ color: Colors.input.text }}
+                  placeholderTextColor={Colors.input.placeholder}
                 />
               </View>
             </View>
 
-            {/* Sign In Button */}
+            {/* Sign In Button - Brand Orange Accent */}
             <Pressable
               onPress={handleLogin}
               disabled={isSubmitting}
-              className="bg-blue-600 py-3 rounded-2xl mt-5 shadow-sm active:opacity-80"
+              className="py-4 rounded-xl shadow-sm active:opacity-80"
+              style={{ backgroundColor: Colors.button.primary }}
             >
               {isSubmitting ? (
                 <ActivityIndicator color="#fff" />
@@ -208,50 +210,51 @@ export default function Login() {
             </Pressable>
 
             {/* Divider */}
-            <View className="flex-row items-center my-6">
-              <View className="flex-1 h-px bg-gray-200" />
-              <Text className="mx-4 text-gray-400 text-sm font-medium">OR</Text>
-              <View className="flex-1 h-px bg-gray-200" />
+            <View className="flex-row items-center my-5">
+              <View className="flex-1 h-px" style={{ backgroundColor: Colors.border.default }} />
+              <Text className="mx-4 text-sm font-medium" style={{ color: Colors.text.tertiary }}>OR</Text>
+              <View className="flex-1 h-px" style={{ backgroundColor: Colors.border.default }} />
             </View>
 
             {/* Google Login */}
             <Pressable
               onPress={handleGoogleLogin}
               disabled={isGoogleSubmitting}
-              className="bg-white border border-gray-300 py-3 rounded-2xl flex-row items-center justify-center shadow-sm active:opacity-80"
+              className="border py-4 rounded-xl flex-row items-center justify-center shadow-sm active:opacity-80"
+              style={{ backgroundColor: Colors.button.secondary, borderColor: Colors.button.secondaryBorder }}
             >
               {isGoogleSubmitting ? (
-                <ActivityIndicator color="#4285F4" />
+                <ActivityIndicator color={Colors.accent} />
               ) : (
                 <>
                   <Image
                     source={require('../../assets/images/google.png')}
                     style={{ width: 22, height: 22, marginRight: 10 }}
                   />
-                  <Text className="text-gray-700 font-semibold text-base">Continue with Google</Text>
+                  <Text className="font-semibold text-base" style={{ color: Colors.text.primary }}>Continue with Google</Text>
                 </>
               )}
             </Pressable>
 
             {/* Forgot Password */}
-            <TouchableOpacity onPress={() => router.push('/forgotPassword')} className="mt-3 items-center">
-              <Text className="text-blue-600 font-medium">Forgot Password?</Text>
+            <TouchableOpacity onPress={() => router.push('/forgotPassword')} className="mt-4 items-center">
+              <Text className="font-medium text-base" style={{ color: Colors.text.accent }}>Forgot Password?</Text>
             </TouchableOpacity>
 
             {/* Create Account */}
-            <View className="items-center mt-6">
-              <Text className="text-gray-500 text-sm">Don’t have an account?</Text>
+            <View className="items-center mt-5 mb-2">
+              <Text className="text-base" style={{ color: Colors.text.secondary }}>Don't have an account?</Text>
               <TouchableOpacity onPress={() => router.push('/(auth)/SignUp')} className="mt-2">
-                <Text className="text-blue-600 font-semibold text-base">Create Account</Text>
+                <Text className="font-semibold text-lg" style={{ color: Colors.text.accent }}>Create Account</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
 
         {/* Guest Option */}
-        <View className="mx-6 mt-6 mb-10 items-center">
+        <View className="mx-6 mt-8 mb-10 items-center">
           <Pressable onPress={() => router.push('/Home')} className="active:opacity-70">
-            <Text className="text-gray-500 font-medium">{t('auth.continueAsGuest')}</Text>
+            <Text className="font-medium text-base" style={{ color: Colors.text.secondary }}>{t('auth.continueAsGuest')}</Text>
           </Pressable>
         </View>
       </ScrollView>
@@ -263,21 +266,21 @@ export default function Login() {
         visible={languageModalVisible}
         onRequestClose={() => setLanguageModalVisible(false)}
       >
-        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <View style={{ backgroundColor: 'white', borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingTop: 20 }}>
+        <View style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: Colors.background.overlay }}>
+          <View style={{ backgroundColor: Colors.white, borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingTop: 20 }}>
             {/* Header */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 20 }}>
-              <Text style={{ fontSize: 18, fontWeight: 'bold', flex: 1 }}>
+              <Text style={{ fontSize: 18, fontWeight: 'bold', flex: 1, color: Colors.text.primary }}>
                 {t('auth.selectLanguage')}
               </Text>
               <TouchableOpacity onPress={() => setLanguageModalVisible(false)}>
-                <Ionicons name="close" size={24} color="#666" />
+                <Ionicons name="close" size={24} color={Colors.text.secondary} />
               </TouchableOpacity>
             </View>
 
             {/* Current Language */}
             <View style={{ paddingHorizontal: 20, paddingBottom: 15 }}>
-              <Text style={{ fontSize: 14, color: '#666', marginBottom: 5 }}>
+              <Text style={{ fontSize: 14, color: Colors.text.secondary, marginBottom: 5 }}>
                 {t('auth.currentLanguage')}: {getLanguageName(currentLanguage, true)}
               </Text>
             </View>
@@ -296,29 +299,29 @@ export default function Login() {
                     alignItems: 'center',
                     paddingHorizontal: 20,
                     paddingVertical: 15,
-                    backgroundColor: currentLanguage === option.code ? '#f0f8ff' : 'white',
+                    backgroundColor: currentLanguage === option.code ? Colors.background.accent : Colors.white,
                     borderLeftWidth: currentLanguage === option.code ? 4 : 0,
-                    borderLeftColor: '#2563eb',
+                    borderLeftColor: Colors.accent,
                   }}
                 >
                   <View style={{ flex: 1 }}>
                     <Text style={{ 
                       fontSize: 16, 
                       fontWeight: currentLanguage === option.code ? 'bold' : 'normal',
-                      color: currentLanguage === option.code ? '#2563eb' : '#333'
+                      color: currentLanguage === option.code ? Colors.text.accent : Colors.text.primary
                     }}>
                       {option.nativeName}
                     </Text>
                     <Text style={{ 
                       fontSize: 14, 
-                      color: '#666', 
+                      color: Colors.text.secondary, 
                       marginTop: 2 
                     }}>
                       {option.englishName}
                     </Text>
                   </View>
                   {currentLanguage === option.code && (
-                    <Ionicons name="checkmark-circle" size={20} color="#2563eb" />
+                    <Ionicons name="checkmark-circle" size={20} color={Colors.accent} />
                   )}
                 </TouchableOpacity>
               ))}

@@ -14,6 +14,7 @@ import {
   View,
 } from 'react-native';
 import Header from '../../components/Header';
+import Colors from '../../constants/Colors';
 import { useAuth } from '../../context/AuthContext';
 import { fetchProducts } from '../../services/productService';
 import formatPrice from '../../utils/formatPrice';
@@ -67,21 +68,22 @@ export default function HomeScreen() {
 
   if (loading)
     return (
-      <SafeAreaView className="flex-1 justify-center items-center bg-gray-50">
-        <ActivityIndicator size="large" />
+      <SafeAreaView className="flex-1 justify-center items-center" style={{ backgroundColor: Colors.background.primary }}>
+        <ActivityIndicator size="large" color={Colors.accent} />
       </SafeAreaView>
     );
 
   // Header + Search + Category Chips as FlatList header
   const renderHeader = () => (
-    <View className="bg-white px-4 pt-4 pb-2">
+    <View className="px-4 pt-4 pb-2" style={{ backgroundColor: Colors.white }}>
       {/* Search Bar */}
       <TouchableOpacity
         onPress={() => router.push('/search')}
-        className="flex-row items-center bg-gray-100 rounded-lg p-3 mb-3"
+        className="flex-row items-center rounded-lg p-3 mb-3"
+        style={{ backgroundColor: Colors.background.tertiary }}
       >
-        <Ionicons name="search" size={20} color="#666" />
-        <Text className="ml-2 text-gray-500">{t('products.searchItems')}</Text>
+        <Ionicons name="search" size={20} color={Colors.text.secondary} />
+        <Text className="ml-2" style={{ color: Colors.text.secondary }}>{t('products.searchItems')}</Text>
       </TouchableOpacity>
 
       {/* Category Chips */}
@@ -101,14 +103,17 @@ export default function HomeScreen() {
             <TouchableOpacity
               key={category}
               onPress={() => setSelectedCategory(category)}
-              className={`mr-3 px-4 h-10 min-w-[70px] flex-row items-center justify-center rounded-full border ${
-                selectedCategory === category ? 'bg-black border-black' : 'bg-white border-gray-300'
-              }`}
+              className="mr-3 px-4 h-10 min-w-[70px] flex-row items-center justify-center rounded-full border"
+              style={{
+                backgroundColor: selectedCategory === category ? Colors.accent : Colors.white,
+                borderColor: selectedCategory === category ? Colors.accent : Colors.border.default,
+              }}
             >
               <Text
-                className={`text-center font-medium ${
-                  selectedCategory === category ? 'text-white' : 'text-gray-800'
-                }`}
+                className="text-center font-medium"
+                style={{
+                  color: selectedCategory === category ? Colors.white : Colors.text.primary,
+                }}
               >
                 {translatedCategory}
               </Text>
@@ -120,7 +125,7 @@ export default function HomeScreen() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: Colors.background.primary }}>
       {/* Fixed Header - Not scrollable */}
       <Header />
       
@@ -133,15 +138,16 @@ export default function HomeScreen() {
           renderItem={({ item }) => (
             <TouchableOpacity
               onPress={() => router.push(`/product/${item.id}`)}
-              className="mb-4 bg-white rounded-xl shadow-md overflow-hidden"
+              className="mb-4 rounded-xl shadow-md overflow-hidden"
+              style={{ backgroundColor: Colors.card.background }}
             >
               <Image source={{ uri: item.imageUrl }} className="w-full h-48" resizeMode="cover" />
               <View className="p-4">
-                <Text className="text-lg font-semibold text-gray-800">{item.name}</Text>
-                <Text className="text-gray-600 mt-1" numberOfLines={2}>
+                <Text className="text-lg font-semibold" style={{ color: Colors.text.primary }}>{item.name}</Text>
+                <Text className="mt-1" numberOfLines={2} style={{ color: Colors.text.secondary }}>
                   {item.description}
                 </Text>
-                <Text className="mt-2 font-bold text-blue-600">
+                <Text className="mt-2 font-bold" style={{ color: Colors.info }}>
                   {formatPrice(item.price, item.currency)}
                 </Text>
               </View>
@@ -152,7 +158,8 @@ export default function HomeScreen() {
         {/* Floating Add New Item Button (shifted left so it doesn't overlap the chat bubble) */}
         <TouchableOpacity
           onPress={handleAddProduct}
-          className="absolute bottom-6 right-6 bg-blue-600 w-16 h-16 rounded-full items-center justify-center shadow-lg"
+          className="absolute bottom-6 right-6 w-16 h-16 rounded-full items-center justify-center shadow-lg"
+          style={{ backgroundColor: Colors.button.primary }}
         >
           <Ionicons name="add" size={32} color="#fff" />
         </TouchableOpacity>

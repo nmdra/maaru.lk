@@ -24,6 +24,12 @@ const BottomNavigation = ({ currentRoute }) => {
       activeIcon: 'search',
     },
     {
+      name: 'Swap',
+      route: '/(tabs)/swap',
+      icon: 'swap-horizontal-outline',
+      activeIcon: 'swap-horizontal',
+    },
+    {
       name: 'Reviews',
       route: '/(tabs)/Reviews',
       icon: 'star-outline',

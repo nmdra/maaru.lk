@@ -8,11 +8,14 @@ import {
   Alert,
   Image,
   Modal,
+  SafeAreaView,
   ScrollView,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import BottomNavigation from '../../components/BottomNavigation';
+import Header from '../../components/Header';
 import ProductCard from '../../components/product/ProductCard';
 import { db } from '../../services/firebaseConfig';
 import formatPrice from '../../utils/formatPrice';
@@ -39,6 +42,11 @@ export default function ProductDetailScreen() {
   const [translating, setTranslating] = useState(false);
   const [translatedData, setTranslatedData] = useState(null);
   const [originalData, setOriginalData] = useState(null);
+
+  // Market analysis states
+  const [analyzingMarket, setAnalyzingMarket] = useState(false);
+  const [marketAnalysis, setMarketAnalysis] = useState(null);
+  const [showAnalysisModal, setShowAnalysisModal] = useState(false);
 
   const mockTags = product?.tags || [];
 
@@ -185,6 +193,118 @@ export default function ProductDetailScreen() {
     }
   };
 
+  // AI Market Analysis Function
+  const handleCheckMarket = async () => {
+    if (!product || !originalData) return;
+
+    setAnalyzingMarket(true);
+    try {
+      // Get language name for AI
+      const languageNames = {
+        en: 'English',
+        si: 'Sinhala',
+        ta: 'Tamil'
+      };
+      const targetLanguage = languageNames[currentLanguage] || 'English';
+      
+      const analysisPrompt = JSON.stringify({
+        task: 'analyze_product_market',
+        targetLanguage: targetLanguage,
+        product: {
+          name: originalData.name,
+          category: originalData.category,
+          price: originalData.price || 0,
+          currency: originalData.currency || 'LKR',
+          condition: originalData.condition || 'Used',
+          description: originalData.description || '',
+          tags: originalData.tags || [],
+          stock: originalData.stock || 1,
+        }
+      });
+
+      console.log('🔍 Analyzing market for product...');
+      const result = await generateProductDetails(null, analysisPrompt);
+
+      if (!result) {
+        Alert.alert('Error', 'AI market analysis returned no data.');
+        return;
+      }
+
+      let analysis;
+      if (typeof result === 'string') {
+        try {
+          analysis = JSON.parse(result);
+        } catch (err) {
+          console.error('Failed to parse AI analysis:', err);
+          Alert.alert('Error', 'Failed to parse market analysis.');
+          return;
+        }
+      } else {
+        analysis = result;
+      }
+
+      console.log('✅ Market analysis completed:', analysis);
+      setMarketAnalysis(analysis);
+      
+      // Navigate to dedicated analysis page
+      router.push({
+        pathname: `/product/analysis/${product.id}`,
+        params: {
+          analysisData: JSON.stringify({
+            ...analysis,
+            productInfo: {
+              name: product.name,
+              price: product.price,
+              currency: product.currency || 'LKR',
+            }
+          })
+        }
+      });
+      
+    } catch (err) {
+      console.error('Error analyzing market:', err);
+      Alert.alert('Error', 'Failed to analyze product market. Please try again.');
+    } finally {
+      setAnalyzingMarket(false);
+    }
+  };
+
+  // Get price verdict color and icon
+  const getPriceVerdictStyle = (verdict) => {
+    switch (verdict) {
+      case 'excellent_deal':
+        return { color: '#10B981', icon: 'trending-down', text: 'Excellent Deal!' };
+      case 'fair_price':
+        return { color: '#3B82F6', icon: 'checkmark-circle', text: 'Fair Price' };
+      case 'slightly_high':
+        return { color: '#F59E0B', icon: 'alert-circle', text: 'Slightly High' };
+      case 'overpriced':
+        return { color: '#EF4444', icon: 'trending-up', text: 'Overpriced' };
+      case 'underpriced':
+        return { color: '#8B5CF6', icon: 'warning', text: 'Unusually Low' };
+      default:
+        return { color: '#6B7280', icon: 'help-circle', text: 'Unknown' };
+    }
+  };
+
+  // Get market demand style
+  const getMarketDemandStyle = (demand) => {
+    switch (demand) {
+      case 'very_high':
+        return { color: '#10B981', text: '🔥 Very High Demand' };
+      case 'high':
+        return { color: '#3B82F6', text: '📈 High Demand' };
+      case 'moderate':
+        return { color: '#F59E0B', text: '📊 Moderate Demand' };
+      case 'low':
+        return { color: '#EF4444', text: '📉 Low Demand' };
+      case 'very_low':
+        return { color: '#6B7280', text: '💤 Very Low Demand' };
+      default:
+        return { color: '#6B7280', text: 'Unknown' };
+    }
+  };
+
   const productCard = useMemo(() => {
     if (!product) return null;
     return {
@@ -295,26 +415,29 @@ export default function ProductDetailScreen() {
   const handleFavorite = () => Alert.alert('Favorite', `${product.name} added to favorites.`);
 
   return (
-    <View className="flex-1 bg-white">
-      {/* Transparent Header */}
-      <View className="absolute top-12 left-4 right-4 z-20 flex-row justify-between items-center">
-        <TouchableOpacity
-          onPress={() => {
-            if (router.canGoBack()) router.back();
-            else router.push('/');
-          }}
-          className="bg-black/40 p-2 rounded-full"
-        >
-          <Ionicons name="arrow-back" size={20} color="white" />
-        </TouchableOpacity>
+    <SafeAreaView className="flex-1 bg-white">
+      <Header />
+      
+      <View className="flex-1 bg-white">
+        {/* Transparent Header - Back button overlay */}
+        <View className="absolute top-4 left-4 right-4 z-20 flex-row justify-between items-center">
+          <TouchableOpacity
+            onPress={() => {
+              if (router.canGoBack()) router.back();
+              else router.push('/');
+            }}
+            className="bg-black/40 p-2 rounded-full"
+          >
+            <Ionicons name="arrow-back" size={20} color="white" />
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => setSwapGuidelinesVisible(true)}
-          className="bg-black/40 p-2 rounded-full"
-        >
-          <Ionicons name="information-circle-outline" size={22} color="white" />
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            onPress={() => setSwapGuidelinesVisible(true)}
+            className="bg-black/40 p-2 rounded-full"
+          >
+            <Ionicons name="information-circle-outline" size={22} color="white" />
+          </TouchableOpacity>
+        </View>
 
       <ScrollView className="pt-0">
         {/* Product Image */}
@@ -356,34 +479,57 @@ export default function ProductDetailScreen() {
           <View className="flex-row items-start justify-between">
             <Text className="text-2xl font-bold text-gray-900 flex-1 pr-2">{product.name}</Text>
             
-            {/* AI Translation Button */}
-            <TouchableOpacity
-              onPress={handleTranslateProduct}
-              disabled={translating}
-              className={`flex-row items-center px-3 py-2 rounded-full shadow-md ${
-                translating 
-                  ? 'bg-gray-300' 
-                  : translatedData 
-                  ? 'bg-green-500' 
-                  : 'bg-purple-500'
-              }`}
-              style={{ minWidth: 70 }}
-            >
-              {translating ? (
-                <ActivityIndicator size="small" color="white" />
-              ) : (
-                <>
-                  <Ionicons 
-                    name={translatedData ? "language" : "language-outline"} 
-                    size={18} 
-                    color="white" 
-                  />
-                  <Text className="text-white text-xs font-semibold ml-1">
-                    {translatedData ? 'Original' : 'Translate'}
-                  </Text>
-                </>
-              )}
-            </TouchableOpacity>
+            <View className="flex-row gap-2">
+              {/* AI Market Check Button */}
+              <TouchableOpacity
+                onPress={handleCheckMarket}
+                disabled={analyzingMarket}
+                className={`flex-row items-center px-3 py-2 rounded-full shadow-md ${
+                  analyzingMarket 
+                    ? 'bg-gray-300' 
+                    : 'bg-blue-600'
+                }`}
+                style={{ minWidth: 80 }}
+              >
+                {analyzingMarket ? (
+                  <ActivityIndicator size="small" color="white" />
+                ) : (
+                  <>
+                    <Ionicons name="analytics-outline" size={18} color="white" />
+                    <Text className="text-white text-xs font-semibold ml-1">Check It</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+
+              {/* AI Translation Button */}
+              <TouchableOpacity
+                onPress={handleTranslateProduct}
+                disabled={translating}
+                className={`flex-row items-center px-3 py-2 rounded-full shadow-md ${
+                  translating 
+                    ? 'bg-gray-300' 
+                    : translatedData 
+                    ? 'bg-green-500' 
+                    : 'bg-purple-500'
+                }`}
+                style={{ minWidth: 70 }}
+              >
+                {translating ? (
+                  <ActivityIndicator size="small" color="white" />
+                ) : (
+                  <>
+                    <Ionicons 
+                      name={translatedData ? "language" : "language-outline"} 
+                      size={18} 
+                      color="white" 
+                    />
+                    <Text className="text-white text-xs font-semibold ml-1">
+                      {translatedData ? 'Original' : 'Translate'}
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
           
           {/* Translation indicator */}
@@ -570,6 +716,161 @@ export default function ProductDetailScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+
+      {/* Market Analysis Modal */}
+      <Modal
+        visible={showAnalysisModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowAnalysisModal(false)}
+      >
+        <View className="flex-1 bg-black/50 justify-end">
+          <View className="bg-white rounded-t-3xl max-h-5/6">
+            <ScrollView className="p-6">
+              {/* Header */}
+              <View className="flex-row justify-between items-center mb-4">
+                <Text className="text-2xl font-bold text-gray-900">🔍 Market Analysis</Text>
+                <TouchableOpacity
+                  onPress={() => setShowAnalysisModal(false)}
+                  className="bg-gray-200 p-2 rounded-full"
+                >
+                  <Ionicons name="close" size={24} color="#374151" />
+                </TouchableOpacity>
+              </View>
+
+              {marketAnalysis && (
+                <>
+                  {/* Price Verdict */}
+                  <View className="bg-blue-50 p-4 rounded-xl mb-4">
+                    <View className="flex-row items-center mb-2">
+                      <Ionicons 
+                        name={getPriceVerdictStyle(marketAnalysis.priceVerdict).icon} 
+                        size={24} 
+                        color={getPriceVerdictStyle(marketAnalysis.priceVerdict).color} 
+                      />
+                      <Text className="text-lg font-bold ml-2" style={{ color: getPriceVerdictStyle(marketAnalysis.priceVerdict).color }}>
+                        {getPriceVerdictStyle(marketAnalysis.priceVerdict).text}
+                      </Text>
+                    </View>
+                    <Text className="text-gray-700">
+                      Listed Price: {formatPrice(product.price, product.currency)}
+                    </Text>
+                  </View>
+
+                  {/* Market Price Range */}
+                  <View className="bg-white border border-gray-200 p-4 rounded-xl mb-4">
+                    <Text className="text-lg font-semibold mb-3">💰 Market Price Range</Text>
+                    <View className="flex-row justify-between items-center mb-2">
+                      <Text className="text-gray-600">Minimum:</Text>
+                      <Text className="font-semibold">{formatPrice(marketAnalysis.marketPrice.min, marketAnalysis.marketPrice.currency)}</Text>
+                    </View>
+                    <View className="flex-row justify-between items-center mb-2">
+                      <Text className="text-gray-600">Average:</Text>
+                      <Text className="font-bold text-blue-600">{formatPrice(marketAnalysis.marketPrice.average, marketAnalysis.marketPrice.currency)}</Text>
+                    </View>
+                    <View className="flex-row justify-between items-center">
+                      <Text className="text-gray-600">Maximum:</Text>
+                      <Text className="font-semibold">{formatPrice(marketAnalysis.marketPrice.max, marketAnalysis.marketPrice.currency)}</Text>
+                    </View>
+                  </View>
+
+                  {/* Market Demand */}
+                  <View className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-xl mb-4">
+                    <Text 
+                      className="text-base font-semibold mb-1" 
+                      style={{ color: getMarketDemandStyle(marketAnalysis.marketDemand).color }}
+                    >
+                      {getMarketDemandStyle(marketAnalysis.marketDemand).text}
+                    </Text>
+                    <Text className="text-sm text-gray-600">Current market demand for this type of product</Text>
+                  </View>
+
+                  {/* Trust Score */}
+                  <View className="bg-white border border-gray-200 p-4 rounded-xl mb-4">
+                    <View className="flex-row justify-between items-center mb-2">
+                      <Text className="text-lg font-semibold">🛡️ Trust Score</Text>
+                      <Text className="text-2xl font-bold" style={{ 
+                        color: marketAnalysis.trustScore >= 70 ? '#10B981' : marketAnalysis.trustScore >= 50 ? '#F59E0B' : '#EF4444' 
+                      }}>
+                        {marketAnalysis.trustScore}/100
+                      </Text>
+                    </View>
+                    <View className="bg-gray-200 h-2 rounded-full overflow-hidden">
+                      <View 
+                        className="h-full rounded-full" 
+                        style={{ 
+                          width: `${marketAnalysis.trustScore}%`,
+                          backgroundColor: marketAnalysis.trustScore >= 70 ? '#10B981' : marketAnalysis.trustScore >= 50 ? '#F59E0B' : '#EF4444'
+                        }} 
+                      />
+                    </View>
+                  </View>
+
+                  {/* Condition Assessment */}
+                  {marketAnalysis.condition && (
+                    <View className="bg-yellow-50 p-4 rounded-xl mb-4">
+                      <Text className="text-lg font-semibold mb-2">🔧 Condition Impact</Text>
+                      <Text className="text-gray-700 mb-2">{marketAnalysis.condition.assessment}</Text>
+                      {marketAnalysis.condition.affectsPrice && (
+                        <Text className="text-sm text-orange-600 font-medium">⚠️ Condition significantly affects price</Text>
+                      )}
+                    </View>
+                  )}
+
+                  {/* Similar Products */}
+                  {marketAnalysis.similarProducts && marketAnalysis.similarProducts.length > 0 && (
+                    <View className="bg-white border border-gray-200 p-4 rounded-xl mb-4">
+                      <Text className="text-lg font-semibold mb-3">📦 Similar Products</Text>
+                      {marketAnalysis.similarProducts.map((item, index) => (
+                        <View key={index} className="flex-row justify-between items-center py-2 border-b border-gray-100">
+                          <View className="flex-1">
+                            <Text className="font-medium text-gray-900">{item.name}</Text>
+                            <Text className="text-xs text-gray-500">{item.source}</Text>
+                          </View>
+                          <Text className="font-semibold text-blue-600">
+                            {formatPrice(item.estimatedPrice, marketAnalysis.marketPrice.currency)}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+
+                  {/* Key Insights */}
+                  {marketAnalysis.insights && marketAnalysis.insights.length > 0 && (
+                    <View className="bg-white border border-gray-200 p-4 rounded-xl mb-4">
+                      <Text className="text-lg font-semibold mb-3">💡 Key Insights</Text>
+                      {marketAnalysis.insights.map((insight, index) => (
+                        <View key={index} className="flex-row items-start mb-2">
+                          <Text className="text-blue-600 mr-2">•</Text>
+                          <Text className="flex-1 text-gray-700">{insight}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+
+                  {/* Recommendation */}
+                  {marketAnalysis.recommendation && (
+                    <View className="bg-green-50 p-4 rounded-xl mb-4">
+                      <Text className="text-lg font-semibold mb-2">✅ Recommendation</Text>
+                      <Text className="text-gray-700 leading-6">{marketAnalysis.recommendation}</Text>
+                    </View>
+                  )}
+
+                  {/* Disclaimer */}
+                  <View className="bg-gray-50 p-3 rounded-lg mb-4">
+                    <Text className="text-xs text-gray-600 text-center">
+                      ⓘ This analysis is AI-generated based on market patterns and may not reflect real-time prices. Always verify details with the seller.
+                    </Text>
+                  </View>
+                </>
+              )}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+      </View>
+      
+      <BottomNavigation currentRoute={`/product/${id}`} />
+    </SafeAreaView>
   );
 }

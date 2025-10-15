@@ -82,7 +82,7 @@ export default function PaymentFailureScreen() {
 
           <Text className="text-gray-700 mb-3">{t('paymentFailure.sampleCard.description')}</Text>
 
-          <View className="bg-blue-50 p-4 rounded-lg">
+          {/* <View className="bg-blue-50 p-4 rounded-lg">
             <View className="space-y-2">
               <View className="flex-row justify-between">
                 <Text className="font-medium text-gray-700">{t('payment.cardNumber')}:</Text>
@@ -97,7 +97,7 @@ export default function PaymentFailureScreen() {
                 <Text className="font-mono text-blue-600">444</Text>
               </View>
             </View>
-          </View>
+          </View> */}
         </View>
 
         {/* Next Steps */}

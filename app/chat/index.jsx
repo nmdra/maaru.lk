@@ -2,7 +2,9 @@
 import { useRouter } from 'expo-router';
 import { collection, doc, getDoc, getDocs, orderBy, limit as qlimit, query } from 'firebase/firestore';
 import { useEffect, useMemo, useState } from 'react';
-import { FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Image, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import BottomNavigation from '../../components/BottomNavigation';
+import Header from '../../components/Header';
 import { useAuth } from '../../context/AuthContext';
 import { listenConversations } from '../../services/chatService';
 import { db } from '../../services/firebaseConfig';
@@ -155,27 +157,37 @@ export default function ChatList() {
 
   if (!uid) {
     return (
-      <View style={styles.emptyWrap}>
-        <Text style={styles.empty}>Please login to view your inbox.</Text>
-      </View>
+      <SafeAreaView style={styles.wrap}>
+        <Header />
+        <View style={styles.emptyWrap}>
+          <Text style={styles.empty}>Please login to view your inbox.</Text>
+        </View>
+        <BottomNavigation currentRoute="/chat" />
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.wrap}>
-      <FlatList
-        data={data}
-        keyExtractor={(it) => it.id}
-        renderItem={renderItem}
-        ItemSeparatorComponent={() => <View style={styles.sep} />}
-        ListEmptyComponent={
-          <View style={styles.emptyWrap}>
-            <Text style={styles.empty}>No conversations yet</Text>
-          </View>
-        }
-        contentContainerStyle={data.length === 0 ? { flex: 1 } : null}
-      />
-    </View>
+    <SafeAreaView style={styles.wrap}>
+      <Header />
+      
+      <View style={{ flex: 1 }}>
+        <FlatList
+          data={data}
+          keyExtractor={(it) => it.id}
+          renderItem={renderItem}
+          ItemSeparatorComponent={() => <View style={styles.sep} />}
+          ListEmptyComponent={
+            <View style={styles.emptyWrap}>
+              <Text style={styles.empty}>No conversations yet</Text>
+            </View>
+          }
+          contentContainerStyle={data.length === 0 ? { flex: 1 } : null}
+        />
+      </View>
+      
+      <BottomNavigation currentRoute="/chat" />
+    </SafeAreaView>
   );
 }
 

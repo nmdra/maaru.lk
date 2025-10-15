@@ -32,7 +32,8 @@
     "loginToSwap": "Please login to swap items",
     "loginToReview": "Please login to write reviews",
     "guestMode": "Guest Mode",
-    "guestModeDesc": "You can browse and search products. Login to buy, swap, or add products."
+    "guestModeDesc": "You can browse and search products. Login to buy, swap, or add products.",
+    "goBack": "Go Back"
   },
   "navigation": {
     "home": "Home",
@@ -109,6 +110,23 @@
       "furniture": "Furniture",
       "others": "Others"
     }
+  },
+  "search": {
+    "aiSearch": "AI Search",
+    "aiSearchDesc": "Describe what you're looking for and let AI find matching products for you",
+    "whatAreYouLookingFor": "What are you looking for?",
+    "describeProduct": "Describe the product in detail - color, brand, size, condition, features, etc.",
+    "aiSearchPlaceholder": "E.g., \"Red Nike running shoes size 42, good condition\" or \"iPhone 13 Pro Max 256GB, unlocked\"",
+    "searchWithAI": "Search with AI",
+    "searchTips": "Search Tips",
+    "tip1": "Be specific about brand, model, or features",
+    "tip2": "Mention color, size, or condition preferences",
+    "tip3": "Include price range if you have one in mind",
+    "tip4": "Use natural language - write as you would speak",
+    "foundProducts": "Found Products",
+    "noProductsFound": "No Products Found",
+    "tryDifferentKeywords": "Try using different keywords or be more specific in your description",
+    "noResults": "No Results"
   },
   "reviews": {
     "title": "Reviews",
@@ -443,5 +461,37 @@
     "address": "Address",
     "continue": "Continue",
     "skip": "Skip for now"
+  },
+  "analysis": {
+    "title": "Market Analysis",
+    "subtitle": "AI-powered product insights",
+    "priceVerdict": "Price Verdict",
+    "excellentDeal": "Excellent Deal!",
+    "fairPrice": "Fair Price",
+    "slightlyHigh": "Slightly High",
+    "overpriced": "Overpriced",
+    "unusuallyLow": "Unusually Low",
+    "unknown": "Unknown",
+    "listedPrice": "Listed Price",
+    "marketPriceRange": "Market Price Range",
+    "minimum": "Minimum",
+    "average": "Average",
+    "maximum": "Maximum",
+    "marketDemand": "Market Demand",
+    "veryHighDemand": "Very High Demand",
+    "highDemand": "High Demand",
+    "moderateDemand": "Moderate Demand",
+    "lowDemand": "Low Demand",
+    "veryLowDemand": "Very Low Demand",
+    "trustScore": "Trust Score",
+    "conditionImpact": "Condition Impact",
+    "conditionAffectsPrice": "Condition significantly affects price",
+    "similarProducts": "Similar Products",
+    "keyInsights": "Key Insights",
+    "recommendation": "Recommendation",
+    "disclaimer": "This analysis is AI-generated based on market patterns and may not reflect real-time prices. Always verify details with the seller and conduct your own research before making a purchase decision.",
+    "noData": "No Analysis Data",
+    "noDataDesc": "Analysis data could not be loaded.",
+    "checkIt": "Check It"
   }
 }

@@ -3,7 +3,9 @@ import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import { serverTimestamp } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
-import { Alert, Image, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, SafeAreaView, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import BottomNavigation from '../components/BottomNavigation';
+import Header from '../components/Header';
 import { generateProductDetails } from '../services/aiService';
 import { uploadImageToCloudinary } from '../services/cloudinaryService'; // <-- Import Cloudinary upload function
 import { addItemToFirestore } from '../services/itemService';
@@ -231,14 +233,19 @@ export default function AddItemScreen() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-gradient-to-b from-white to-gray-100 p-5">
+    <SafeAreaView className="flex-1 bg-gray-50">
+      {/* Fixed Header */}
+      <Header />
       
-      <View className="flex-row items-center mb-6">
-        <TouchableOpacity onPress={() => router.push('/(tabs)/Home')} className="mr-3 p-2">
-          <Ionicons name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <Text className="text-3xl font-extrabold text-gray-900 flex-1">Add New Item</Text>
-      </View>
+      {/* Scrollable Content */}
+      <ScrollView className="flex-1 bg-gradient-to-b from-white to-gray-100 p-5">
+        
+        <View className="flex-row items-center mb-6">
+          <TouchableOpacity onPress={() => router.push('/(tabs)/Home')} className="mr-3 p-2">
+            <Ionicons name="arrow-back" size={24} color="#333" />
+          </TouchableOpacity>
+          <Text className="text-3xl font-extrabold text-gray-900 flex-1">Add New Item</Text>
+        </View>
 
       <View className="mb-6 items-center">
         <Image
@@ -462,5 +469,9 @@ export default function AddItemScreen() {
         </Text>
       </TouchableOpacity>
     </ScrollView>
+    
+    {/* Fixed Bottom Navigation */}
+    <BottomNavigation currentRoute="/AddProduct" />
+  </SafeAreaView>
   );
 }

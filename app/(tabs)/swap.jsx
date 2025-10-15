@@ -6,12 +6,15 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  SafeAreaView,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
+import Header from '../../components/Header';
+import Colors from '../../constants/Colors';
 import { useAuth } from '../../context/AuthContext';
 import { generateProductDetails } from '../../services/aiService';
 import { ensureConversation, roomIdFor } from '../../services/chatService';
@@ -381,46 +384,55 @@ export default function SwapTab() {
 
   if (!user) {
     return (
-      <View className="flex-1 justify-center items-center bg-white p-6">
-        <Ionicons name="log-in-outline" size={80} color="#3B82F6" />
-        <Text className="text-2xl font-bold text-gray-900 mt-4 mb-2">
-          {t('auth.loginRequired')}
-        </Text>
-        <Text className="text-gray-600 text-center mb-6">
-          Please login to use the swap feature
-        </Text>
-        <TouchableOpacity
-          onPress={() => router.push('/Login')}
-          className="bg-blue-600 px-8 py-3 rounded-lg"
-        >
-          <Text className="text-white font-semibold text-lg">{t('auth.login')}</Text>
-        </TouchableOpacity>
-      </View>
+      <SafeAreaView className="flex-1 bg-white">
+        <Header />
+        <View className="flex-1 justify-center items-center bg-white p-6">
+          <Ionicons name="log-in-outline" size={80} color="#3B82F6" />
+          <Text className="text-2xl font-bold text-gray-900 mt-4 mb-2">
+            {t('auth.loginRequired')}
+          </Text>
+          <Text className="text-gray-600 text-center mb-6">
+            Please login to use the swap feature
+          </Text>
+          <TouchableOpacity
+            onPress={() => router.push('/Login')}
+            className="bg-blue-600 px-8 py-3 rounded-lg"
+          >
+            <Text className="text-white font-semibold text-lg">{t('auth.login')}</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
     );
   }
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#3B82F6" />
-        <Text className="text-gray-500 mt-4">{t('common.loading')}</Text>
-      </View>
+      <SafeAreaView className="flex-1 bg-white">
+        <Header />
+        <View className="flex-1 justify-center items-center bg-white">
+          <ActivityIndicator size="large" color="#3B82F6" />
+          <Text className="text-gray-500 mt-4">{t('common.loading')}</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   // Step 1: Select your products
   if (step === 1) {
     return (
-      <View className="flex-1 bg-gray-50">
-        {/* Header */}
-        <View className="bg-white px-4 py-3 border-b border-gray-200">
-          <Text className="text-xl font-bold text-gray-900">
-            {t('swap.selectYourItem')}
-          </Text>
-          <Text className="text-sm text-gray-500 mt-1">
-            Select one or more products you want to swap
-          </Text>
-        </View>
+      <SafeAreaView className="flex-1 bg-gray-50">
+        <Header />
+        
+        <View className="flex-1 bg-gray-50">
+          {/* Header */}
+          <View className="bg-white px-4 py-3 border-b border-gray-200">
+            <Text className="text-xl font-bold text-gray-900">
+              {t('swap.selectYourItem')}
+            </Text>
+            <Text className="text-sm text-gray-500 mt-1">
+              Select one or more products you want to swap
+            </Text>
+          </View>
 
         <ScrollView className="flex-1 p-4">
           {myProducts.length === 0 ? (
@@ -493,13 +505,17 @@ export default function SwapTab() {
             </TouchableOpacity>
           </View>
         )}
-      </View>
+        </View>
+      </SafeAreaView>
     );
   }
 
   // Step 2: Select target product
   return (
-    <View className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1 bg-gray-50">
+      <Header />
+      
+      <View className="flex-1 bg-gray-50">
       {/* Header */}
       <View className="bg-white px-4 py-3 border-b border-gray-200">
         <View className="flex-row items-center justify-between">
@@ -694,6 +710,7 @@ export default function SwapTab() {
           </TouchableOpacity>
         </View>
       )}
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }

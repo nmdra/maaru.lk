@@ -3,7 +3,10 @@ import { useRouter } from 'expo-router';
 import debounce from 'lodash.debounce';
 import { useEffect } from 'react';
 import { ActivityIndicator, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
+import BottomNavigation from '../../components/BottomNavigation';
+import Header from '../../components/Header';
 import Loader from '../../components/product/Loader';
 import ProductCard from '../../components/product/ProductCard';
 import SearchBar from '../../components/product/SearchBar';
@@ -34,15 +37,18 @@ export default function ProductsScreen() {
   }, 300);
 
   return (
-    <View style={styles.container}>
-      <SearchBar
-        defaultValue={search}
-        onChangeText={onChangeText}
-        onClear={() => {
-          setSearch('');
-          fetchFirstPage('');
-        }}
-      />
+    <SafeAreaView style={styles.container}>
+      <Header />
+      
+      <View style={{ flex: 1 }}>
+        <SearchBar
+          defaultValue={search}
+          onChangeText={onChangeText}
+          onClear={() => {
+            setSearch('');
+            fetchFirstPage('');
+          }}
+        />
 
       {loading && items.length === 0 ? (
         <Loader />
@@ -79,7 +85,10 @@ export default function ProductsScreen() {
           <Text style={{ color: 'red' }}>{String(error)}</Text>
         </View>
       )}
-    </View>
+      </View>
+      
+      <BottomNavigation currentRoute="/product" />
+    </SafeAreaView>
   );
 }
 

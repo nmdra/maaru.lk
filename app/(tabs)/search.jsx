@@ -3,7 +3,10 @@ import { FlashList } from '@shopify/flash-list';
 import { useRouter } from 'expo-router';
 import debounce from 'lodash.debounce';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, RefreshControl, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, RefreshControl, SafeAreaView, Text, View } from 'react-native';
+import BottomNavigation from '../../components/BottomNavigation';
+import Header from '../../components/Header';
+import Colors from '../../constants/Colors';
 import FilterBar from '../../components/product/FilterBar';
 import Loader from '../../components/product/Loader';
 import ProductCard from '../../components/product/ProductCard';
@@ -38,16 +41,19 @@ export default function ProductsScreen() {
   }, 300);
 
   return (
-    <View className="flex-1 bg-white">
-      <SearchBar
-        value={search}
-        onChangeText={onChangeText}
-        onClear={() => {
-          setSearch('');
-          fetchFirstPage('');
-        }}
-        onToggleFilters={() => setShowFilters(!showFilters)}
-      />
+    <SafeAreaView className="flex-1" style={{ backgroundColor: Colors.background.primary }}>
+      <Header />
+      
+      <View className="flex-1" style={{ backgroundColor: Colors.background.primary }}>
+        <SearchBar
+          value={search}
+          onChangeText={onChangeText}
+          onClear={() => {
+            setSearch('');
+            fetchFirstPage('');
+          }}
+          onToggleFilters={() => setShowFilters(!showFilters)}
+        />
 
       {showFilters && (
         <FilterBar
@@ -65,16 +71,16 @@ export default function ProductsScreen() {
         <Loader />
       ) : items.length === 0 ? (
         <View className="flex-1 items-center justify-center p-8">
-          <Ionicons name="search-outline" size={64} color="#ccc" />
-          <Text className="text-lg text-gray-600 font-semibold mt-4">
+          <Ionicons name="search-outline" size={64} color={Colors.gray[300]} />
+          <Text className="text-lg font-semibold mt-4" style={{ color: Colors.text.secondary }}>
             No products found
           </Text>
           {search ? (
-            <Text className="text-gray-400 text-center mt-2">
+            <Text className="text-center mt-2" style={{ color: Colors.text.tertiary }}>
               Try different keywords or adjust filters
             </Text>
           ) : (
-            <Text className="text-gray-400 text-center mt-2">
+            <Text className="text-center mt-2" style={{ color: Colors.text.tertiary }}>
               Start searching to find products
             </Text>
           )}
@@ -108,9 +114,30 @@ export default function ProductsScreen() {
 
       {error && (
         <View className="p-3">
-          <Text className="text-red-500">{String(error)}</Text>
+          <Text style={{ color: Colors.error }}>{String(error)}</Text>
         </View>
       )}
-    </View>
+      </View>
+
+      {/* Floating AI Search Button - Fixed position in bottom right, above footer */}
+      <View className="absolute bottom-24 right-6">
+        <Pressable
+          onPress={() => router.push('/search/ai-search')}
+          className="w-16 h-16 rounded-full items-center justify-center shadow-lg active:opacity-80"
+          style={{
+            backgroundColor: Colors.accent,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 3 },
+            shadowOpacity: 0.25,
+            shadowRadius: 6,
+            elevation: 5,
+          }}
+        >
+          <Ionicons name="sparkles" size={28} color="#fff" />
+        </Pressable>
+      </View>
+
+      {/* <BottomNavigation currentRoute="/(tabs)/search" /> */}
+    </SafeAreaView>
   );
 }

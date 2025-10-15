@@ -7,12 +7,12 @@ export default function Header() {
   const router = useRouter();
 
   return (
-    <View className="bg-white px-8 py-2 flex-row justify-between items-center border-b border-gray-200">
+    <View className="bg-white px-8 py-1 pt-5 flex-row justify-between items-center border-b border-gray-200">
       {/* Logo on the left */}
-      <View className="w-20 h-20 items-center justify-center">
+      <View className="w-30 h-12 items-center justify-center">
         <Image
           source={require('../assets/images/logo_int.png')}
-          style={{ width: 56, height: 56 }}
+          style={{ width: 70, height: 70 }}
           resizeMode="contain"
         />
       </View>

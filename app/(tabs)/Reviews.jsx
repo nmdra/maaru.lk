@@ -1,6 +1,8 @@
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, FlatList, Modal, Pressable, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, FlatList, Modal, Pressable, SafeAreaView, Text, TextInput, View } from "react-native";
+import Header from "../../components/Header";
+import Colors from "../../constants/Colors";
 import { useAuth } from "../../context/AuthContext";
 import { createReview, deleteReview, fetchReviews, updateReview } from "../../services/reviewService";
 import { useAppI18n } from "../../utils/i18n";
@@ -131,17 +133,17 @@ export default function Reviews() {
 	function renderReview({ item }) {
 		const isMine = item.reviewerId === user?.uid;
 		return (
-			<View className="bg-white rounded-lg shadow p-4 mb-3">
-				<Text className="font-bold text-lg mb-1">{item.reviewerName || t('reviews.anonymous')}</Text>
-				<Text className="text-yellow-500 mb-1">{t('reviews.rating')}: {item.rating}</Text>
-				<Text className="mb-2">{item.comment}</Text>
-				<Text className="text-xs text-gray-400 mb-1">{item.timestamp?.toDate?.().toLocaleString?.() || ""}</Text>
+			<View className="rounded-lg shadow p-4 mb-3" style={{ backgroundColor: Colors.card.background }}>
+				<Text className="font-bold text-lg mb-1" style={{ color: Colors.text.primary }}>{item.reviewerName || t('reviews.anonymous')}</Text>
+				<Text className="mb-1" style={{ color: Colors.warning }}>{t('reviews.rating')}: {item.rating}</Text>
+				<Text className="mb-2" style={{ color: Colors.text.secondary }}>{item.comment}</Text>
+				<Text className="text-xs mb-1" style={{ color: Colors.text.tertiary }}>{item.timestamp?.toDate?.().toLocaleString?.() || ""}</Text>
 				{isMine && (
 					<View className="flex-row space-x-2 mt-2">
-						<Pressable onPress={() => openEditModal(item)} className="bg-blue-500 px-3 py-1 rounded">
+						<Pressable onPress={() => openEditModal(item)} className="px-3 py-1 rounded" style={{ backgroundColor: Colors.accent }}>
 							<Text className="text-white">{t('reviews.edit')}</Text>
 						</Pressable>
-						<Pressable onPress={() => handleDelete(item)} className="bg-red-500 px-3 py-1 rounded">
+						<Pressable onPress={() => handleDelete(item)} className="px-3 py-1 rounded" style={{ backgroundColor: Colors.error }}>
 							<Text className="text-white">{t('reviews.delete')}</Text>
 						</Pressable>
 					</View>
@@ -151,28 +153,31 @@ export default function Reviews() {
 	}
 
 	return (
-		<View className="flex-1 bg-gray-100 p-4">
-			<Text className="text-2xl font-bold mb-4">{t('reviews.sellerReviews')}</Text>
-			<Pressable onPress={openCreateModal} className="bg-blue-600 py-3 rounded mb-4">
-				<Text className="text-white text-center font-semibold">{t('reviews.addReview')}</Text>
-			</Pressable>
+		<SafeAreaView className="flex-1" style={{ backgroundColor: Colors.background.primary }}>
+			<Header />
+			
+			<View className="flex-1 p-4" style={{ backgroundColor: Colors.background.primary }}>
+				<Text className="text-2xl font-bold mb-4" style={{ color: Colors.text.primary }}>{t('reviews.sellerReviews')}</Text>
+				<Pressable onPress={openCreateModal} className="py-3 rounded mb-4" style={{ backgroundColor: Colors.button.primary }}>
+					<Text className="text-white text-center font-semibold">{t('reviews.addReview')}</Text>
+				</Pressable>
 			{loading ? (
-				<ActivityIndicator size="large" color="#1a73e8" />
+				<ActivityIndicator size="large" color={Colors.accent} />
 			) : (
 				<FlatList
 					data={reviews}
 					keyExtractor={item => item.id}
 					renderItem={renderReview}
-					ListEmptyComponent={<Text className="text-center text-gray-400 mt-10">{t('reviews.noReviewsYet')}</Text>}
+					ListEmptyComponent={<Text className="text-center mt-10" style={{ color: Colors.text.tertiary }}>{t('reviews.noReviewsYet')}</Text>}
 				/>
 			)}
 
 			{/* Modal for create/edit */}
 			<Modal visible={modalVisible} animationType="slide" transparent>
-				<View className="flex-1 justify-center items-center bg-black bg-opacity-40">
-					<View className="bg-white w-11/12 rounded-xl p-6">
-						<Text className="text-xl font-bold mb-4">{editingReview ? t('reviews.editReview') : t('reviews.addReview')}</Text>
-						<Text className="mb-2">{t('reviews.ratingLabel')}</Text>
+				<View className="flex-1 justify-center items-center" style={{ backgroundColor: Colors.background.overlay }}>
+					<View className="w-11/12 rounded-xl p-6" style={{ backgroundColor: Colors.white }}>
+						<Text className="text-xl font-bold mb-4" style={{ color: Colors.text.primary }}>{editingReview ? t('reviews.editReview') : t('reviews.addReview')}</Text>
+						<Text className="mb-2" style={{ color: Colors.text.primary }}>{t('reviews.ratingLabel')}</Text>
 						<TextInput
 							value={String(rating)}
 							onChangeText={t => {
@@ -180,27 +185,31 @@ export default function Reviews() {
 								if (t === "" || /^[1-5]$/.test(t)) setRating(t);
 							}}
 							keyboardType="numeric"
-							className="border border-gray-300 rounded px-3 py-2 mb-3"
+							className="border rounded px-3 py-2 mb-3"
+							style={{ borderColor: Colors.input.border, backgroundColor: Colors.input.background, color: Colors.input.text }}
 						/>
-						<Text className="mb-2">{t('reviews.commentLabel')}</Text>
+						<Text className="mb-2" style={{ color: Colors.text.primary }}>{t('reviews.commentLabel')}</Text>
 						<TextInput
 							value={comment}
 							onChangeText={setComment}
 							placeholder={t('reviews.commentPlaceholder')}
+							placeholderTextColor={Colors.input.placeholder}
 							multiline
-							className="border border-gray-300 rounded px-3 py-2 mb-3 min-h-[60px]"
+							className="border rounded px-3 py-2 mb-3 min-h-[60px]"
+							style={{ borderColor: Colors.input.border, backgroundColor: Colors.input.background, color: Colors.input.text }}
 						/>
 						<View className="flex-row justify-end space-x-2">
-							<Pressable onPress={() => setModalVisible(false)} className="px-4 py-2 bg-gray-300 rounded">
-								<Text>{t('reviews.cancel')}</Text>
+							<Pressable onPress={() => setModalVisible(false)} className="px-4 py-2 rounded" style={{ backgroundColor: Colors.button.disabled }}>
+								<Text style={{ color: Colors.text.primary }}>{t('reviews.cancel')}</Text>
 							</Pressable>
-							<Pressable onPress={handleSubmit} className="px-4 py-2 bg-blue-600 rounded" disabled={submitting}>
+							<Pressable onPress={handleSubmit} className="px-4 py-2 rounded" style={{ backgroundColor: Colors.button.primary }} disabled={submitting}>
 								<Text className="text-white">{submitting ? t('reviews.saving') : editingReview ? t('reviews.update') : t('reviews.submit')}</Text>
 							</Pressable>
 						</View>
 					</View>
 				</View>
 			</Modal>
-		</View>
+			</View>
+		</SafeAreaView>
 	);
 }

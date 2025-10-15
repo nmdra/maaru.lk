@@ -12,6 +12,9 @@ import {
   TouchableOpacity, 
   View 
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import BottomNavigation from '../../components/BottomNavigation';
+import Header from '../../components/Header';
 import { useAuth } from '../../context/AuthContext';
 import { generateProductDetails } from '../../services/aiService';
 import { ensureConversation, roomIdFor } from '../../services/chatService';
@@ -306,40 +309,39 @@ export default function SwapScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <ActivityIndicator size="large" color="#3B82F6" />
-        <Text className="text-gray-500 mt-4">{t('common.loading')}</Text>
-      </View>
+      <SafeAreaView className="flex-1 bg-white">
+        <Header />
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color="#3B82F6" />
+          <Text className="text-gray-500 mt-4">{t('common.loading')}</Text>
+        </View>
+        <BottomNavigation currentRoute={`/swap/${targetProductId}`} />
+      </SafeAreaView>
     );
   }
 
   if (!targetProduct) {
     return (
-      <View className="flex-1 justify-center items-center bg-white p-6">
-        <Ionicons name="alert-circle-outline" size={80} color="#EF4444" />
-        <Text className="text-2xl font-bold text-gray-900 mt-4">Product Not Found</Text>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          className="mt-6 bg-blue-600 px-6 py-3 rounded-lg"
-        >
-          <Text className="text-white font-semibold">Go Back</Text>
-        </TouchableOpacity>
-      </View>
+      <SafeAreaView className="flex-1 bg-white">
+        <Header />
+        <View className="flex-1 justify-center items-center p-6">
+          <Ionicons name="alert-circle-outline" size={80} color="#EF4444" />
+          <Text className="text-2xl font-bold text-gray-900 mt-4">Product Not Found</Text>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="mt-6 bg-blue-600 px-6 py-3 rounded-lg"
+          >
+            <Text className="text-white font-semibold">Go Back</Text>
+          </TouchableOpacity>
+        </View>
+        <BottomNavigation currentRoute={`/swap/${targetProductId}`} />
+      </SafeAreaView>
     );
   }
 
   return (
-    <View className="flex-1 bg-gray-50">
-      {/* Header */}
-      <View className="bg-white px-4 py-3 border-b border-gray-200">
-        <View className="flex-row items-center justify-between">
-          <TouchableOpacity onPress={() => router.back()} className="p-2">
-            <Ionicons name="arrow-back" size={24} color="#1F2937" />
-          </TouchableOpacity>
-          <Text className="text-lg font-semibold text-gray-900">{t('swap.title')}</Text>
-          <View className="w-10" />
-        </View>
-      </View>
+    <SafeAreaView className="flex-1 bg-gray-50">
+      <Header />
 
       <ScrollView className="flex-1">
         {/* Target Product */}
@@ -553,6 +555,8 @@ export default function SwapScreen() {
           </View>
         )}
       </ScrollView>
-    </View>
+
+      <BottomNavigation currentRoute={`/swap/${targetProductId}`} />
+    </SafeAreaView>
   );
 }

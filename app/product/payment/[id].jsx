@@ -6,6 +6,7 @@ import {
   Alert,
   Image,
   Platform,
+  SafeAreaView,
   ScrollView,
   Text,
   TextInput,
@@ -13,12 +14,14 @@ import {
   View,
 } from 'react-native';
 import BottomNavigation from '../../../components/BottomNavigation';
+import Header from '../../../components/Header';
 import { useAuth } from '../../../context/AuthContext';
 import { db } from '../../../services/firebaseConfig';
 import formatPrice from '../../../utils/formatPrice';
 import { useAppI18n } from '../../../utils/i18n';
 
 import { useStripe } from '../../../utils/stripe';
+import Colors from '../../../constants/Colors';
 
 const STRIPE_API_BASE = 'https://maaru-stripe-api.vercel.app';
 
@@ -246,30 +249,41 @@ export default function PaymentScreen() {
 
   if (loading || authLoading) {
     return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <Text className="text-gray-500">{common('loading')}</Text>
-      </View>
+      <SafeAreaView className="flex-1" style={{ backgroundColor: Colors.background.primary }}>
+        <Header />
+        <View className="flex-1 justify-center items-center" style={{ backgroundColor: Colors.background.primary }}>
+          <Text className="text-gray-500">{common('loading')}</Text>
+        </View>
+        <BottomNavigation currentRoute={`/product/payment/${id}`} />
+      </SafeAreaView>
     );
   }
 
   if (!product) {
     return (
-      <View className="flex-1 justify-center items-center bg-white">
-        <Text className="text-gray-500">Product not found</Text>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          className="mt-4 bg-blue-600 px-6 py-2 rounded-lg"
-        >
-          <Text className="text-white font-semibold">{common('back')}</Text>
-        </TouchableOpacity>
-      </View>
+      <SafeAreaView className="flex-1" style={{ backgroundColor: Colors.background.primary }}>
+        <Header />
+        <View className="flex-1 justify-center items-center" style={{ backgroundColor: Colors.background.primary }}>
+          <Text className="text-gray-500">Product not found</Text>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="mt-4 bg-blue-600 px-6 py-2 rounded-lg"
+          >
+            <Text className="text-white font-semibold">{common('back')}</Text>
+          </TouchableOpacity>
+        </View>
+        <BottomNavigation currentRoute={`/product/payment/${id}`} />
+      </SafeAreaView>
     );
   }
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: Colors.background.primary }}>
+      <Header />
+      
+      <View className="flex-1" style={{ backgroundColor: Colors.background.primary }}>
       {/* Header */}
-      <View className="bg-white px-4 py-3 border-b border-gray-200">
+      <View className="px-4 py-3 border-b border-gray-200" style={{ backgroundColor: Colors.card.background }}>
         <View className="flex-row items-center">
           <TouchableOpacity onPress={() => router.back()} className="mr-3">
             <Ionicons name="arrow-back" size={24} color="#333" />
@@ -280,7 +294,7 @@ export default function PaymentScreen() {
 
       <ScrollView className="flex-1">
         {/* Product Summary */}
-        <View className="bg-white mx-4 mt-4 p-4 rounded-lg shadow-sm">
+        <View className="mx-4 mt-4 p-4 rounded-lg shadow-sm" style={{ backgroundColor: Colors.card.background }}>
           <Text className="text-lg font-bold mb-3">{t('payment.orderSummary')}</Text>
           <View className="flex-row">
             <Image
@@ -320,7 +334,7 @@ export default function PaymentScreen() {
         </View>
 
         {/* Payment Method Selection */}
-        <View className="bg-white mx-4 mt-4 p-4 rounded-lg shadow-sm">
+        <View className="mx-4 mt-4 p-4 rounded-lg shadow-sm" style={{ backgroundColor: Colors.card.background }}>
           <Text className="text-lg font-bold mb-3">{t('payment.paymentMethod')}</Text>
           {paymentMethods.map((method) => (
             <TouchableOpacity
@@ -364,7 +378,7 @@ export default function PaymentScreen() {
 
         {/* Payment Details Form */}
         {selectedPaymentMethod === 'stripe' && (
-          <View className="bg-white mx-4 mt-4 p-4 rounded-lg shadow-sm">
+          <View className="mx-4 mt-4 p-4 rounded-lg shadow-sm" style={{ backgroundColor: Colors.card.background }}>
             <Text className="text-lg font-bold mb-3">Payment Details</Text>
             <Text className="text-sm text-gray-600 mb-3">Stripe will securely collect your payment information in the next step</Text>
             
@@ -395,7 +409,7 @@ export default function PaymentScreen() {
         )}
 
         {/* Billing Information */}
-        <View className="bg-white mx-4 mt-4 p-4 rounded-lg shadow-sm">
+        <View className="mx-4 mt-4 p-4 rounded-lg shadow-sm" style={{ backgroundColor: Colors.card.background }}>
           <Text className="text-lg font-bold mb-3">{t('payment.billingInfo')}</Text>
           
           <View className="space-y-3">
@@ -426,7 +440,7 @@ export default function PaymentScreen() {
         </View>
 
         {/* Price Breakdown */}
-        <View className="bg-white mx-4 mt-4 p-4 rounded-lg shadow-sm">
+        <View className="mx-4 mt-4 p-4 rounded-lg shadow-sm" style={{ backgroundColor: Colors.card.background }}>
           <Text className="text-lg font-bold mb-3">{t('payment.priceBreakdown')}</Text>
           
           <View className="space-y-2">
@@ -454,7 +468,7 @@ export default function PaymentScreen() {
       </ScrollView>
 
       {/* Fixed Pay Button */}
-      <View className="bg-white px-4 py-3 border-t border-gray-200">
+      <View className="px-4 py-3 border-t border-gray-200" style={{ backgroundColor: Colors.card.background }}>
         <TouchableOpacity
           onPress={handlePayment}
           disabled={processingPayment}
@@ -476,9 +490,10 @@ export default function PaymentScreen() {
           </Text>
         </TouchableOpacity>
       </View>
+      </View>
 
       {/* Bottom Navigation */}
-      <BottomNavigation />
-    </View>
+      <BottomNavigation currentRoute={`/product/payment/${id}`} />
+    </SafeAreaView>
   );
 }
