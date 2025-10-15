@@ -14,7 +14,7 @@ export default function SplashScreen() {
   useEffect(() => {
     let userToRoute = null;
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      userToRoute = user ? "/Login" : "/Home";
+      userToRoute = user ? "/" : "/";
     });
 
     const timer = setTimeout(() => {
@@ -23,7 +23,7 @@ export default function SplashScreen() {
         duration: 600,
         useNativeDriver: true,
       }).start(() => {
-        router.replace(userToRoute || "/Login");
+        router.replace(userToRoute || "/");
       });
     }, 1000);
 
@@ -42,15 +42,15 @@ export default function SplashScreen() {
       </View>
       
       <View style={styles.content}>
-        <View style={styles.logoContainer}>
+        <View >
           <Image
-            source={require("../assets/images/logo_int.png")}
+            source={require("../assets/images/adaptive-icon.png")}
             style={styles.logo}
           />
         </View>
         
-        <Text style={styles.title}>Maaru.LK</Text>
-        <Text style={styles.tagline}>Swap, Trade, Thrive</Text>
+        {/* <Text style={styles.title}>Maaru.LK</Text>
+        <Text style={styles.tagline}>Swap, Trade, Thrive</Text> */}
         <Text style={styles.subtitle}>{common('loading')}</Text>
         
         {/* Loading Indicator */}
@@ -113,8 +113,8 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   logo: {
-    width: 100,
-    height: 100,
+    width: 200,
+    height: 200,
   },
   title: {
     fontSize: 42,

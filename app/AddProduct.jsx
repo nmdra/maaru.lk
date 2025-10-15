@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { Alert, Image, SafeAreaView, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import BottomNavigation from '../components/BottomNavigation';
 import Header from '../components/Header';
+import { useAuth } from '../context/AuthContext';
 import { generateProductDetails } from '../services/aiService';
 import { uploadImageToCloudinary } from '../services/cloudinaryService'; // <-- Import Cloudinary upload function
 import { addItemToFirestore } from '../services/itemService';
@@ -17,6 +18,7 @@ const MOCK_TAGS = ['Emergency', 'Good Condition', 'Limited Time', 'New Arrival']
 
 export default function AddItemScreen() {
   const router = useRouter();
+  const { user } = useAuth();
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
@@ -37,6 +39,27 @@ export default function AddItemScreen() {
   const [payStatus, setPayStatus] = useState(true); // Allow payment by default
   const [availability, setAvailability] = useState(true); // Available by default
   const [otherImages, setOtherImages] = useState([]); // Array of additional image URIs
+
+  // Check authentication on mount
+  useEffect(() => {
+    if (!user) {
+      Alert.alert(
+        'Login Required',
+        'You must be logged in to add a product. Please login first.',
+        [
+          { 
+            text: 'Cancel', 
+            style: 'cancel',
+            onPress: () => router.push('/(tabs)/Home')
+          },
+          { 
+            text: 'Login', 
+            onPress: () => router.push('/(auth)/Login') 
+          }
+        ]
+      );
+    }
+  }, [user]);
 
   useEffect(() => {
     const loadUserId = async () => {
@@ -163,7 +186,8 @@ export default function AddItemScreen() {
       return;
     }
 
-    if (!userId) {
+    // Double-check authentication before submitting
+    if (!user || !userId) {
       Alert.alert(
         'Login Required',
         'You must be logged in to add a product. Please login first.',

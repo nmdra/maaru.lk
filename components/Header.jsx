@@ -7,7 +7,7 @@ export default function Header() {
   const router = useRouter();
 
   return (
-    <View className="bg-white px-8 py-1 pt-5 flex-row justify-between items-center border-b border-gray-200">
+    <View className="bg-white px-8 py-1 pt-11 flex-row justify-between items-center border-b border-gray-200">
       {/* Logo on the left */}
       <View className="w-30 h-12 items-center justify-center">
         <Image
