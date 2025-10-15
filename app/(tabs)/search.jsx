@@ -4,13 +4,12 @@ import { useRouter } from 'expo-router';
 import debounce from 'lodash.debounce';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, RefreshControl, SafeAreaView, Text, View } from 'react-native';
-import BottomNavigation from '../../components/BottomNavigation';
 import Header from '../../components/Header';
-import Colors from '../../constants/Colors';
 import FilterBar from '../../components/product/FilterBar';
 import Loader from '../../components/product/Loader';
 import ProductCard from '../../components/product/ProductCard';
 import SearchBar from '../../components/product/SearchBar';
+import Colors from '../../constants/Colors';
 import useProducts from '../../hooks/useProducts';
 
 export default function ProductsScreen() {

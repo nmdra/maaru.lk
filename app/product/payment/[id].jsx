@@ -20,8 +20,8 @@ import { db } from '../../../services/firebaseConfig';
 import formatPrice from '../../../utils/formatPrice';
 import { useAppI18n } from '../../../utils/i18n';
 
-import { useStripe } from '../../../utils/stripe';
 import Colors from '../../../constants/Colors';
+import { useStripe } from '../../../utils/stripe';
 
 const STRIPE_API_BASE = 'https://maaru-stripe-api.vercel.app';
 

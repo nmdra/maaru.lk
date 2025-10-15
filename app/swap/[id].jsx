@@ -2,15 +2,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
-import { 
+import {
   ActivityIndicator,
-  Alert, 
+  Alert,
   Image,
-  ScrollView, 
-  Text, 
+  ScrollView,
+  Text,
   TextInput,
-  TouchableOpacity, 
-  View 
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomNavigation from '../../components/BottomNavigation';

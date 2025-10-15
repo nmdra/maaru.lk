@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter, usePathname } from 'expo-router';
-import React, { useState } from 'react';
-import { Text, TouchableOpacity, View, Modal, ScrollView } from 'react-native';
-import { useAppI18n, LANGUAGE_OPTIONS, getLanguageName } from '../utils/i18n';
+import { usePathname, useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { LANGUAGE_OPTIONS, getLanguageName, useAppI18n } from '../utils/i18n';
 
 const BottomNavigation = ({ currentRoute }) => {
   const router = useRouter();

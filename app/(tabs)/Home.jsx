@@ -6,12 +6,11 @@ import {
   Alert,
   FlatList,
   Image,
-  Pressable,
   SafeAreaView,
   ScrollView,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import Header from '../../components/Header';
 import Colors from '../../constants/Colors';

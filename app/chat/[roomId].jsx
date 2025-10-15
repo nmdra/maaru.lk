@@ -6,19 +6,18 @@ import { ActivityIndicator, Alert, Image, SafeAreaView, Text, TouchableOpacity, 
 import { Actions, GiftedChat, InputToolbar } from 'react-native-gifted-chat';
 import BottomNavigation from '../../components/BottomNavigation';
 import Header from '../../components/Header';
+import Colors from '../../constants/Colors';
 import { useAuth } from '../../context/AuthContext';
+import { generateProductDetails } from '../../services/aiService';
 import { listenMessages, markThreadRead, sendMessage } from '../../services/chatService';
 import { uploadChatImageToCloudinary } from '../../services/cloudinaryService';
 import {
-    getSocket,
-    wsSendMessage,
-    wsTypingStart,
-    wsTypingStop,
+  getSocket,
+  wsSendMessage,
+  wsTypingStart,
+  wsTypingStop,
 } from '../../services/socket';
 import { clearSwapDraft, getSwapDraft } from '../../utils/storage';
-import formatPrice from '../../utils/formatPrice';
-import { generateProductDetails } from '../../services/aiService';
-import Colors from '../../constants/Colors';
 
 /* ---------- helpers ---------- */
 function tsToMillis(ts) {

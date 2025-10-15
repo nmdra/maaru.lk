@@ -14,12 +14,10 @@ import {
   View,
 } from 'react-native';
 import Header from '../../components/Header';
-import Colors from '../../constants/Colors';
 import { useAuth } from '../../context/AuthContext';
 import { generateProductDetails } from '../../services/aiService';
 import { ensureConversation, roomIdFor } from '../../services/chatService';
 import { db } from '../../services/firebaseConfig';
-import { searchProductsByKeywords } from '../../services/searchKeywordService';
 import formatPrice from '../../utils/formatPrice';
 import { useAppI18n } from '../../utils/i18n';
 import { saveSwapDraft } from '../../utils/storage';
