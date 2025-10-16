@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { Alert, Image, SafeAreaView, ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import BottomNavigation from '../components/BottomNavigation';
 import Header from '../components/Header';
+import Colors from '../constants/Colors';
 import { useAuth } from '../context/AuthContext';
 import { generateProductDetails } from '../services/aiService';
 import { uploadImageToCloudinary } from '../services/cloudinaryService'; // <-- Import Cloudinary upload function
@@ -257,37 +258,39 @@ export default function AddItemScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: Colors.background.primary }}>
       {/* Fixed Header */}
       <Header />
       
       {/* Scrollable Content */}
-      <ScrollView className="flex-1 bg-gradient-to-b from-white to-gray-100 p-5">
+      <ScrollView className="flex-1 p-5">
         
         <View className="flex-row items-center mb-6">
           <TouchableOpacity onPress={() => router.push('/(tabs)/Home')} className="mr-3 p-2">
-            <Ionicons name="arrow-back" size={24} color="#333" />
+            <Ionicons name="arrow-back" size={24} color={Colors.text.primary} />
           </TouchableOpacity>
-          <Text className="text-3xl font-extrabold text-gray-900 flex-1">Add New Item</Text>
+          <Text className="text-3xl font-extrabold flex-1" style={{ color: Colors.text.primary }}>Add New Item</Text>
         </View>
 
       <View className="mb-6 items-center">
         <Image
           source={imageUri ? { uri: imageUri } : { uri: 'https://placehold.co/200x200' }}
           className="w-48 h-48 rounded-2xl shadow-lg mb-4"
-          style={{ borderWidth: 1, borderColor: '#e5e7eb' }}
+          style={{ borderWidth: 1, borderColor: Colors.border.default }}
         />
         <View className="flex-row space-x-4 mb-3">
           <TouchableOpacity
             onPress={() => handlePickImage(true)}
-            className="bg-blue-500 px-6 py-3 rounded-full flex-row items-center shadow-lg hover:bg-blue-600 transition-all"
+            className="px-6 py-3 rounded-full flex-row items-center shadow-lg"
+            style={{ backgroundColor: Colors.accent }}
           >
             <Ionicons name="camera-outline" size={22} color="white" />
             <Text className="text-white font-semibold text-base ml-2">Camera</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => handlePickImage(false)}
-            className="bg-green-500 px-6 py-3 rounded-full flex-row items-center shadow-lg hover:bg-green-600 transition-all"
+            className="px-6 py-3 rounded-full flex-row items-center shadow-lg"
+            style={{ backgroundColor: Colors.success }}
           >
             <Ionicons name="images-outline" size={22} color="white" />
             <Text className="text-white font-semibold text-base ml-2">Gallery</Text>
@@ -297,8 +300,11 @@ export default function AddItemScreen() {
         <TouchableOpacity
           onPress={handleAIAutofill}
           disabled={aiLoading}
-          className={`flex-row items-center justify-center rounded-full px-6 py-3 shadow-lg transition-all
-            ${aiLoading ? 'bg-purple-400 opacity-70' : 'bg-purple-500 hover:bg-purple-600'}`}
+          className="flex-row items-center justify-center rounded-full px-6 py-3 shadow-lg"
+          style={{ 
+            backgroundColor: aiLoading ? Colors.text.tertiary : Colors.info,
+            opacity: aiLoading ? 0.7 : 1
+          }}
         >
           <Ionicons name="hardware-chip-outline" size={22} color="white" style={{ marginRight: 8 }} />
           <Text className="text-white font-semibold text-base">
@@ -308,7 +314,7 @@ export default function AddItemScreen() {
       </View>
 
       {!imageUri && (
-        <Text className="text-red-500 mb-5 text-center font-medium">
+        <Text className="mb-5 text-center font-medium" style={{ color: Colors.error }}>
           Select an image to enable AI autofill.
         </Text>
       )}
@@ -317,15 +323,29 @@ export default function AddItemScreen() {
         value={name}
         onChangeText={setName}
         placeholder="Item Name*"
-        className="bg-white border border-gray-200 rounded-2xl px-5 py-4 mb-5 shadow-sm text-gray-900 placeholder-gray-400"
+        placeholderTextColor={Colors.text.tertiary}
+        className="rounded-2xl px-5 py-4 mb-5 shadow-sm"
+        style={{
+          backgroundColor: Colors.card.background,
+          borderWidth: 1,
+          borderColor: Colors.border.default,
+          color: Colors.text.primary
+        }}
       />
 
       <TextInput
         value={description}
         onChangeText={setDescription}
         placeholder="Description*"
+        placeholderTextColor={Colors.text.tertiary}
         multiline
-        className="bg-white border border-gray-200 rounded-2xl px-5 py-4 mb-5 shadow-sm text-gray-900 placeholder-gray-400 h-28"
+        className="rounded-2xl px-5 py-4 mb-5 shadow-sm h-28"
+        style={{
+          backgroundColor: Colors.card.background,
+          borderWidth: 1,
+          borderColor: Colors.border.default,
+          color: Colors.text.primary
+        }}
       />
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-5 space-x-3">
@@ -333,11 +353,17 @@ export default function AddItemScreen() {
           <TouchableOpacity
             key={cat}
             onPress={() => setCategory(cat)}
-            className={`px-5 py-2.5 rounded-full border transition-all ${
-              category === cat ? 'bg-blue-500 border-blue-500' : 'bg-white border-gray-200'
-            } shadow-sm`}
+            className="px-5 py-2.5 rounded-full shadow-sm"
+            style={{
+              backgroundColor: category === cat ? Colors.accent : Colors.card.background,
+              borderWidth: 1,
+              borderColor: category === cat ? Colors.accent : Colors.border.default
+            }}
           >
-            <Text className={`font-semibold ${category === cat ? 'text-white' : 'text-gray-700'}`}>
+            <Text 
+              className="font-semibold"
+              style={{ color: category === cat ? Colors.white : Colors.text.primary }}
+            >
               {cat}
             </Text>
           </TouchableOpacity>
@@ -345,46 +371,46 @@ export default function AddItemScreen() {
       </ScrollView>
 
       <View className="flex-row justify-between items-center mb-5 px-2">
-        <Text className="text-gray-800 font-semibold text-lg">Swap Only</Text>
+        <Text className="font-semibold text-lg" style={{ color: Colors.text.primary }}>Swap Only</Text>
         <Switch
           value={swapOnly}
           onValueChange={setSwapOnly}
-          trackColor={{ false: '#d1d5db', true: '#3b82f6' }}
-          thumbColor={swapOnly ? '#ffffff' : '#f3f4f6'}
+          trackColor={{ false: Colors.border.default, true: Colors.accent + '80' }}
+          thumbColor={swapOnly ? Colors.accent : Colors.background.secondary}
         />
       </View>
 
       {/* New Status Fields */}
-      <View className="bg-gray-50 p-4 rounded-2xl mb-5 shadow-sm">
-        <Text className="text-gray-900 font-bold text-lg mb-3">Product Status</Text>
+      <View className="p-4 rounded-2xl mb-5 shadow-sm" style={{ backgroundColor: Colors.background.tertiary }}>
+        <Text className="font-bold text-lg mb-3" style={{ color: Colors.text.primary }}>Product Status</Text>
         
         <View className="flex-row justify-between items-center mb-3 px-2">
-          <Text className="text-gray-700 font-medium">Allow Swap</Text>
+          <Text className="font-medium" style={{ color: Colors.text.primary }}>Allow Swap</Text>
           <Switch
             value={swapStatus}
             onValueChange={setSwapStatus}
-            trackColor={{ false: '#d1d5db', true: '#10b981' }}
-            thumbColor={swapStatus ? '#ffffff' : '#f3f4f6'}
+            trackColor={{ false: Colors.border.default, true: Colors.success + '80' }}
+            thumbColor={swapStatus ? Colors.success : Colors.background.secondary}
           />
         </View>
 
         <View className="flex-row justify-between items-center mb-3 px-2">
-          <Text className="text-gray-700 font-medium">Allow Payment</Text>
+          <Text className="font-medium" style={{ color: Colors.text.primary }}>Allow Payment</Text>
           <Switch
             value={payStatus}
             onValueChange={setPayStatus}
-            trackColor={{ false: '#d1d5db', true: '#3b82f6' }}
-            thumbColor={payStatus ? '#ffffff' : '#f3f4f6'}
+            trackColor={{ false: Colors.border.default, true: Colors.accent + '80' }}
+            thumbColor={payStatus ? Colors.accent : Colors.background.secondary}
           />
         </View>
 
         <View className="flex-row justify-between items-center px-2">
-          <Text className="text-gray-700 font-medium">Available for Sale</Text>
+          <Text className="font-medium" style={{ color: Colors.text.primary }}>Available for Sale</Text>
           <Switch
             value={availability}
             onValueChange={setAvailability}
-            trackColor={{ false: '#d1d5db', true: '#f59e0b' }}
-            thumbColor={availability ? '#ffffff' : '#f3f4f6'}
+            trackColor={{ false: Colors.border.default, true: Colors.accent + '80' }}
+            thumbColor={availability ? Colors.accent : Colors.background.secondary}
           />
         </View>
       </View>
@@ -394,8 +420,15 @@ export default function AddItemScreen() {
           value={price}
           onChangeText={setPrice}
           placeholder="Price (optional)"
+          placeholderTextColor={Colors.text.tertiary}
           keyboardType="numeric"
-          className="bg-white border border-gray-200 rounded-2xl px-5 py-4 mb-5 shadow-sm text-gray-900 placeholder-gray-400"
+          className="rounded-2xl px-5 py-4 mb-5 shadow-sm"
+          style={{
+            backgroundColor: Colors.card.background,
+            borderWidth: 1,
+            borderColor: Colors.border.default,
+            color: Colors.text.primary
+          }}
         />
       )}
 
@@ -403,15 +436,29 @@ export default function AddItemScreen() {
         value={condition}
         onChangeText={setCondition}
         placeholder="Condition"
-        className="bg-white border border-gray-200 rounded-2xl px-5 py-4 mb-5 shadow-sm text-gray-900 placeholder-gray-400"
+        placeholderTextColor={Colors.text.tertiary}
+        className="rounded-2xl px-5 py-4 mb-5 shadow-sm"
+        style={{
+          backgroundColor: Colors.card.background,
+          borderWidth: 1,
+          borderColor: Colors.border.default,
+          color: Colors.text.primary
+        }}
       />
 
       <TextInput
         value={String(stock)}
         onChangeText={(val) => setStock(Number(val))}
         placeholder="Stock"
+        placeholderTextColor={Colors.text.tertiary}
         keyboardType="numeric"
-        className="bg-white border border-gray-200 rounded-2xl px-5 py-4 mb-5 shadow-sm text-gray-900 placeholder-gray-400"
+        className="rounded-2xl px-5 py-4 mb-5 shadow-sm"
+        style={{
+          backgroundColor: Colors.card.background,
+          borderWidth: 1,
+          borderColor: Colors.border.default,
+          color: Colors.text.primary
+        }}
       />
 
       <View className="flex-row flex-wrap mb-5 space-x-2">
@@ -419,11 +466,17 @@ export default function AddItemScreen() {
           <TouchableOpacity
             key={tag}
             onPress={() => toggleTag(tag)}
-            className={`px-4 py-2 rounded-full border transition-all ${
-              tags.includes(tag) ? 'bg-green-500 border-green-500' : 'bg-white border-gray-200'
-            } mb-2 shadow-sm`}
+            className="px-4 py-2 rounded-full mb-2 shadow-sm"
+            style={{
+              backgroundColor: tags.includes(tag) ? Colors.success : Colors.card.background,
+              borderWidth: 1,
+              borderColor: tags.includes(tag) ? Colors.success : Colors.border.default
+            }}
           >
-            <Text className={`font-medium ${tags.includes(tag) ? 'text-white' : 'text-gray-700'}`}>
+            <Text 
+              className="font-medium"
+              style={{ color: tags.includes(tag) ? Colors.white : Colors.text.primary }}
+            >
               {tag}
             </Text>
           </TouchableOpacity>
@@ -435,11 +488,19 @@ export default function AddItemScreen() {
           value={customTag}
           onChangeText={setCustomTag}
           placeholder="Add custom tag"
-          className="flex-1 bg-white border border-gray-200 rounded-l-2xl px-5 py-4 shadow-sm text-gray-900 placeholder-gray-400"
+          placeholderTextColor={Colors.text.tertiary}
+          className="flex-1 rounded-l-2xl px-5 py-4 shadow-sm"
+          style={{
+            backgroundColor: Colors.card.background,
+            borderWidth: 1,
+            borderColor: Colors.border.default,
+            color: Colors.text.primary
+          }}
         />
         <TouchableOpacity
           onPress={handleAddCustomTag}
-          className="bg-blue-500 px-5 py-4 rounded-r-2xl flex-row items-center shadow-lg hover:bg-blue-600 transition-all"
+          className="px-5 py-4 rounded-r-2xl flex-row items-center shadow-lg"
+          style={{ backgroundColor: Colors.accent }}
         >
           <Ionicons name="add-outline" size={22} color="white" />
         </TouchableOpacity>
@@ -447,11 +508,12 @@ export default function AddItemScreen() {
 
       {/* Other Images Section */}
       <View className="mb-6">
-        <Text className="text-gray-900 font-bold text-lg mb-3">Additional Images (Optional)</Text>
+        <Text className="font-bold text-lg mb-3" style={{ color: Colors.text.primary }}>Additional Images (Optional)</Text>
         
         <TouchableOpacity
           onPress={handlePickOtherImages}
-          className="bg-indigo-500 py-3 rounded-full flex-row items-center justify-center shadow-lg mb-3"
+          className="py-3 rounded-full flex-row items-center justify-center shadow-lg mb-3"
+          style={{ backgroundColor: Colors.info }}
         >
           <Ionicons name="images" size={22} color="white" />
           <Text className="text-white font-semibold text-base ml-2">
@@ -466,11 +528,12 @@ export default function AddItemScreen() {
                 <Image
                   source={{ uri }}
                   className="w-24 h-24 rounded-xl"
-                  style={{ borderWidth: 1, borderColor: '#e5e7eb' }}
+                  style={{ borderWidth: 1, borderColor: Colors.border.default }}
                 />
                 <TouchableOpacity
                   onPress={() => handleRemoveOtherImage(index)}
-                  className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1"
+                  className="absolute -top-2 -right-2 rounded-full p-1"
+                  style={{ backgroundColor: Colors.error }}
                 >
                   <Ionicons name="close" size={16} color="white" />
                 </TouchableOpacity>
@@ -483,9 +546,11 @@ export default function AddItemScreen() {
       <TouchableOpacity
         onPress={handleAddItem}
         disabled={loading}
-        className={`bg-green-500 py-4 rounded-full items-center justify-center flex-row shadow-lg mb-10 transition-all ${
-          loading ? 'opacity-50' : 'hover:bg-green-600'
-        }`}
+        className="py-4 rounded-full items-center justify-center flex-row shadow-lg mb-10"
+        style={{ 
+          backgroundColor: Colors.success,
+          opacity: loading ? 0.5 : 1
+        }}
       >
         <Ionicons name="add-circle-outline" size={24} color="white" className="mr-2" />
         <Text className="text-white font-semibold text-lg">

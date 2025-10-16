@@ -2,7 +2,7 @@
 import { useRouter } from 'expo-router';
 import { collection, doc, getDoc, getDocs, orderBy, limit as qlimit, query } from 'firebase/firestore';
 import { useEffect, useMemo, useState } from 'react';
-import { FlatList, Image, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import BottomNavigation from '../../components/BottomNavigation';
 import Header from '../../components/Header';
 import { useAuth } from '../../context/AuthContext';
@@ -157,18 +157,18 @@ export default function ChatList() {
 
   if (!uid) {
     return (
-      <SafeAreaView style={styles.wrap}>
+      <View style={styles.wrap}>
         <Header />
         <View style={styles.emptyWrap}>
           <Text style={styles.empty}>Please login to view your inbox.</Text>
         </View>
         <BottomNavigation currentRoute="/chat" />
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.wrap}>
+    <View style={styles.wrap}>
       <Header />
       
       <View style={{ flex: 1 }}>
@@ -187,25 +187,25 @@ export default function ChatList() {
       </View>
       
       <BottomNavigation currentRoute="/chat" />
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   wrap: { flex: 1, backgroundColor: '#fff' },
-  sep: { height: 1, backgroundColor: '#eee' },
-  row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 10 },
+  sep: { height: 1, backgroundColor: '#eee', marginHorizontal: 16 },
+  row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 },
   rowPressed: { backgroundColor: '#f8f8f8' },
-  avatar: { width: 44, height: 44, borderRadius: 22, marginRight: 12, backgroundColor: '#e5e7eb' },
-  mid: { flex: 1, justifyContent: 'center' },
-  topLine: { flexDirection: 'row', alignItems: 'center' },
-  name: { flex: 1, fontWeight: '700', fontSize: 15, color: '#111827' },
+  avatar: { width: 48, height: 48, borderRadius: 24, marginRight: 12, backgroundColor: '#e5e7eb' },
+  mid: { flex: 1, justifyContent: 'center', paddingRight: 8 },
+  topLine: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
+  name: { flex: 1, fontWeight: '700', fontSize: 16, color: '#111827' },
   time: { marginLeft: 8, fontSize: 12, color: '#6b7280' },
-  bottomLine: { marginTop: 3, flexDirection: 'row', alignItems: 'center' },
-  preview: { flex: 1, color: '#6b7280' },
+  bottomLine: { marginTop: 2, flexDirection: 'row', alignItems: 'center' },
+  preview: { flex: 1, color: '#6b7280', fontSize: 14 },
   badge: { marginLeft: 8, minWidth: 20, paddingHorizontal: 6, paddingVertical: 2, backgroundColor: '#2563eb', borderRadius: 999, alignItems: 'center' },
   badgeTxt: { color: '#fff', fontSize: 12, fontWeight: '700' },
-  thumb: { width: 42, height: 42, borderRadius: 6, marginLeft: 10, backgroundColor: '#e5e7eb' },
-  emptyWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  empty: { color: '#6b7280' },
+  thumb: { width: 48, height: 48, borderRadius: 8, marginLeft: 12, backgroundColor: '#e5e7eb' },
+  emptyWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
+  empty: { color: '#6b7280', fontSize: 15 },
 });

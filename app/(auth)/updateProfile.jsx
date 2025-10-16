@@ -19,6 +19,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import BottomNavigation from "../../components/BottomNavigation";
 import Header from "../../components/Header";
+import Colors from "../../constants/Colors";
 import { auth, db } from "../../services/firebaseConfig";
 
 export default function UpdateProfile() {
@@ -133,10 +134,10 @@ export default function UpdateProfile() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-white">
+      <SafeAreaView className="flex-1" style={{ backgroundColor: Colors.background.primary }}>
         <Header />
-        <View className="flex-1 justify-center items-center bg-white">
-          <ActivityIndicator size="large" color="#1a73e8" />
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color={Colors.accent} />
         </View>
         <BottomNavigation currentRoute="/updateProfile" />
       </SafeAreaView>
@@ -144,42 +145,50 @@ export default function UpdateProfile() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: Colors.background.primary }}>
       <Header />
       
       <ScrollView className="flex-1">
         {/* Header Section - Removed back button since Header already has navigation */}
-        <View className="bg-blue-600 px-6 pt-6 pb-12">
+        <View className="px-6 pt-6 pb-12" style={{ backgroundColor: Colors.accent }}>
           <View className="items-center">
             <Text className="text-white text-2xl font-bold mb-3">Update your profile</Text>
           </View>
         </View>
 
         {/* Profile Card */}
-        <View className="mx-6 -mt-8 bg-white rounded-2xl shadow-lg p-6">
+        <View className="mx-6 -mt-8 rounded-2xl shadow-lg p-6" style={{ backgroundColor: Colors.card.background }}>
           {/* Icon Section */}
           <View className="items-center -mt-10 mb-6">
             <Pressable onPress={() => handlePickPhoto(false)}>
-              <View className="w-24 h-24 rounded-full bg-white p-1 shadow-lg">
+              <View className="w-24 h-24 rounded-full p-1 shadow-lg" style={{ backgroundColor: Colors.white }}>
                 {photo ? (
                   <Image source={{ uri: photo.uri }} className="w-full h-full rounded-full" />
                 ) : photoURL ? (
                   <Image source={{ uri: photoURL }} className="w-full h-full rounded-full" />
                 ) : (
-                  <View className="w-full h-full rounded-full bg-blue-500 items-center justify-center">
+                  <View className="w-full h-full rounded-full items-center justify-center" style={{ backgroundColor: Colors.accent }}>
                     <Text className="text-white text-2xl font-bold">✎</Text>
                   </View>
                 )}
               </View>
             </Pressable>
             <View className="flex-row justify-center mt-2 space-x-3">
-              <TouchableOpacity onPress={() => handlePickPhoto(false)} className="flex-row items-center px-3 py-1 bg-gray-100 rounded-full">
-                <Ionicons name="image-outline" size={16} color="#1a73e8" />
-                <Text className="ml-1 text-blue-600 text-sm">Gallery</Text>
+              <TouchableOpacity 
+                onPress={() => handlePickPhoto(false)} 
+                className="flex-row items-center px-3 py-1 rounded-full"
+                style={{ backgroundColor: Colors.background.accent }}
+              >
+                <Ionicons name="image-outline" size={16} color={Colors.accent} />
+                <Text className="ml-1 text-sm" style={{ color: Colors.accent }}>Gallery</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => handlePickPhoto(true)} className="flex-row items-center px-3 py-1 bg-gray-100 rounded-full">
-                <Ionicons name="camera-outline" size={16} color="#1a73e8" />
-                <Text className="ml-1 text-blue-600 text-sm">Camera</Text>
+              <TouchableOpacity 
+                onPress={() => handlePickPhoto(true)} 
+                className="flex-row items-center px-3 py-1 rounded-full"
+                style={{ backgroundColor: Colors.background.accent }}
+              >
+                <Ionicons name="camera-outline" size={16} color={Colors.accent} />
+                <Text className="ml-1 text-sm" style={{ color: Colors.accent }}>Camera</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -190,76 +199,118 @@ export default function UpdateProfile() {
             {/* Name Fields */}
             <View className="flex-row space-x-3">
               <View className="flex-1">
-                <Text className="text-gray-700 font-medium mb-2">First Name</Text>
+                <Text className="font-medium mb-2" style={{ color: Colors.text.primary }}>First Name</Text>
                 <TextInput
                   value={firstName}
                   onChangeText={setFirstName}
                   placeholder="First name"
+                  placeholderTextColor={Colors.text.tertiary}
                   autoCapitalize="words"
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base"
+                  className="w-full rounded-xl px-4 py-3 text-base"
+                  style={{ 
+                    backgroundColor: Colors.background.secondary,
+                    borderWidth: 1,
+                    borderColor: Colors.border.default,
+                    color: Colors.text.primary
+                  }}
                 />
               </View>
               <View className="flex-1">
-                <Text className="text-gray-700 font-medium mb-2">Last Name</Text>
+                <Text className="font-medium mb-2" style={{ color: Colors.text.primary }}>Last Name</Text>
                 <TextInput
                   value={lastName}
                   onChangeText={setLastName}
                   placeholder="Last name"
+                  placeholderTextColor={Colors.text.tertiary}
                   autoCapitalize="words"
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base"
+                  className="w-full rounded-xl px-4 py-3 text-base"
+                  style={{ 
+                    backgroundColor: Colors.background.secondary,
+                    borderWidth: 1,
+                    borderColor: Colors.border.default,
+                    color: Colors.text.primary
+                  }}
                 />
               </View>
             </View>
 
             {/* Email (read-only) */}
             <View>
-              <Text className="text-gray-700 font-medium mb-2">Email Address</Text>
+              <Text className="font-medium mb-2" style={{ color: Colors.text.primary }}>Email Address</Text>
               <TextInput
                 value={email}
                 editable={false}
-                className="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-3 text-base text-gray-400"
+                className="w-full rounded-xl px-4 py-3 text-base"
+                style={{ 
+                  backgroundColor: Colors.background.tertiary,
+                  borderWidth: 1,
+                  borderColor: Colors.border.default,
+                  color: Colors.text.secondary
+                }}
               />
             </View>
 
             {/* Phone and Age */}
             <View className="flex-row space-x-3">
               <View className="flex-1">
-                <Text className="text-gray-700 font-medium mb-2">Phone</Text>
+                <Text className="font-medium mb-2" style={{ color: Colors.text.primary }}>Phone</Text>
                 <TextInput
                   value={phone}
                   onChangeText={setPhone}
                   placeholder="Phone number"
+                  placeholderTextColor={Colors.text.tertiary}
                   keyboardType="phone-pad"
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base"
+                  className="w-full rounded-xl px-4 py-3 text-base"
+                  style={{ 
+                    backgroundColor: Colors.background.secondary,
+                    borderWidth: 1,
+                    borderColor: Colors.border.default,
+                    color: Colors.text.primary
+                  }}
                 />
               </View>
               <View className="flex-1">
-                <Text className="text-gray-700 font-medium mb-2">Age</Text>
+                <Text className="font-medium mb-2" style={{ color: Colors.text.primary }}>Age</Text>
                 <TextInput
                   value={age}
                   onChangeText={setAge}
                   placeholder="Age"
+                  placeholderTextColor={Colors.text.tertiary}
                   keyboardType="numeric"
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base"
+                  className="w-full rounded-xl px-4 py-3 text-base"
+                  style={{ 
+                    backgroundColor: Colors.background.secondary,
+                    borderWidth: 1,
+                    borderColor: Colors.border.default,
+                    color: Colors.text.primary
+                  }}
                 />
               </View>
             </View>
 
             {/* Address */}
             <View>
-              <Text className="text-gray-700 font-medium mb-2">Address</Text>
+              <Text className="font-medium mb-2" style={{ color: Colors.text.primary }}>Address</Text>
               <TextInput
                 value={address}
                 onChangeText={setAddress}
                 placeholder="Your address"
-                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-base"
+                placeholderTextColor={Colors.text.tertiary}
+                className="w-full rounded-xl px-4 py-3 text-base"
+                style={{ 
+                  backgroundColor: Colors.background.secondary,
+                  borderWidth: 1,
+                  borderColor: Colors.border.default,
+                  color: Colors.text.primary
+                }}
               />
             </View>
 
             {/* Update Button */}
             <Pressable
               onPress={handleUpdate}
-              className="bg-blue-600 py-4 rounded-xl mt-5"
+              className="py-4 rounded-xl mt-5"
+              style={{ backgroundColor: Colors.accent }}
               disabled={isSubmitting}
             >
               {isSubmitting ? (

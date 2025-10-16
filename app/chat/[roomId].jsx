@@ -2,7 +2,7 @@
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Image, SafeAreaView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, Image, Text, TouchableOpacity, View } from 'react-native';
 import { Actions, GiftedChat, InputToolbar } from 'react-native-gifted-chat';
 import BottomNavigation from '../../components/BottomNavigation';
 import Header from '../../components/Header';
@@ -575,19 +575,19 @@ export default function ChatRoom() {
   // No conversation ID
   if (!conversationId) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+      <View style={{ flex: 1, backgroundColor: '#fff' }}>
         <Header />
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <Text>No conversation ID provided</Text>
         </View>
         <BottomNavigation currentRoute={`/chat/${roomId}`} />
-      </SafeAreaView>
+      </View>
     );
   }
 
   // Main chat UI
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
+    <View style={{ flex: 1, backgroundColor: '#fff' }}>
       <Header />
       
       <View style={{ flex: 1, backgroundColor: '#fff' }}>
@@ -777,7 +777,7 @@ export default function ChatRoom() {
       </View>
       
       <BottomNavigation currentRoute={`/chat/${roomId}`} />
-    </SafeAreaView>
+    </View>
   );
 }
 

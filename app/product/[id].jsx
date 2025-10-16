@@ -48,6 +48,11 @@ export default function ProductDetailScreen() {
   const [marketAnalysis, setMarketAnalysis] = useState(null);
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
 
+  // Image viewer state
+  const [imageViewerVisible, setImageViewerVisible] = useState(false);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [allImages, setAllImages] = useState([]);
+
   const mockTags = product?.tags || [];
 
   useEffect(() => {
@@ -60,6 +65,17 @@ export default function ProductDetailScreen() {
           const data = { id: docSnap.id, ...docSnap.data() };
           setProduct(data);
           setOriginalData(data); // Store original data for translation toggle
+          
+          // Combine main image with other images
+          const images = [];
+          if (data.imageUrl) {
+            images.push(data.imageUrl);
+          }
+          if (data.otherImages && Array.isArray(data.otherImages)) {
+            images.push(...data.otherImages);
+          }
+          setAllImages(images);
+          
           fetchRelatedItems(data.category, data.id);
           
           // Fetch owner data if ownerId exists
@@ -420,7 +436,7 @@ export default function ProductDetailScreen() {
       
       <View className="flex-1 bg-white">
         {/* Transparent Header - Back button overlay */}
-        <View className="absolute top-4 left-4 right-4 z-20 flex-row justify-between items-center">
+        <View className="absolute top-4 left-4 z-20">
           <TouchableOpacity
             onPress={() => {
               if (router.canGoBack()) router.back();
@@ -430,23 +446,37 @@ export default function ProductDetailScreen() {
           >
             <Ionicons name="arrow-back" size={20} color="white" />
           </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => setSwapGuidelinesVisible(true)}
-            className="bg-black/40 p-2 rounded-full"
-          >
-            <Ionicons name="information-circle-outline" size={22} color="white" />
-          </TouchableOpacity>
         </View>
 
       <ScrollView className="pt-0">
         {/* Product Image */}
-        <View className="relative">
-          <Image
-            source={product.imageUrl ? { uri: product.imageUrl } : { uri: 'https://placehold.co/400' }}
-            className="w-full h-80 bg-gray-200"
-            resizeMode="cover"
-          />
+        <TouchableOpacity 
+          onPress={() => {
+            setSelectedImageIndex(0);
+            setImageViewerVisible(true);
+          }}
+          activeOpacity={0.9}
+        >
+          <View className="relative">
+            <Image
+              source={product.imageUrl ? { uri: product.imageUrl } : { uri: 'https://placehold.co/400' }}
+              className="w-full h-80 bg-gray-200"
+              resizeMode="cover"
+            />
+            
+            {/* Zoom indicator */}
+            <View className="absolute top-3 right-3 bg-black/40 p-2 rounded-full">
+              <Ionicons name="expand-outline" size={20} color="white" />
+            </View>
+            
+            {/* Image counter */}
+            {allImages.length > 1 && (
+              <View className="absolute bottom-3 left-3 bg-black/60 px-3 py-1 rounded-full">
+                <Text className="text-white text-xs font-semibold">
+                  1/{allImages.length}
+                </Text>
+              </View>
+            )}
 
           {/* Tags */}
           <View className="absolute bottom-3 left-3 flex-row space-x-2">
@@ -471,7 +501,8 @@ export default function ProductDetailScreen() {
           >
             <Ionicons name="heart-outline" size={20} color="white" />
           </TouchableOpacity>
-        </View>
+          </View>
+        </TouchableOpacity>
 
         {/* Product Info */}
         <View className="p-4 space-y-4">
@@ -625,11 +656,30 @@ export default function ProductDetailScreen() {
         </View>
 
         {/* Action Buttons */}
-        <View className="flex-row justify-between px-4 py-3 space-x-3 items-center">
-          {/* Show buttons based on product status */}
-          {product.swapStatus && product.payStatus ? (
-            // Both swap and pay enabled
-            <>
+        <View className="px-4 py-3">
+          <View className="flex-row justify-between space-x-3 items-center">
+            {/* Show buttons based on product status */}
+            {product.swapStatus && product.payStatus ? (
+              // Both swap and pay enabled
+              <>
+                <TouchableOpacity
+                  onPress={handleSwap}
+                  className="flex-1 bg-green-600 py-3 rounded-lg flex-row items-center justify-center"
+                >
+                  <Ionicons name="swap-horizontal-outline" size={20} color="white" />
+                  <Text className="text-white font-semibold ml-2">{t('productDetail.swap')}</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={handlePay}
+                  className="flex-1 bg-yellow-500 py-3 rounded-lg flex-row items-center justify-center"
+                >
+                  <Ionicons name="card-outline" size={20} color="white" />
+                  <Text className="text-white font-semibold ml-2">{t('productDetail.buyNow')}</Text>
+                </TouchableOpacity>
+              </>
+            ) : product.swapStatus && !product.payStatus ? (
+              // Only swap enabled
               <TouchableOpacity
                 onPress={handleSwap}
                 className="flex-1 bg-green-600 py-3 rounded-lg flex-row items-center justify-center"
@@ -637,7 +687,8 @@ export default function ProductDetailScreen() {
                 <Ionicons name="swap-horizontal-outline" size={20} color="white" />
                 <Text className="text-white font-semibold ml-2">{t('productDetail.swap')}</Text>
               </TouchableOpacity>
-
+            ) : !product.swapStatus && product.payStatus ? (
+              // Only pay enabled
               <TouchableOpacity
                 onPress={handlePay}
                 className="flex-1 bg-yellow-500 py-3 rounded-lg flex-row items-center justify-center"
@@ -645,31 +696,15 @@ export default function ProductDetailScreen() {
                 <Ionicons name="card-outline" size={20} color="white" />
                 <Text className="text-white font-semibold ml-2">{t('productDetail.buyNow')}</Text>
               </TouchableOpacity>
-            </>
-          ) : product.swapStatus && !product.payStatus ? (
-            // Only swap enabled
-            <TouchableOpacity
-              onPress={handleSwap}
-              className="flex-1 bg-green-600 py-3 rounded-lg flex-row items-center justify-center"
-            >
-              <Ionicons name="swap-horizontal-outline" size={20} color="white" />
-              <Text className="text-white font-semibold ml-2">{t('productDetail.swap')}</Text>
-            </TouchableOpacity>
-          ) : !product.swapStatus && product.payStatus ? (
-            // Only pay enabled
-            <TouchableOpacity
-              onPress={handlePay}
-              className="flex-1 bg-yellow-500 py-3 rounded-lg flex-row items-center justify-center"
-            >
-              <Ionicons name="card-outline" size={20} color="white" />
-              <Text className="text-white font-semibold ml-2">{t('productDetail.buyNow')}</Text>
-            </TouchableOpacity>
-          ) : (
-            // Neither enabled - show unavailable message
-            <View className="flex-1 bg-gray-300 py-3 rounded-lg items-center justify-center">
-              <Text className="text-gray-700 font-semibold">Product Not Available for Purchase</Text>
-            </View>
-          )}
+            ) : (
+              // Neither enabled - show unavailable message
+              <View className="flex-1 bg-gray-300 py-3 rounded-lg items-center justify-center">
+                <Text className="text-gray-700 font-semibold">Product Not Available for Purchase</Text>
+              </View>
+            )}
+            
+            {/* Swap Guidelines Info Button removed - moved to action area */}
+          </View>
         </View>
 
         {/* Related Items */}
@@ -713,6 +748,148 @@ export default function ProductDetailScreen() {
             >
               <Text className="text-white text-center font-semibold">{t('common.close')}</Text>
             </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Image Viewer Modal */}
+      <Modal
+        visible={imageViewerVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setImageViewerVisible(false)}
+      >
+        <View className="flex-1 bg-black">
+          {/* Header */}
+          <View className="absolute top-0 left-0 right-0 z-10 flex-row justify-between items-center px-4 pt-12 pb-4 bg-black/50">
+            <View className="flex-1">
+              <Text className="text-white text-lg font-semibold" numberOfLines={1}>
+                {product.name}
+              </Text>
+              {allImages.length > 1 && (
+                <Text className="text-white/70 text-sm">
+                  Image {selectedImageIndex + 1} of {allImages.length}
+                </Text>
+              )}
+            </View>
+            <TouchableOpacity
+              onPress={() => setImageViewerVisible(false)}
+              className="bg-white/20 p-2 rounded-full ml-3"
+            >
+              <Ionicons name="close" size={28} color="white" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Image with Swipe Navigation */}
+          <View className="flex-1 justify-center items-center">
+            <ScrollView
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onMomentumScrollEnd={(e) => {
+                const newIndex = Math.round(e.nativeEvent.contentOffset.x / e.nativeEvent.layoutMeasurement.width);
+                setSelectedImageIndex(newIndex);
+              }}
+              contentOffset={{ x: selectedImageIndex * 400, y: 0 }}
+            >
+              {allImages.map((imageUrl, index) => (
+                <View key={index} style={{ width: 400, height: '100%', justifyContent: 'center' }}>
+                  <Image
+                    source={{ uri: imageUrl }}
+                    style={{ width: '100%', height: '100%' }}
+                    resizeMode="contain"
+                  />
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* Navigation Arrows */}
+          {allImages.length > 1 && (
+            <>
+              {selectedImageIndex > 0 && (
+                <TouchableOpacity
+                  onPress={() => setSelectedImageIndex(selectedImageIndex - 1)}
+                  className="absolute left-4 top-1/2 bg-white/20 p-3 rounded-full"
+                  style={{ transform: [{ translateY: -20 }] }}
+                >
+                  <Ionicons name="chevron-back" size={24} color="white" />
+                </TouchableOpacity>
+              )}
+              
+              {selectedImageIndex < allImages.length - 1 && (
+                <TouchableOpacity
+                  onPress={() => setSelectedImageIndex(selectedImageIndex + 1)}
+                  className="absolute right-4 top-1/2 bg-white/20 p-3 rounded-full"
+                  style={{ transform: [{ translateY: -20 }] }}
+                >
+                  <Ionicons name="chevron-forward" size={24} color="white" />
+                </TouchableOpacity>
+              )}
+            </>
+          )}
+
+          {/* Thumbnail Strip */}
+          {allImages.length > 1 && (
+            <View className="absolute bottom-20 left-0 right-0 px-4">
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ alignItems: 'center', justifyContent: 'center' }}
+              >
+                <View className="flex-row">
+                  {allImages.map((imageUrl, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      onPress={() => setSelectedImageIndex(index)}
+                      className="mr-2"
+                      style={{
+                        borderWidth: 2,
+                        borderColor: index === selectedImageIndex ? '#d3854d' : 'white',
+                        borderRadius: 6,
+                        opacity: index === selectedImageIndex ? 1 : 0.6,
+                      }}
+                    >
+                      <Image
+                        source={{ uri: imageUrl }}
+                        style={{
+                          width: 60,
+                          height: 60,
+                          borderRadius: 4,
+                        }}
+                        resizeMode="cover"
+                      />
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </ScrollView>
+            </View>
+          )}
+
+          {/* Footer Info */}
+          <View className="absolute bottom-0 left-0 right-0 bg-black/70 p-4">
+            <View className="flex-row justify-between items-center">
+              <View className="flex-1">
+                <Text className="text-white text-sm font-medium mb-1">
+                  {product.category}
+                </Text>
+                {!product.swapOnly && (
+                  <Text className="text-white text-2xl font-bold">
+                    {product.price ? formatPrice(product.price, product.currency) : 'Free'}
+                  </Text>
+                )}
+              </View>
+              
+              <TouchableOpacity
+                onPress={() => {
+                  setImageViewerVisible(false);
+                  // Optional: Add share functionality
+                }}
+                className="bg-white/20 p-3 rounded-full ml-3"
+              >
+                <Ionicons name="share-outline" size={24} color="white" />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>

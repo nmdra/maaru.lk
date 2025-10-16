@@ -17,6 +17,7 @@ import { getUserById } from '../../../services/userService';
 import { sendOrderConfirmationEmail, sendSellerNotificationEmail } from '../../../utils/emailService';
 import formatPrice from '../../../utils/formatPrice';
 import { useAppI18n } from '../../../utils/i18n';
+import Colors from '../../../constants/Colors';
 
 export default function PaymentSuccessScreen() {
   const params = useLocalSearchParams();
@@ -237,10 +238,10 @@ export default function PaymentSuccessScreen() {
   // Show loading state while processing order
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-50">
-        <Ionicons name="hourglass-outline" size={48} color="#2563eb" />
-        <Text className="text-lg font-semibold mt-4 mb-2">Processing your order...</Text>
-        <Text className="text-gray-600 text-center px-8">
+      <View className="flex-1 justify-center items-center" style={{ backgroundColor: Colors.background.primary }}>
+        <Ionicons name="hourglass-outline" size={48} color={Colors.accent} />
+        <Text className="text-lg font-semibold mt-4 mb-2" style={{ color: Colors.text.primary }}>Processing your order...</Text>
+        <Text style={{ color: Colors.text.secondary, textAlign: 'center', paddingHorizontal: 32 }}>
           Please wait while we create your order and process the payment.
         </Text>
       </View>
@@ -250,15 +251,16 @@ export default function PaymentSuccessScreen() {
   // Show error state if required parameters are missing
   if (!params.productId || !params.buyerId) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-50">
-        <Ionicons name="alert-circle-outline" size={48} color="#ef4444" />
-        <Text className="text-lg font-semibold mt-4 mb-2">Invalid Order</Text>
-        <Text className="text-gray-600 text-center px-8 mb-6">
+      <View className="flex-1 justify-center items-center" style={{ backgroundColor: Colors.background.primary }}>
+        <Ionicons name="alert-circle-outline" size={48} color={Colors.warning || '#ef4444'} />
+        <Text className="text-lg font-semibold mt-4 mb-2" style={{ color: Colors.text.primary }}>Invalid Order</Text>
+        <Text style={{ color: Colors.text.secondary, textAlign: 'center', paddingHorizontal: 32, marginBottom: 12 }}>
           There was an issue with your order. Please try again.
         </Text>
         <TouchableOpacity
           onPress={() => router.push('/(tabs)/Home')}
-          className="bg-blue-600 px-6 py-3 rounded-lg"
+          className="px-6 py-3 rounded-lg"
+          style={{ backgroundColor: Colors.accent }}
         >
           <Text className="text-white font-semibold">Return to Home</Text>
         </TouchableOpacity>
@@ -267,123 +269,119 @@ export default function PaymentSuccessScreen() {
   }
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className="flex-1" style={{ backgroundColor: Colors.background.primary }}>
       {/* Success Header */}
-      <View className="bg-green-600 px-4 py-8 items-center">
-        <View className="bg-white rounded-full p-4 mb-4">
-          <Ionicons name="checkmark" size={48} color="#16a34a" />
+      <View style={{ backgroundColor: Colors.success, paddingHorizontal: 16, paddingVertical: 24, alignItems: 'center' }}>
+        <View style={{ backgroundColor: Colors.card.background, borderRadius: 9999, padding: 12, marginBottom: 12 }}>
+          <Ionicons name="checkmark" size={48} color={Colors.success} />
         </View>
-        <Text className="text-white text-2xl font-bold mb-2">{t('paymentSuccess.title')}</Text>
-        <Text className="text-green-100 text-center">
-          {t('paymentSuccess.subtitle')}
-        </Text>
+        <Text style={{ color: '#fff', fontSize: 20, fontWeight: '700', marginBottom: 6 }}>{t('paymentSuccess.title')}</Text>
+        <Text style={{ color: 'rgba(255,255,255,0.9)', textAlign: 'center' }}>{t('paymentSuccess.subtitle')}</Text>
       </View>
 
       <ScrollView className="flex-1">
         {/* Order Summary Card */}
-        <View className="bg-white mx-4 mt-6 p-6 rounded-lg shadow-sm">
+        <View className="mx-4 mt-6 p-6 rounded-lg shadow-sm" style={{ backgroundColor: Colors.card.background }}>
           <View className="flex-row items-center mb-4">
-            <Ionicons name="receipt-outline" size={24} color="#2563eb" />
-            <Text className="text-lg font-bold ml-2">{t('paymentSuccess.orderSummary')}</Text>
+            <Ionicons name="receipt-outline" size={24} color={Colors.accent} />
+            <Text style={{ fontSize: 16, fontWeight: '700', marginLeft: 8, color: Colors.text.primary }}>{t('paymentSuccess.orderSummary')}</Text>
           </View>
 
           <View className="space-y-3">
             <View className="flex-row justify-between">
-              <Text className="text-gray-600">{t('paymentSuccess.orderNumber')}</Text>
-              <Text className="font-semibold text-blue-600">{orderNumber}</Text>
+              <Text style={{ color: Colors.text.secondary }}>{t('paymentSuccess.orderNumber')}</Text>
+              <Text style={{ fontWeight: '600', color: 'text-blue-600' }}>{orderNumber}</Text>
             </View>
 
             <View className="flex-row justify-between">
-              <Text className="text-gray-600">{t('paymentSuccess.product')}</Text>
-              <Text className="font-medium flex-1 text-right">{orderDetails.productName}</Text>
+              <Text style={{ color: Colors.text.secondary }}>{t('paymentSuccess.product')}</Text>
+              <Text style={{ fontWeight: '500', flex: 1, textAlign: 'right', color: Colors.text.primary }}>{orderDetails.productName}</Text>
             </View>
 
             <View className="flex-row justify-between">
-              <Text className="text-gray-600">{t('payment.quantity')}</Text>
-              <Text className="font-medium">{orderDetails.quantity}</Text>
+              <Text style={{ color: Colors.text.secondary }}>{t('payment.quantity')}</Text>
+              <Text style={{ fontWeight: '500', color: Colors.text.primary }}>{orderDetails.quantity}</Text>
             </View>
 
             <View className="flex-row justify-between">
-              <Text className="text-gray-600">{t('paymentSuccess.unitPrice')}</Text>
-              <Text className="font-medium">{formatPrice(orderDetails.price, orderDetails.currency)}</Text>
+              <Text style={{ color: Colors.text.secondary }}>{t('paymentSuccess.unitPrice')}</Text>
+              <Text style={{ fontWeight: '500', color: Colors.text.primary }}>{formatPrice(orderDetails.price, orderDetails.currency)}</Text>
             </View>
 
             <View className="flex-row justify-between">
-              <Text className="text-gray-600">{t('payment.paymentMethod')}</Text>
-              <Text className="font-medium">{getPaymentMethodName(orderDetails.paymentMethod)}</Text>
+              <Text style={{ color: Colors.text.secondary }}>{t('payment.paymentMethod')}</Text>
+              <Text style={{ fontWeight: '500', color: Colors.text.primary }}>{getPaymentMethodName(orderDetails.paymentMethod)}</Text>
             </View>
 
-            <View className="border-t border-gray-200 pt-3 flex-row justify-between">
-              <Text className="text-lg font-bold">{t('paymentSuccess.totalPaid')}</Text>
-              <Text className="text-lg font-bold text-green-600">
-                {formatPrice(orderDetails.total, orderDetails.currency)}
-              </Text>
+            <View style={{ borderTopWidth: 1, borderTopColor: Colors.border.default, paddingTop: 12 }} className="flex-row justify-between">
+              <Text style={{ fontSize: 16, fontWeight: '700', color: Colors.text.primary }}>{t('paymentSuccess.totalPaid')}</Text>
+              <Text style={{ fontSize: 16, fontWeight: '700', color: Colors.success }}>{formatPrice(orderDetails.total, orderDetails.currency)}</Text>
             </View>
           </View>
         </View>
 
         {/* Delivery Information */}
-        <View className="bg-white mx-4 mt-4 p-6 rounded-lg shadow-sm">
+        <View className="mx-4 mt-4 p-6 rounded-lg shadow-sm" style={{ backgroundColor: Colors.card.background }}>
           <View className="flex-row items-center mb-4">
-            <Ionicons name="truck-outline" size={24} color="#f59e0b" />
-            <Text className="text-lg font-bold ml-2">{t('paymentSuccess.deliveryInfo')}</Text>
+            <Ionicons name="truck-outline" size={24} color={Colors.accent} />
+            <Text style={{ fontSize: 16, fontWeight: '700', marginLeft: 8, color: Colors.text.primary }}>{t('paymentSuccess.deliveryInfo')}</Text>
           </View>
 
           <View className="space-y-3">
             <View className="flex-row justify-between">
-              <Text className="text-gray-600">{t('paymentSuccess.orderDate')}</Text>
-              <Text className="font-medium">{orderDetails.orderDate.toLocaleDateString()}</Text>
+              <Text style={{ color: Colors.text.secondary }}>{t('paymentSuccess.orderDate')}</Text>
+              <Text style={{ color: Colors.text.primary }}>{orderDetails.orderDate.toLocaleDateString()}</Text>
             </View>
 
             <View className="flex-row justify-between">
-              <Text className="text-gray-600">{t('paymentSuccess.estimatedDelivery')}</Text>
-              <Text className="font-medium text-orange-600">{estimatedDelivery.toLocaleDateString()}</Text>
+              <Text style={{ color: Colors.text.secondary }}>{t('paymentSuccess.estimatedDelivery')}</Text>
+              <Text style={{ color: Colors.accent }}>{estimatedDelivery.toLocaleDateString()}</Text>
             </View>
 
             <View className="flex-row justify-between">
-              <Text className="text-gray-600">{t('paymentSuccess.status')}</Text>
-              <View className="bg-yellow-100 px-3 py-1 rounded-full">
-                <Text className="text-yellow-800 text-sm font-medium">{t('paymentSuccess.processing')}</Text>
+              <Text style={{ color: Colors.text.secondary }}>{t('paymentSuccess.status')}</Text>
+              <View style={{ backgroundColor: Colors.warningBackground || '#FEF3C7', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 9999 }}>
+                <Text style={{ color: Colors.warningText || '#92400E', fontSize: 12, fontWeight: '600' }}>{t('paymentSuccess.processing')}</Text>
               </View>
             </View>
           </View>
         </View>
 
         {/* Next Steps */}
-        <View className="bg-white mx-4 mt-4 p-6 rounded-lg shadow-sm">
+        <View className="mx-4 mt-4 p-6 rounded-lg shadow-sm" style={{ backgroundColor: Colors.card.background }}>
           <View className="flex-row items-center mb-4">
-            <Ionicons name="list-outline" size={24} color="#8b5cf6" />
-            <Text className="text-lg font-bold ml-2">{t('paymentSuccess.whatsNext')}</Text>
+            <Ionicons name="list-outline" size={24} color={Colors.accent} />
+            <Text style={{ fontSize: 16, fontWeight: '700', marginLeft: 8, color: Colors.text.primary }}>{t('paymentSuccess.whatsNext')}</Text>
           </View>
 
           <View className="space-y-3">
             <View className="flex-row">
-              <View className="bg-blue-100 rounded-full p-2 mr-3">
-                <Ionicons name="mail-outline" size={16} color="#2563eb" />
+              <View style={{ backgroundColor: Colors.primaryBackground || '#DBEAFE', borderRadius: 9999, padding: 8, marginRight: 12 }}>
+                <Ionicons name="mail-outline" size={16} color={Colors.accent} />
               </View>
-              <View className="flex-1">
-                <Text className="font-medium">{t('paymentSuccess.steps.confirmation.title')}</Text>
-                <Text className="text-sm text-gray-600">{t('paymentSuccess.steps.confirmation.description')}</Text>
-              </View>
-            </View>
-
-            <View className="flex-row">
-              <View className="bg-orange-100 rounded-full p-2 mr-3">
-                <Ionicons name="cube-outline" size={16} color="#f59e0b" />
-              </View>
-              <View className="flex-1">
-                <Text className="font-medium">{t('paymentSuccess.steps.packaging.title')}</Text>
-                <Text className="text-sm text-gray-600">{t('paymentSuccess.steps.packaging.description')}</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontWeight: '600', color: Colors.text.primary }}>{t('paymentSuccess.steps.confirmation.title')}</Text>
+                <Text style={{ color: Colors.text.secondary }}>{t('paymentSuccess.steps.confirmation.description')}</Text>
               </View>
             </View>
 
             <View className="flex-row">
-              <View className="bg-green-100 rounded-full p-2 mr-3">
-                <Ionicons name="location-outline" size={16} color="#16a34a" />
+              <View style={{ backgroundColor: Colors.accentBackground || '#FFF7ED', borderRadius: 9999, padding: 8, marginRight: 12 }}>
+                <Ionicons name="cube-outline" size={16} color={Colors.accent} />
               </View>
-              <View className="flex-1">
-                <Text className="font-medium">{t('paymentSuccess.steps.tracking.title')}</Text>
-                <Text className="text-sm text-gray-600">{t('paymentSuccess.steps.tracking.description')}</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontWeight: '600', color: Colors.text.primary }}>{t('paymentSuccess.steps.packaging.title')}</Text>
+                <Text style={{ color: Colors.text.secondary }}>{t('paymentSuccess.steps.packaging.description')}</Text>
+              </View>
+            </View>
+
+            <View className="flex-row">
+              <View style={{ backgroundColor: Colors.successBackground || '#ECFDF5', borderRadius: 9999, padding: 8, marginRight: 12 }}>
+                <Ionicons name="location-outline" size={16} color={Colors.success} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontWeight: '600', color: Colors.text.primary }}>{t('paymentSuccess.steps.tracking.title')}</Text>
+                <Text style={{ color: Colors.text.secondary }}>{t('paymentSuccess.steps.tracking.description')}</Text>
               </View>
             </View>
           </View>
@@ -393,18 +391,20 @@ export default function PaymentSuccessScreen() {
         <View className="mx-4 mt-6 mb-6 space-y-3">
           <TouchableOpacity
             onPress={() => router.push('/(tabs)/Home')}
-            className="bg-blue-600 py-4 rounded-lg items-center justify-center flex-row"
+            className="py-4 rounded-lg items-center justify-center flex-row"
+            style={{ backgroundColor: Colors.accent }}
           >
-            <Ionicons name="home-outline" size={20} color="white" className="mr-2" />
-            <Text className="text-white font-bold text-lg">{t('paymentSuccess.actions.continueShopping')}</Text>
+            <Ionicons name="home-outline" size={20} color="white" style={{ marginRight: 8 }} />
+            <Text style={{ color: 'white', fontWeight: '700', fontSize: 16 }}>{t('paymentSuccess.actions.continueShopping')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => router.push('/(tabs)/Reviews')}
-            className="bg-gray-200 py-4 rounded-lg items-center justify-center flex-row"
+            onPress={() => router.push('/(profile)/MyOrders')}
+            className="py-4 rounded-lg items-center justify-center flex-row"
+            style={{ backgroundColor: Colors.background.secondary }}
           >
-            <Ionicons name="receipt-outline" size={20} color="#374151" className="mr-2" />
-            <Text className="text-gray-700 font-bold text-lg">{t('paymentSuccess.actions.viewOrders')}</Text>
+            <Ionicons name="receipt-outline" size={20} color={Colors.text.primary} style={{ marginRight: 8 }} />
+            <Text style={{ color: Colors.text.primary, fontWeight: '700', fontSize: 16 }}>{t('paymentSuccess.actions.viewOrders')}</Text>
           </TouchableOpacity>
         </View>
 

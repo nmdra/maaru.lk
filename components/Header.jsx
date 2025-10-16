@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Image, Pressable, View } from 'react-native';
+import Colors from '../constants/Colors';
 
 export default function Header() {
   const router = useRouter();
@@ -20,7 +21,11 @@ export default function Header() {
       {/* Profile button on the right */}
       <Pressable
         onPress={() => router.push('/(auth)/Profile')}
-        className="bg-blue-600 p-2 rounded-full"
+        style={{
+          backgroundColor: Colors.accent,
+          padding: 8,
+          borderRadius: 50,
+        }}
         accessibilityLabel="Go to Profile"
       >
         <Ionicons name="person" size={24} color="white" />

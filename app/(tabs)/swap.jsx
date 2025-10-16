@@ -14,6 +14,7 @@ import {
   View,
 } from 'react-native';
 import Header from '../../components/Header';
+import Colors from '../../constants/Colors';
 import { useAuth } from '../../context/AuthContext';
 import { generateProductDetails } from '../../services/aiService';
 import { ensureConversation, roomIdFor } from '../../services/chatService';
@@ -382,19 +383,20 @@ export default function SwapTab() {
 
   if (!user) {
     return (
-      <SafeAreaView className="flex-1 bg-white">
+      <SafeAreaView className="flex-1" style={{ backgroundColor: Colors.background.primary }}>
         <Header />
-        <View className="flex-1 justify-center items-center bg-white p-6">
-          <Ionicons name="log-in-outline" size={80} color="#3B82F6" />
-          <Text className="text-2xl font-bold text-gray-900 mt-4 mb-2">
+        <View className="flex-1 justify-center items-center p-6" style={{ backgroundColor: Colors.background.primary }}>
+          <Ionicons name="log-in-outline" size={80} color={Colors.accent} />
+          <Text className="text-2xl font-bold mt-4 mb-2" style={{ color: Colors.text.primary }}>
             {t('auth.loginRequired')}
           </Text>
-          <Text className="text-gray-600 text-center mb-6">
+          <Text className="text-center mb-6" style={{ color: Colors.text.secondary }}>
             Please login to use the swap feature
           </Text>
           <TouchableOpacity
             onPress={() => router.push('/Login')}
-            className="bg-blue-600 px-8 py-3 rounded-lg"
+            className="px-8 py-3 rounded-lg"
+            style={{ backgroundColor: Colors.accent }}
           >
             <Text className="text-white font-semibold text-lg">{t('auth.login')}</Text>
           </TouchableOpacity>
@@ -405,11 +407,11 @@ export default function SwapTab() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-white">
+      <SafeAreaView className="flex-1" style={{ backgroundColor: Colors.background.primary }}>
         <Header />
-        <View className="flex-1 justify-center items-center bg-white">
-          <ActivityIndicator size="large" color="#3B82F6" />
-          <Text className="text-gray-500 mt-4">{t('common.loading')}</Text>
+        <View className="flex-1 justify-center items-center" style={{ backgroundColor: Colors.background.primary }}>
+          <ActivityIndicator size="large" color={Colors.accent} />
+          <Text className="mt-4" style={{ color: Colors.text.secondary }}>{t('common.loading')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -418,16 +420,16 @@ export default function SwapTab() {
   // Step 1: Select your products
   if (step === 1) {
     return (
-      <SafeAreaView className="flex-1 bg-gray-50">
+      <SafeAreaView className="flex-1" style={{ backgroundColor: Colors.background.primary }}>
         <Header />
         
-        <View className="flex-1 bg-gray-50">
+        <View className="flex-1" style={{ backgroundColor: Colors.background.primary }}>
           {/* Header */}
-          <View className="bg-white px-4 py-3 border-b border-gray-200">
-            <Text className="text-xl font-bold text-gray-900">
+          <View className="px-4 py-3" style={{ backgroundColor: Colors.card.background, borderBottomWidth: 1, borderBottomColor: Colors.border.default }}>
+            <Text className="text-xl font-bold" style={{ color: Colors.text.primary }}>
               {t('swap.selectYourItem')}
             </Text>
-            <Text className="text-sm text-gray-500 mt-1">
+            <Text className="text-sm mt-1" style={{ color: Colors.text.secondary }}>
               Select one or more products you want to swap
             </Text>
           </View>
@@ -435,13 +437,14 @@ export default function SwapTab() {
         <ScrollView className="flex-1 p-4">
           {myProducts.length === 0 ? (
             <View className="items-center py-12">
-              <Ionicons name="cube-outline" size={80} color="#9CA3AF" />
-              <Text className="text-gray-500 mt-4 mb-6 text-center">
+              <Ionicons name="cube-outline" size={80} color={Colors.text.tertiary} />
+              <Text className="mt-4 mb-6 text-center" style={{ color: Colors.text.secondary }}>
                 {t('swap.noProductsDesc')}
               </Text>
               <TouchableOpacity
                 onPress={() => router.push('/AddProduct')}
-                className="bg-blue-600 px-6 py-3 rounded-lg"
+                className="px-6 py-3 rounded-lg"
+                style={{ backgroundColor: Colors.accent }}
               >
                 <Text className="text-white font-semibold">{t('swap.addProduct')}</Text>
               </TouchableOpacity>
@@ -457,9 +460,12 @@ export default function SwapTab() {
                     className="w-1/2 p-2"
                   >
                     <View
-                      className={`bg-white rounded-xl overflow-hidden ${
-                        isSelected ? 'border-2 border-green-500' : 'border border-gray-200'
-                      }`}
+                      className="rounded-xl overflow-hidden"
+                      style={{
+                        backgroundColor: Colors.card.background,
+                        borderWidth: isSelected ? 2 : 1,
+                        borderColor: isSelected ? Colors.success : Colors.border.default
+                      }}
                     >
                       <Image
                         source={{ uri: product.imageUrl || 'https://placehold.co/300' }}
@@ -467,17 +473,17 @@ export default function SwapTab() {
                         resizeMode="cover"
                       />
                       {isSelected && (
-                        <View className="absolute top-2 right-2 bg-green-500 rounded-full p-1">
+                        <View className="absolute top-2 right-2 rounded-full p-1" style={{ backgroundColor: Colors.success }}>
                           <Ionicons name="checkmark" size={20} color="white" />
                         </View>
                       )}
                       <View className="p-3">
-                        <Text className="text-sm font-semibold text-gray-900" numberOfLines={2}>
-                          {product.name}
-                        </Text>
-                        <Text className="text-xs text-blue-600 font-semibold mt-1">
-                          {formatPrice(product.price || 0, product.currency || 'LKR')}
-                        </Text>
+                        <Text className="text-sm font-semibold" style={{ color: Colors.text.primary }} numberOfLines={2}>
+                            {product.name}
+                          </Text>
+                          <Text className="text-xs font-semibold mt-1 text-blue-600">
+                              {formatPrice(product.price || 0, product.currency || 'LKR')}
+                            </Text>
                       </View>
                     </View>
                   </TouchableOpacity>
@@ -489,13 +495,14 @@ export default function SwapTab() {
 
         {/* Continue Button */}
         {myProducts.length > 0 && (
-          <View className="bg-white p-4 border-t border-gray-200">
+          <View className="p-4" style={{ backgroundColor: Colors.card.background, borderTopWidth: 1, borderTopColor: Colors.border.default }}>
             <TouchableOpacity
               onPress={handleContinue}
               disabled={selectedMyProducts.length === 0}
-              className={`py-4 rounded-xl ${
-                selectedMyProducts.length === 0 ? 'bg-gray-300' : 'bg-blue-600'
-              }`}
+              className="py-4 rounded-xl"
+              style={{
+                backgroundColor: selectedMyProducts.length === 0 ? Colors.border.default : Colors.accent
+              }}
             >
               <Text className="text-white text-center font-bold text-lg">
                 Continue ({selectedMyProducts.length} selected)
@@ -510,34 +517,41 @@ export default function SwapTab() {
 
   // Step 2: Select target product
   return (
-    <SafeAreaView className="flex-1 bg-gray-50">
+    <SafeAreaView className="flex-1" style={{ backgroundColor: Colors.background.primary }}>
       <Header />
       
-      <View className="flex-1 bg-gray-50">
+      <View className="flex-1" style={{ backgroundColor: Colors.background.primary }}>
       {/* Header */}
-      <View className="bg-white px-4 py-3 border-b border-gray-200">
+      <View className="px-4 py-3" style={{ backgroundColor: Colors.card.background, borderBottomWidth: 1, borderBottomColor: Colors.border.default }}>
         <View className="flex-row items-center justify-between">
           <TouchableOpacity onPress={() => setStep(1)} className="p-2">
-            <Ionicons name="arrow-back" size={24} color="#1F2937" />
+            <Ionicons name="arrow-back" size={24} color={Colors.text.primary} />
           </TouchableOpacity>
-          <Text className="text-lg font-bold text-gray-900">Select Product to Get</Text>
+          <Text className="text-lg font-bold" style={{ color: Colors.text.primary }}>Select Product to Get</Text>
           <View className="w-10" />
         </View>
       </View>
 
       {/* AI Search Section */}
-      <View className="bg-white p-4 border-b border-gray-200">
-        <Text className="text-sm font-semibold text-gray-900 mb-2">
+      <View className="p-4" style={{ backgroundColor: Colors.card.background, borderBottomWidth: 1, borderBottomColor: Colors.border.default }}>
+        <Text className="text-sm font-semibold mb-2" style={{ color: Colors.text.primary }}>
           🤖 {t('swap.aiDescription')}
         </Text>
-        <Text className="text-xs text-gray-500 mb-2">
+        <Text className="text-xs mb-2" style={{ color: Colors.text.secondary }}>
           AI will analyze your description and find matching products
         </Text>
         <TextInput
           value={searchDescription}
           onChangeText={setSearchDescription}
           placeholder={t('swap.aiDescriptionPlaceholder')}
-          className="bg-gray-50 rounded-lg p-3 text-sm text-gray-900 border border-gray-200 mb-3"
+          placeholderTextColor={Colors.text.tertiary}
+          className="rounded-lg p-3 text-sm mb-3"
+          style={{
+            backgroundColor: Colors.background.secondary,
+            borderWidth: 1,
+            borderColor: Colors.border.default,
+            color: Colors.text.primary
+          }}
           multiline
           numberOfLines={2}
         />
@@ -545,9 +559,10 @@ export default function SwapTab() {
           <TouchableOpacity
             onPress={handleAISearch}
             disabled={loadingAI || !searchDescription.trim()}
-            className={`flex-1 py-3 rounded-lg flex-row items-center justify-center ${
-              loadingAI || !searchDescription.trim() ? 'bg-gray-300' : 'bg-purple-600'
-            }`}
+            className="flex-1 py-3 rounded-lg flex-row items-center justify-center"
+            style={{
+              backgroundColor: loadingAI || !searchDescription.trim() ? Colors.border.default : Colors.accent
+            }}
           >
             {loadingAI ? (
               <>
@@ -569,15 +584,16 @@ export default function SwapTab() {
                 setSearchDescription('');
                 setFilteredProducts(allProducts);
               }}
-              className="bg-gray-200 px-4 py-3 rounded-lg"
+              className="px-4 py-3 rounded-lg"
+              style={{ backgroundColor: Colors.background.secondary }}
             >
-              <Ionicons name="close" size={18} color="#374151" />
+              <Ionicons name="close" size={18} color={Colors.text.primary} />
             </TouchableOpacity>
           )}
         </View>
         {filteredProducts.length > 0 && filteredProducts.length < allProducts.length && (
-          <View className="mt-3 bg-purple-50 rounded-lg p-2">
-            <Text className="text-xs text-purple-800 text-center">
+          <View className="mt-3 rounded-lg p-2" style={{ backgroundColor: Colors.info + '20' }}>
+            <Text className="text-xs text-center" style={{ color: Colors.info }}>
               ✨ Showing {filteredProducts.length} AI-matched products
             </Text>
           </View>
@@ -587,13 +603,13 @@ export default function SwapTab() {
       <ScrollView className="flex-1 p-4">
         {loading ? (
           <View className="items-center py-12">
-            <ActivityIndicator size="large" color="#3B82F6" />
-            <Text className="text-gray-500 mt-4">Loading products...</Text>
+            <ActivityIndicator size="large" color={Colors.accent} />
+            <Text className="mt-4" style={{ color: Colors.text.secondary }}>Loading products...</Text>
           </View>
         ) : filteredProducts.length === 0 ? (
           <View className="items-center py-12">
-            <Ionicons name="search-outline" size={80} color="#9CA3AF" />
-            <Text className="text-gray-500 mt-4 text-center mb-2">
+            <Ionicons name="search-outline" size={80} color={Colors.text.tertiary} />
+            <Text className="mt-4 text-center mb-2" style={{ color: Colors.text.secondary }}>
               {searchDescription.trim() ? t('swap.noMatchesDesc') : 'No products available'}
             </Text>
             {searchDescription.trim() && (
@@ -602,7 +618,8 @@ export default function SwapTab() {
                   setSearchDescription('');
                   setFilteredProducts(allProducts);
                 }}
-                className="mt-4 bg-blue-600 px-6 py-2 rounded-lg"
+                className="mt-4 px-6 py-2 rounded-lg"
+                style={{ backgroundColor: Colors.accent }}
               >
                 <Text className="text-white font-semibold">Show All Products</Text>
               </TouchableOpacity>
@@ -628,9 +645,12 @@ export default function SwapTab() {
                   className="w-1/2 p-2"
                 >
                   <View
-                    className={`bg-white rounded-xl overflow-hidden ${
-                      isSelected ? 'border-2 border-blue-500' : 'border border-gray-200'
-                    }`}
+                    className="rounded-xl overflow-hidden"
+                    style={{
+                      backgroundColor: Colors.card.background,
+                      borderWidth: isSelected ? 2 : 1,
+                      borderColor: isSelected ? Colors.accent : Colors.border.default
+                    }}
                   >
                     <Image
                       source={{ uri: product.imageUrl || 'https://placehold.co/300' }}
@@ -638,36 +658,36 @@ export default function SwapTab() {
                       resizeMode="cover"
                     />
                     {hasAIScore && (
-                      <View className="absolute top-2 left-2 bg-purple-600 px-2 py-1 rounded-full">
+                      <View className="absolute top-2 left-2 px-2 py-1 rounded-full" style={{ backgroundColor: Colors.info }}>
                         <Text className="text-white text-xs font-bold">
                           🤖 {Math.round(product.aiScore)}%
                         </Text>
                       </View>
                     )}
                     {isClosePrice && (
-                      <View className="absolute top-2 right-2 bg-green-500 rounded-full px-2 py-1">
+                      <View className="absolute top-2 right-2 rounded-full px-2 py-1" style={{ backgroundColor: Colors.success }}>
                         <Text className="text-white text-xs font-bold">
                           {t('swap.match')}
                         </Text>
                       </View>
                     )}
                     {isSelected && (
-                      <View className="absolute bottom-2 right-2 bg-blue-500 rounded-full p-1">
+                      <View className="absolute bottom-2 right-2 rounded-full p-1" style={{ backgroundColor: Colors.accent }}>
                         <Ionicons name="checkmark" size={20} color="white" />
                       </View>
                     )}
                     <View className="p-3">
-                      <Text className="text-sm font-semibold text-gray-900" numberOfLines={2}>
+                      <Text className="text-sm font-semibold" style={{ color: Colors.text.primary }} numberOfLines={2}>
                         {product.name}
                       </Text>
-                      <Text className="text-xs text-gray-500 mt-1">
+                      <Text className="text-xs mt-1" style={{ color: Colors.text.secondary }}>
                         {product.category}
                       </Text>
-                      <Text className="text-xs text-blue-600 font-semibold mt-1">
-                        {formatPrice(product.price || 0, product.currency || 'LKR')}
-                      </Text>
+                      <Text className="text-xs font-semibold mt-1 text-blue-600">
+                          {formatPrice(product.price || 0, product.currency || 'LKR')}
+                        </Text>
                       {hasAIScore && product.aiReason && (
-                        <Text className="text-xs text-purple-600 mt-1 italic" numberOfLines={2}>
+                        <Text className="text-xs mt-1 italic" style={{ color: Colors.info }} numberOfLines={2}>
                           💡 {product.aiReason}
                         </Text>
                       )}
@@ -682,13 +702,14 @@ export default function SwapTab() {
 
       {/* Create Swap Request Button */}
       {selectedTargetProduct && (
-        <View className="bg-white p-4 border-t border-gray-200">
+        <View className="p-4" style={{ backgroundColor: Colors.card.background, borderTopWidth: 1, borderTopColor: Colors.border.default }}>
           <TouchableOpacity
             onPress={handleCreateSwapRequest}
             disabled={generatingSwap}
-            className={`py-4 rounded-xl flex-row items-center justify-center ${
-              generatingSwap ? 'bg-gray-300' : 'bg-green-600'
-            }`}
+            className="py-4 rounded-xl flex-row items-center justify-center"
+            style={{
+              backgroundColor: generatingSwap ? Colors.border.default : Colors.success
+            }}
           >
             {generatingSwap ? (
               <>

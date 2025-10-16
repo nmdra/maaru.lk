@@ -16,7 +16,6 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BottomNavigation from '../../components/BottomNavigation';
-import ChatBubble from '../../components/chat/ChatBubble';
 import Header from '../../components/Header';
 import Colors from '../../constants/Colors';
 import { useAuth } from '../../context/AuthContext';
@@ -221,8 +220,39 @@ const handleSignOut = async () => {
 
           {/* Action Buttons */}
           <View className="space-y-3">
-            <Pressable className="border py-4 rounded-xl" style={{ borderColor: Colors.border.default }}>
-              <Text className="font-semibold text-base text-center" style={{ color: Colors.text.primary }}>{t('profile.settings')}</Text>
+            {/* My Products Button */}
+            <Pressable 
+              className="border py-4 rounded-xl flex-row items-center justify-center"
+              style={{ borderColor: Colors.border.default, backgroundColor: Colors.background.accent }}
+              onPress={() => router.push('/(profile)/MyProducts')}
+            >
+              <Ionicons name="cube-outline" size={20} color={Colors.accent} style={{ marginRight: 8 }} />
+              <Text className="font-semibold text-base" style={{ color: Colors.accent }}>
+                My Products
+              </Text>
+            </Pressable>
+
+            {/* My Orders Button */}
+            <Pressable 
+              className="border py-4 rounded-xl flex-row items-center justify-center"
+              style={{ borderColor: Colors.border.default, backgroundColor: Colors.background.accent }}
+              onPress={() => router.push('/(profile)/MyOrders')}
+            >
+              <Ionicons name="receipt-outline" size={20} color={Colors.accent} style={{ marginRight: 8 }} />
+              <Text className="font-semibold text-base" style={{ color: Colors.accent }}>
+                My Orders
+              </Text>
+            </Pressable>
+
+            {/* Settings Button */}
+            <Pressable 
+              className="border py-4 rounded-xl" 
+              style={{ borderColor: Colors.border.default }}
+              onPress={() => router.push('/(auth)/updateProfile')}
+            >
+              <Text className="font-semibold text-base text-center" style={{ color: Colors.text.primary }}>
+                {t('profile.settings')}
+              </Text>
             </Pressable>
           </View>
         </View>
@@ -256,11 +286,12 @@ const handleSignOut = async () => {
           
           <View className="space-y-1">
             {[
-              { title: 'Order History', action: null },
-              { title: 'Payment Methods', action: null },
+              // { title: 'Order History', action: null },
+              // { title: 'Payment Methods', action: null },
               { title: 'Notifications', action: null },
-              { title: 'Privacy Settings', action: null },
-              { title: 'Help Support', action: null },
+              { title: 'Privacy Settings', action: () => router.push('/(settings)/PrivacySettings') },
+              { title: 'Help Support', action: () => router.push('/(settings)/HelpSupport') },
+              { title: 'About', action: () => router.push('/(settings)/About') },
             ].map((item, index) => (
               <Pressable 
                 key={index} 
@@ -293,9 +324,31 @@ const handleSignOut = async () => {
       </ScrollView>
 
       {/* Floating Chat Bubble - Fixed position in bottom right, above footer */}
-      <View className="absolute bottom-24 right-6">
-        <ChatBubble to="/chat" />
-      </View>
+      <TouchableOpacity
+        onPress={() => router.push('/chat')}
+        activeOpacity={0.8}
+        style={{
+          position: 'absolute',
+          bottom: 100,
+          right: 24,
+          width: 60,
+          height: 60,
+          borderRadius: 30,
+          backgroundColor: Colors.accent,
+          alignItems: 'center',
+          justifyContent: 'center',
+          shadowColor: '#000',
+          shadowOffset: {
+            width: 0,
+            height: 4,
+          },
+          shadowOpacity: 0.3,
+          shadowRadius: 6,
+          elevation: 8,
+        }}
+      >
+        <Ionicons name="chatbubble" size={28} color="#FFFFFF" />
+      </TouchableOpacity>
 
       {/* Language Selection Modal */}
       <Modal

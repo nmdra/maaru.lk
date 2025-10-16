@@ -283,27 +283,28 @@ export default function PaymentScreen() {
       
       <View className="flex-1" style={{ backgroundColor: Colors.background.primary }}>
       {/* Header */}
-      <View className="px-4 py-3 border-b border-gray-200" style={{ backgroundColor: Colors.card.background }}>
+      <View className="px-4 py-3" style={{ backgroundColor: Colors.card.background, borderBottomWidth: 1, borderBottomColor: Colors.border.default }}>
         <View className="flex-row items-center">
           <TouchableOpacity onPress={() => router.back()} className="mr-3">
-            <Ionicons name="arrow-back" size={24} color="#333" />
+            <Ionicons name="arrow-back" size={24} color={Colors.text.primary} />
           </TouchableOpacity>
-          <Text className="text-lg font-bold text-gray-900">{t('payment.title')}</Text>
+          <Text className="text-lg font-bold" style={{ color: Colors.text.primary }}>{t('payment.title')}</Text>
         </View>
       </View>
 
       <ScrollView className="flex-1">
         {/* Product Summary */}
         <View className="mx-4 mt-4 p-4 rounded-lg shadow-sm" style={{ backgroundColor: Colors.card.background }}>
-          <Text className="text-lg font-bold mb-3">{t('payment.orderSummary')}</Text>
+          <Text className="text-lg font-bold mb-3" style={{ color: Colors.text.primary }}>{t('payment.orderSummary')}</Text>
           <View className="flex-row">
             <Image
               source={product.imageUrl ? { uri: product.imageUrl } : { uri: 'https://placehold.co/80' }}
-              className="w-20 h-20 rounded-lg bg-gray-200"
+              className="w-20 h-20 rounded-lg"
+              style={{ backgroundColor: Colors.background.secondary }}
             />
             <View className="flex-1 ml-3">
-              <Text className="font-semibold text-gray-900">{product.name}</Text>
-              <Text className="text-sm text-gray-600 mt-1">{product.category}</Text>
+              <Text className="font-semibold" style={{ color: Colors.text.primary }}>{product.name}</Text>
+              <Text className="text-sm mt-1" style={{ color: Colors.text.secondary }}>{product.category}</Text>
               <Text className="text-lg font-bold text-blue-600 mt-2">
                 {formatPrice(product.price, product.currency)}
               </Text>
@@ -311,23 +312,25 @@ export default function PaymentScreen() {
           </View>
 
           {/* Quantity Selector */}
-          <View className="flex-row items-center justify-between mt-4 pt-4 border-t border-gray-200">
-            <Text className="font-semibold">{t('payment.quantity')}:</Text>
+          <View className="flex-row items-center justify-between mt-4 pt-4" style={{ borderTopWidth: 1, borderTopColor: Colors.border.default }}>
+            <Text className="font-semibold" style={{ color: Colors.text.primary }}>{t('payment.quantity')}:</Text>
             <View className="flex-row items-center">
               <TouchableOpacity
                 onPress={() => handleQuantityChange(-1)}
-                className="w-10 h-10 bg-gray-200 rounded-full items-center justify-center"
+                className="w-10 h-10 rounded-full items-center justify-center"
+                style={{ backgroundColor: Colors.background.secondary }}
                 disabled={quantity <= 1}
               >
-                <Ionicons name="remove" size={20} color={quantity <= 1 ? "#ccc" : "#333"} />
+                <Ionicons name="remove" size={20} color={quantity <= 1 ? Colors.text.tertiary : Colors.text.primary} />
               </TouchableOpacity>
-              <Text className="mx-4 text-lg font-bold">{quantity}</Text>
+              <Text className="mx-4 text-lg font-bold" style={{ color: Colors.text.primary }}>{quantity}</Text>
               <TouchableOpacity
                 onPress={() => handleQuantityChange(1)}
-                className="w-10 h-10 bg-gray-200 rounded-full items-center justify-center"
+                className="w-10 h-10 rounded-full items-center justify-center"
+                style={{ backgroundColor: Colors.background.secondary }}
                 disabled={quantity >= (product.stock || 1)}
               >
-                <Ionicons name="add" size={20} color={quantity >= (product.stock || 1) ? "#ccc" : "#333"} />
+                <Ionicons name="add" size={20} color={quantity >= (product.stock || 1) ? Colors.text.tertiary : Colors.text.primary} />
               </TouchableOpacity>
             </View>
           </View>
@@ -335,42 +338,53 @@ export default function PaymentScreen() {
 
         {/* Payment Method Selection */}
         <View className="mx-4 mt-4 p-4 rounded-lg shadow-sm" style={{ backgroundColor: Colors.card.background }}>
-          <Text className="text-lg font-bold mb-3">{t('payment.paymentMethod')}</Text>
+          <Text className="text-lg font-bold mb-3" style={{ color: Colors.text.primary }}>{t('payment.paymentMethod')}</Text>
           {paymentMethods.map((method) => (
             <TouchableOpacity
               key={method.id}
               onPress={() => !method.disabled && setSelectedPaymentMethod(method.id)}
               disabled={method.disabled}
-              className={`flex-row items-center p-3 rounded-lg mb-2 ${
-                method.disabled 
-                  ? 'bg-gray-100 border border-gray-300 opacity-50'
+              className="flex-row items-center p-3 rounded-lg mb-2"
+              style={{
+                backgroundColor: method.disabled 
+                  ? Colors.background.tertiary
                   : selectedPaymentMethod === method.id 
-                    ? 'bg-blue-50 border-2 border-blue-500' 
-                    : 'bg-gray-50 border border-gray-200'
-              }`}
+                    ? Colors.background.accent
+                    : Colors.background.secondary,
+                borderWidth: method.disabled ? 1 : selectedPaymentMethod === method.id ? 2 : 1,
+                borderColor: method.disabled
+                  ? Colors.border.default
+                  : selectedPaymentMethod === method.id
+                    ? Colors.accent
+                    : Colors.border.default,
+                opacity: method.disabled ? 0.5 : 1
+              }}
             >
               <Ionicons 
                 name={method.icon} 
                 size={24} 
                 color={
                   method.disabled 
-                    ? '#ccc' 
+                    ? Colors.text.tertiary
                     : selectedPaymentMethod === method.id 
-                      ? '#2563eb' 
-                      : '#666'
+                      ? Colors.accent
+                      : Colors.text.secondary
                 } 
               />
-              <Text className={`ml-3 font-medium ${
-                method.disabled
-                  ? 'text-gray-400'
-                  : selectedPaymentMethod === method.id 
-                    ? 'text-blue-600' 
-                    : 'text-gray-700'
-              }`}>
+              <Text 
+                className="ml-3 font-medium flex-1"
+                style={{
+                  color: method.disabled
+                    ? Colors.text.tertiary
+                    : selectedPaymentMethod === method.id 
+                      ? Colors.accent
+                      : Colors.text.primary
+                }}
+              >
                 {method.name}
               </Text>
               {selectedPaymentMethod === method.id && !method.disabled && (
-                <Ionicons name="checkmark-circle" size={20} color="#2563eb" className="ml-auto" />
+                <Ionicons name="checkmark-circle" size={20} color={Colors.accent} />
               )}
             </TouchableOpacity>
           ))}
@@ -379,25 +393,39 @@ export default function PaymentScreen() {
         {/* Payment Details Form */}
         {selectedPaymentMethod === 'stripe' && (
           <View className="mx-4 mt-4 p-4 rounded-lg shadow-sm" style={{ backgroundColor: Colors.card.background }}>
-            <Text className="text-lg font-bold mb-3">Payment Details</Text>
-            <Text className="text-sm text-gray-600 mb-3">Stripe will securely collect your payment information in the next step</Text>
+            <Text className="text-lg font-bold mb-3" style={{ color: Colors.text.primary }}>Payment Details</Text>
+            <Text className="text-sm mb-3" style={{ color: Colors.text.secondary }}>Stripe will securely collect your payment information in the next step</Text>
             
             <View className="space-y-3">
               <View>
-                <Text className="text-sm font-medium text-gray-700 mb-1">{t('payment.cardholderName')}</Text>
+                <Text className="text-sm font-medium mb-1" style={{ color: Colors.text.primary }}>{t('payment.cardholderName')}</Text>
                 <TextInput
-                  className="border border-gray-300 rounded-lg px-3 py-2 bg-white"
+                  className="rounded-lg px-3 py-2"
+                  style={{
+                    borderWidth: 1,
+                    borderColor: Colors.border.default,
+                    backgroundColor: Colors.background.primary,
+                    color: Colors.text.primary
+                  }}
                   placeholder={t('payment.placeholders.cardholderName')}
+                  placeholderTextColor={Colors.text.tertiary}
                   value={paymentDetails.cardholderName}
                   onChangeText={(text) => setPaymentDetails({...paymentDetails, cardholderName: text})}
                 />
               </View>
 
               <View>
-                <Text className="text-sm font-medium text-gray-700 mb-1">Email (optional - for receipt)</Text>
+                <Text className="text-sm font-medium mb-1" style={{ color: Colors.text.primary }}>Email (optional - for receipt)</Text>
                 <TextInput
-                  className="border border-gray-300 rounded-lg px-3 py-2 bg-white"
+                  className="rounded-lg px-3 py-2"
+                  style={{
+                    borderWidth: 1,
+                    borderColor: Colors.border.default,
+                    backgroundColor: Colors.background.primary,
+                    color: Colors.text.primary
+                  }}
                   placeholder="your-email@example.com"
+                  placeholderTextColor={Colors.text.tertiary}
                   value={paymentDetails.email}
                   onChangeText={(text) => setPaymentDetails({...paymentDetails, email: text})}
                   keyboardType="email-address"
@@ -410,14 +438,21 @@ export default function PaymentScreen() {
 
         {/* Billing Information */}
         <View className="mx-4 mt-4 p-4 rounded-lg shadow-sm" style={{ backgroundColor: Colors.card.background }}>
-          <Text className="text-lg font-bold mb-3">{t('payment.billingInfo')}</Text>
+          <Text className="text-lg font-bold mb-3" style={{ color: Colors.text.primary }}>{t('payment.billingInfo')}</Text>
           
           <View className="space-y-3">
             <View>
-              <Text className="text-sm font-medium text-gray-700 mb-1">{t('payment.phoneNumber')}</Text>
+              <Text className="text-sm font-medium mb-1" style={{ color: Colors.text.primary }}>{t('payment.phoneNumber')}</Text>
               <TextInput
-                className="border border-gray-300 rounded-lg px-3 py-2 bg-white"
+                className="rounded-lg px-3 py-2"
+                style={{
+                  borderWidth: 1,
+                  borderColor: Colors.border.default,
+                  backgroundColor: Colors.background.primary,
+                  color: Colors.text.primary
+                }}
                 placeholder={t('payment.placeholders.phoneNumber')}
+                placeholderTextColor={Colors.text.tertiary}
                 value={paymentDetails.phoneNumber}
                 onChangeText={(text) => setPaymentDetails({...paymentDetails, phoneNumber: text})}
                 keyboardType="phone-pad"
@@ -425,10 +460,17 @@ export default function PaymentScreen() {
             </View>
 
             <View>
-              <Text className="text-sm font-medium text-gray-700 mb-1">{t('payment.billingAddress')}</Text>
+              <Text className="text-sm font-medium mb-1" style={{ color: Colors.text.primary }}>{t('payment.billingAddress')}</Text>
               <TextInput
-                className="border border-gray-300 rounded-lg px-3 py-3 bg-white"
+                className="rounded-lg px-3 py-3"
+                style={{
+                  borderWidth: 1,
+                  borderColor: Colors.border.default,
+                  backgroundColor: Colors.background.primary,
+                  color: Colors.text.primary
+                }}
                 placeholder={t('payment.placeholders.billingAddress')}
+                placeholderTextColor={Colors.text.tertiary}
                 value={paymentDetails.billingAddress}
                 onChangeText={(text) => setPaymentDetails({...paymentDetails, billingAddress: text})}
                 multiline
@@ -441,23 +483,23 @@ export default function PaymentScreen() {
 
         {/* Price Breakdown */}
         <View className="mx-4 mt-4 p-4 rounded-lg shadow-sm" style={{ backgroundColor: Colors.card.background }}>
-          <Text className="text-lg font-bold mb-3">{t('payment.priceBreakdown')}</Text>
+          <Text className="text-lg font-bold mb-3" style={{ color: Colors.text.primary }}>{t('payment.priceBreakdown')}</Text>
           
           <View className="space-y-2">
             <View className="flex-row justify-between">
-              <Text className="text-gray-700">{t('payment.subtotal')} ({quantity} item{quantity > 1 ? 's' : ''})</Text>
-              <Text className="font-medium">{formatPrice(product.price * quantity, product.currency)}</Text>
+              <Text style={{ color: Colors.text.primary }}>{t('payment.subtotal')} ({quantity} item{quantity > 1 ? 's' : ''})</Text>
+              <Text className="font-medium text-blue-600">{formatPrice(product.price * quantity, product.currency)}</Text>
             </View>
             <View className="flex-row justify-between">
-              <Text className="text-gray-700">{t('payment.shipping')}</Text>
-              <Text className="font-medium">{formatPrice(200, product.currency)}</Text>
+              <Text style={{ color: Colors.text.primary }}>{t('payment.shipping')}</Text>
+              <Text className="font-medium text-blue-600">{formatPrice(200, product.currency)}</Text>
             </View>
             <View className="flex-row justify-between">
-              <Text className="text-gray-700">{t('payment.tax')} (10%)</Text>
-              <Text className="font-medium">{formatPrice(product.price * quantity * 0.1, product.currency)}</Text>
+              <Text style={{ color: Colors.text.primary }}>{t('payment.tax')} (10%)</Text>
+              <Text className="font-medium text-blue-600">{formatPrice(product.price * quantity * 0.1, product.currency)}</Text>
             </View>
-            <View className="border-t border-gray-200 pt-2 flex-row justify-between">
-              <Text className="text-lg font-bold">{t('payment.total')}</Text>
+            <View className="pt-2 flex-row justify-between" style={{ borderTopWidth: 1, borderTopColor: Colors.border.default }}>
+              <Text className="text-lg font-bold" style={{ color: Colors.text.primary }}>{t('payment.total')}</Text>
               <Text className="text-lg font-bold text-blue-600">{formatPrice(calculateTotal(), product.currency)}</Text>
             </View>
           </View>
@@ -468,13 +510,14 @@ export default function PaymentScreen() {
       </ScrollView>
 
       {/* Fixed Pay Button */}
-      <View className="px-4 py-3 border-t border-gray-200" style={{ backgroundColor: Colors.card.background }}>
+      <View className="px-4 py-3" style={{ backgroundColor: Colors.card.background, borderTopWidth: 1, borderTopColor: Colors.border.default }}>
         <TouchableOpacity
           onPress={handlePayment}
           disabled={processingPayment}
-          className={`py-4 rounded-lg items-center justify-center flex-row ${
-            processingPayment ? 'bg-gray-400' : 'bg-blue-600'
-          }`}
+          className="py-4 rounded-lg items-center justify-center flex-row"
+          style={{
+            backgroundColor: processingPayment ? Colors.border.default : Colors.accent
+          }}
         >
           <Ionicons 
             name={processingPayment ? "hourglass-outline" : "card-outline"} 
