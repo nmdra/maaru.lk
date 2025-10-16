@@ -21,3 +21,14 @@ test('app component has correct initial state', () => {
   // Check if app is visible
   expect(appContainer).toBeVisible();
 });
+
+test('app component renders with correct accessibility attributes', () => {
+  render(<App />);
+  
+  // Check if the app has proper accessibility role
+  const appElement = screen.getByRole('application');
+  expect(appElement).toBeInTheDocument();
+  
+  // Check if app has accessible name
+  expect(appElement).toHaveAccessibleName();
+});
