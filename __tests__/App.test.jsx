@@ -11,3 +11,13 @@ test('renders app without crashing', () => {
   render(<App />);
   expect(screen.getByRole('main')).toBeInTheDocument();
 });
+
+test('app component has correct initial state', () => {
+  render(<App />);
+  // Check if the app container exists
+  const appContainer = screen.getByTestId('app-container');
+  expect(appContainer).toBeInTheDocument();
+  
+  // Check if app is visible
+  expect(appContainer).toBeVisible();
+});
